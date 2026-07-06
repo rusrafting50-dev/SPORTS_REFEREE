@@ -1,7 +1,9 @@
 # app.py — точка входа, инициализация Flask и БД
 import os
+import re
 
 from flask import Flask, flash, redirect, render_template, request, url_for
+from markupsafe import Markup, escape
 
 from models import ReportSettings, db
 from routes.athletes import bp as athletes_bp
@@ -9,6 +11,15 @@ from routes.import_export import bp as import_export_bp
 from routes.reports import bp as reports_bp
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+CATEGORY_PATTERN = re.compile(r"\s*(\(\s*\d+\s*-\s*\d+\s*категория\s*\))", re.IGNORECASE)
+
+
+def break_before_category(value):
+    """Переносит '(N-N категория)' на новую строку независимо от исходных пробелов/переводов строк."""
+    if not value:
+        return value
+    return Markup(CATEGORY_PATTERN.sub(r"<br>\1", str(escape(value))))
 
 
 def create_app():
@@ -18,6 +29,7 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     app.jinja_env.finalize = lambda value: "" if value is None else value
+    app.jinja_env.filters["break_before_category"] = break_before_category
 
     db.init_app(app)
     app.register_blueprint(athletes_bp)
