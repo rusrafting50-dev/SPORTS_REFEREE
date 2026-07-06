@@ -39,6 +39,9 @@
     transform: rotate(180deg);
     white-space: nowrap;
 }
+.header-vertical-cell {
+    text-align: left !important;
+}
 
 /* Столбец дисциплины: ширина под "Дистанции пешеходные,", более длинные значения переносятся на новую строку внутри этой ширины */
 .col-discipline {
