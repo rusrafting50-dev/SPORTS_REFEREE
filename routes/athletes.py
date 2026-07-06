@@ -16,6 +16,16 @@ ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 # Дистанции / Дистанция / Группа дисциплин "дистанция" — без учёта регистра
 DISTANCE_DISCIPLINE_PATTERN = r"(?i)дистанц"
 
+# Конкретные виды маршрутов для кнопок на странице /athletes/routes:
+# (slug, подпись кнопки, эндпоинт, паттерн дисциплины)
+ROUTE_TYPES = [
+    ("ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+]
+
 
 def _apply_common_filters(query):
     discipline = request.args.get("discipline", "")
@@ -45,7 +55,7 @@ def _apply_common_filters(query):
     return query, filters
 
 
-def _render_athletes_list(query):
+def _render_athletes_list(query, **extra_context):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
     pagination = query.order_by(Athlete.last_name).paginate(page=page, per_page=PER_PAGE, error_out=False)
@@ -55,6 +65,7 @@ def _render_athletes_list(query):
         pagination=pagination,
         filters=filters,
         references=references,
+        **extra_context,
     )
 
 
@@ -69,7 +80,24 @@ def athletes_routes_list():
     query = Athlete.query.filter_by(is_active=True).filter(
         Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
     )
-    return _render_athletes_list(query)
+    return _render_athletes_list(query, route_buttons=ROUTE_TYPES)
+
+
+def _make_route_type_view(pattern):
+    def view():
+        query = Athlete.query.filter_by(is_active=True).filter(
+            Athlete.discipline.op("REGEXP")(pattern)
+        )
+        return _render_athletes_list(query)
+    return view
+
+
+for _slug, _label, _endpoint, _pattern in ROUTE_TYPES:
+    bp.add_url_rule(
+        f"/routes/{_slug}",
+        endpoint=_endpoint.split(".")[1],
+        view_func=_make_route_type_view(_pattern),
+    )
 
 
 @bp.route("/distances")

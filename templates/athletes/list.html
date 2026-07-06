@@ -6,6 +6,13 @@
     <a href="{{ url_for('athletes.athletes_new') }}" class="btn btn-primary">Добавить спортсмена</a>
 </div>
 
+{% if route_buttons %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+    {% for slug, label, endpoint, pattern in route_buttons %}
+    <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
+    {% endfor %}
+</div>
+{% else %}
 <form method="get" action="{{ url_for(request.endpoint) }}" class="row g-2 mb-3">
     <div class="col-md-2">
         <select name="discipline" class="form-select">
@@ -51,6 +58,7 @@
         <button type="submit" class="btn btn-outline-secondary w-100">Применить фильтры</button>
     </div>
 </form>
+{% endif %}
 
 <div class="table-responsive">
 <table class="table table-sm table-striped table-bordered align-middle table-report">
