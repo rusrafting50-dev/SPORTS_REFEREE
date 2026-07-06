@@ -17,13 +17,24 @@ ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 DISTANCE_DISCIPLINE_PATTERN = r"(?i)дистанц"
 
 # Конкретные виды маршрутов для кнопок на странице /athletes/routes:
-# (slug, подпись кнопки, эндпоинт, паттерн дисциплины)
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины)
 ROUTE_TYPES = [
-    ("ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+]
+
+# Конкретные виды дистанций для кнопок на странице /athletes/distances:
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины)
+DISTANCE_TYPES = [
+    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход"),
+    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн"),
+    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн"),
+    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн"),
+    ("/distances/vehicle-bike", "Дистанции на средствах передвижения (вело)", "athletes.athletes_distances_vehicle_bike", r"(?is)дистанц.*средствах передвижения.*вело"),
+    ("/distances/vehicle-horse", "Дистанции на средствах передвижения (конные)", "athletes.athletes_distances_vehicle_horse", r"(?is)дистанц.*средствах передвижения.*конн"),
 ]
 
 
@@ -80,10 +91,18 @@ def athletes_routes_list():
     query = Athlete.query.filter_by(is_active=True).filter(
         Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
     )
-    return _render_athletes_list(query, route_buttons=ROUTE_TYPES)
+    return _render_athletes_list(query, list_buttons=ROUTE_TYPES)
 
 
-def _make_route_type_view(pattern):
+@bp.route("/distances")
+def athletes_distances_list():
+    query = Athlete.query.filter_by(is_active=True).filter(
+        Athlete.discipline.op("REGEXP")(DISTANCE_DISCIPLINE_PATTERN)
+    )
+    return _render_athletes_list(query, list_buttons=DISTANCE_TYPES)
+
+
+def _make_discipline_type_view(pattern):
     def view():
         query = Athlete.query.filter_by(is_active=True).filter(
             Athlete.discipline.op("REGEXP")(pattern)
@@ -92,20 +111,12 @@ def _make_route_type_view(pattern):
     return view
 
 
-for _slug, _label, _endpoint, _pattern in ROUTE_TYPES:
+for _path, _label, _endpoint, _pattern in ROUTE_TYPES + DISTANCE_TYPES:
     bp.add_url_rule(
-        f"/routes/{_slug}",
+        _path,
         endpoint=_endpoint.split(".")[1],
-        view_func=_make_route_type_view(_pattern),
+        view_func=_make_discipline_type_view(_pattern),
     )
-
-
-@bp.route("/distances")
-def athletes_distances_list():
-    query = Athlete.query.filter_by(is_active=True).filter(
-        Athlete.discipline.op("REGEXP")(DISTANCE_DISCIPLINE_PATTERN)
-    )
-    return _render_athletes_list(query)
 
 
 @bp.route("/new", methods=["GET", "POST"])
