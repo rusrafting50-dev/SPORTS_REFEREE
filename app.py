@@ -17,6 +17,8 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "athletes.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    app.jinja_env.finalize = lambda value: "" if value is None else value
+
     db.init_app(app)
     app.register_blueprint(athletes_bp)
     app.register_blueprint(import_export_bp)
