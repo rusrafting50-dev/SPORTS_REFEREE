@@ -36,7 +36,7 @@
             <th rowspan="2">Территориальная принадлежность</th>
             <th rowspan="2">Личный тренер</th>
             <th colspan="3">Высший результат сезона на официальных спортивных соревнованиях</th>
-            <th rowspan="2">Состав спортивной сборной команды Российской Федерации</th>
+            <th rowspan="2" class="col-national-team">Состав спортивной сборной команды Российской Федерации</th>
         </tr>
         <tr class="text-center">
             <th class="header-vertical">Московские областные</th>
@@ -61,7 +61,7 @@
             <td class="text-center">{{ athlete.result_regional }}</td>
             <td class="text-center">{{ athlete.result_national }}</td>
             <td class="text-center">{{ athlete.result_international }}</td>
-            <td class="text-center">{{ athlete.national_team }}</td>
+            <td class="text-center col-national-team">{{ athlete.national_team }}</td>
         </tr>
         {% else %}
         <tr>

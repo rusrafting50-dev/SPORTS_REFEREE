@@ -53,3 +53,11 @@
     white-space: normal;
     word-break: break-word;
 }
+
+/* Столбец состава сборной РФ: ширина под перенос "Основной состав (мужчины, женщины)" ровно в две строки */
+.col-national-team {
+    width: 11.5em;
+    max-width: 11.5em;
+    white-space: normal;
+    word-break: break-word;
+}
