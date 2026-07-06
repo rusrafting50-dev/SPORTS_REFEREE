@@ -56,7 +56,7 @@
 <table class="table table-sm table-striped table-bordered align-middle table-report">
     <thead>
         <tr class="text-center">
-            <th rowspan="2">№ п/п</th>
+            <th rowspan="2" class="text-nowrap">№ п/п</th>
             <th rowspan="2">Фамилия, имя, отчество (при наличии)</th>
             <th rowspan="2">Дата рождения</th>
             <th rowspan="2">Пол</th>
@@ -79,7 +79,7 @@
     <tbody>
         {% for athlete in athletes %}
         <tr>
-            <td class="text-center">{{ loop.index + pagination.per_page * (pagination.page - 1) }}</td>
+            <td class="text-center text-nowrap">{{ loop.index + pagination.per_page * (pagination.page - 1) }}</td>
             <td><a href="{{ url_for('athletes.athletes_detail', athlete_id=athlete.id) }}">{{ athlete.full_name }}</a></td>
             <td class="text-center">{{ athlete.birth_date.strftime('%d.%m.%Y') if athlete.birth_date }}</td>
             <td class="text-center">{{ athlete.gender }}</td>
