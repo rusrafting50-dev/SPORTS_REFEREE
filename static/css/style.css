@@ -61,3 +61,11 @@
     white-space: normal;
     word-break: break-word;
 }
+
+/* Столбец ФИО: ширина под "Кузин Дмитрий Игоревич" в одну строку, более длинные ФИО переносятся внутри этой ширины */
+.col-fio {
+    width: 12.5em;
+    max-width: 12.5em;
+    white-space: normal;
+    word-break: break-word;
+}
