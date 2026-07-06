@@ -4,6 +4,8 @@ import re
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 from models import ReportSettings, db
 from routes.athletes import bp as athletes_bp
@@ -29,6 +31,14 @@ def break_trainers(value):
         return value
     parts = TRAINER_SEPARATOR.split(str(escape(value)))
     return Markup(",<br>".join(parts))
+
+
+@event.listens_for(Engine, "connect")
+def _register_sqlite_regexp(dbapi_connection, connection_record):
+    """SQLite не поддерживает REGEXP без явной регистрации функции (нужно для фильтра "Маршруты")."""
+    dbapi_connection.create_function(
+        "REGEXP", 2, lambda pattern, value: value is not None and re.search(pattern, value) is not None
+    )
 
 
 def create_app():

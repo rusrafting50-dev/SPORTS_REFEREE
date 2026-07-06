@@ -10,11 +10,11 @@ bp = Blueprint("athletes", __name__, url_prefix="/athletes")
 
 PER_PAGE = 20
 
+# Маршрут (Маршрут - лыжный, водный, горный и т.д. "N-N категория") — независимо от пробелов/дефиса
+ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 
-@bp.route("/")
-def athletes_list():
-    query = Athlete.query.filter_by(is_active=True)
 
+def _apply_common_filters(query):
     discipline = request.args.get("discipline", "")
     gender = request.args.get("gender", "")
     rank = request.args.get("rank", "")
@@ -32,22 +32,41 @@ def athletes_list():
     if category:
         query = query.filter(Athlete.category == category)
 
+    filters = {
+        "discipline": discipline,
+        "gender": gender,
+        "rank": rank,
+        "territory": territory,
+        "category": category,
+    }
+    return query, filters
+
+
+def _render_athletes_list(query):
+    query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
     pagination = query.order_by(Athlete.last_name).paginate(page=page, per_page=PER_PAGE, error_out=False)
-
     return render_template(
         "athletes/list.html",
         athletes=pagination.items,
         pagination=pagination,
-        filters={
-            "discipline": discipline,
-            "gender": gender,
-            "rank": rank,
-            "territory": territory,
-            "category": category,
-        },
+        filters=filters,
         references=references,
     )
+
+
+@bp.route("/")
+def athletes_list():
+    query = Athlete.query.filter_by(is_active=True)
+    return _render_athletes_list(query)
+
+
+@bp.route("/routes")
+def athletes_routes_list():
+    query = Athlete.query.filter_by(is_active=True).filter(
+        Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
+    )
+    return _render_athletes_list(query)
 
 
 @bp.route("/new", methods=["GET", "POST"])
