@@ -38,13 +38,10 @@
     text-align: left;
 }
 
-/* Столбец дисциплины: ширина под "Дистанции пешеходные,", длинные значения обрезаются многоточием */
+/* Столбец дисциплины: ширина под "Дистанции пешеходные,", более длинные значения переносятся на новую строку внутри этой ширины */
 .col-discipline {
     width: 13em;
     max-width: 13em;
-}
-.col-discipline-cell {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
 }
