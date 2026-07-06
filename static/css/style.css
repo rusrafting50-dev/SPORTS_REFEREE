@@ -42,6 +42,11 @@
 .header-vertical-cell {
     text-align: left !important;
 }
+.header-vertical-wrap {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
 
 /* Столбец дисциплины: ширина под "Дистанции пешеходные,", более длинные значения переносятся на новую строку внутри этой ширины */
 .col-discipline {
