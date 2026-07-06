@@ -23,7 +23,7 @@
 <div class="table-responsive">
 <table class="table table-sm table-striped table-bordered align-middle">
     <thead>
-        <tr>
+        <tr class="text-center">
             <th>№</th>
             <th>ФИО</th>
             <th>Дата рождения</th>
@@ -44,21 +44,21 @@
     <tbody>
         {% for athlete in athletes %}
         <tr>
-            <td>{{ loop.index }}</td>
+            <td class="text-center">{{ loop.index }}</td>
             <td>{{ athlete.full_name }}</td>
-            <td>{{ athlete.birth_date.strftime('%d.%m.%Y') if athlete.birth_date }}</td>
-            <td>{{ athlete.gender }}</td>
-            <td>{{ athlete.discipline }}</td>
-            <td>{{ athlete.category }}</td>
-            <td>{{ athlete.age_category }}</td>
-            <td>{{ athlete.rank }}</td>
-            <td>{{ athlete.organization }}</td>
-            <td>{{ athlete.territory }}</td>
-            <td>{{ athlete.trainer }}</td>
-            <td>{{ athlete.result_regional }}</td>
-            <td>{{ athlete.result_national }}</td>
-            <td>{{ athlete.result_international }}</td>
-            <td>{{ athlete.national_team }}</td>
+            <td class="text-center">{{ athlete.birth_date.strftime('%d.%m.%Y') if athlete.birth_date }}</td>
+            <td class="text-center">{{ athlete.gender }}</td>
+            <td class="text-center">{{ athlete.discipline }}</td>
+            <td class="text-center">{{ athlete.category }}</td>
+            <td class="text-center">{{ athlete.age_category }}</td>
+            <td class="text-center">{{ athlete.rank }}</td>
+            <td class="text-center">{{ athlete.organization }}</td>
+            <td class="text-center">{{ athlete.territory }}</td>
+            <td class="text-center">{{ athlete.trainer }}</td>
+            <td class="text-center">{{ athlete.result_regional }}</td>
+            <td class="text-center">{{ athlete.result_national }}</td>
+            <td class="text-center">{{ athlete.result_international }}</td>
+            <td class="text-center">{{ athlete.national_team }}</td>
         </tr>
         {% else %}
         <tr>
