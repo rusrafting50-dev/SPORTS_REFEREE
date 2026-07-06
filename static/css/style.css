@@ -16,3 +16,16 @@
 @media (min-width: 1400px) {
     .container { max-width: 1386px; }
 }
+
+/* Компактная таблица со спортсменами: мелкий шрифт, чтобы уместиться на экране без горизонтальной прокрутки */
+.table-report {
+    font-size: 0.68rem;
+}
+.table-report th,
+.table-report td {
+    padding: 0.25rem 0.3rem;
+}
+.table-report thead th {
+    font-weight: normal;
+    vertical-align: middle;
+}
