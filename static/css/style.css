@@ -1,20 +1,20 @@
 /* style.css — общие стили Сборной команды */
 
-/* Контейнер таблиц на экране шире на 5% относительно стандартных брейкпоинтов Bootstrap */
+/* Контейнер таблиц на экране шире на ~10% относительно стандартных брейкпоинтов Bootstrap */
 @media (min-width: 576px) {
-    .container { max-width: 567px; }
+    .container { max-width: 595px; }
 }
 @media (min-width: 768px) {
-    .container { max-width: 756px; }
+    .container { max-width: 794px; }
 }
 @media (min-width: 992px) {
-    .container { max-width: 1008px; }
+    .container { max-width: 1058px; }
 }
 @media (min-width: 1200px) {
-    .container { max-width: 1197px; }
+    .container { max-width: 1257px; }
 }
 @media (min-width: 1400px) {
-    .container { max-width: 1386px; }
+    .container { max-width: 1455px; }
 }
 
 /* Компактная таблица со спортсменами: мелкий шрифт, чтобы уместиться на экране без горизонтальной прокрутки */
