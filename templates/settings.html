@@ -9,11 +9,15 @@
         <input type="text" name="organization_name" class="form-control" value="{{ settings.organization_name if settings else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Председатель (ФИО)</label>
+        <label class="form-label">Должность руководителя организации</label>
+        <input type="text" name="chairman_position" class="form-control" value="{{ settings.chairman_position if settings else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Фамилия инициалы руководителя организации</label>
         <input type="text" name="chairman_name" class="form-control" value="{{ settings.chairman_name if settings else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Главный тренер (ФИО)</label>
+        <label class="form-label">Фамилия инициалы Главный тренер</label>
         <input type="text" name="head_coach_name" class="form-control" value="{{ settings.head_coach_name if settings else '' }}">
     </div>
     <div class="col-md-8">

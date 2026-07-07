@@ -72,6 +72,7 @@ def create_app():
                 report_settings = ReportSettings()
                 db.session.add(report_settings)
             report_settings.organization_name = request.form.get("organization_name", "").strip()
+            report_settings.chairman_position = request.form.get("chairman_position", "").strip()
             report_settings.chairman_name = request.form.get("chairman_name", "").strip()
             report_settings.head_coach_name = request.form.get("head_coach_name", "").strip()
             report_settings.sport_name = request.form.get("sport_name", "").strip()
