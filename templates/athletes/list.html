@@ -25,18 +25,18 @@
         </select>
     </div>
     <div class="col-md-2">
-        <select name="gender" class="form-select">
-            <option value="">Пол: все</option>
-            {% for g in references.GENDERS %}
-                <option value="{{ g }}" {% if filters.gender == g %}selected{% endif %}>{{ g }}</option>
+        <select name="age_category" class="form-select">
+            <option value="">Возрастная категория: все</option>
+            {% for a in references.AGE_CATEGORIES %}
+                <option value="{{ a }}" {% if filters.age_category == a %}selected{% endif %}>{{ a }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="col-md-2">
-        <select name="rank" class="form-select">
-            <option value="">Разряд: все</option>
-            {% for r in references.RANKS %}
-                <option value="{{ r }}" {% if filters.rank == r %}selected{% endif %}>{{ r }}</option>
+        <select name="gender" class="form-select">
+            <option value="">Пол: все</option>
+            {% for g in references.GENDERS %}
+                <option value="{{ g }}" {% if filters.gender == g %}selected{% endif %}>{{ g }}</option>
             {% endfor %}
         </select>
     </div>
@@ -49,12 +49,7 @@
         </select>
     </div>
     <div class="col-md-2">
-        <select name="category" class="form-select">
-            <option value="">Категория: все</option>
-            {% for c in references.CATEGORIES %}
-                <option value="{{ c }}" {% if filters.category == c %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
-        </select>
+        <input type="text" name="organization" class="form-control" placeholder="Организация" value="{{ filters.organization }}">
     </div>
     <div class="col-md-2">
         <button type="submit" class="btn btn-outline-secondary w-100">Применить фильтры</button>

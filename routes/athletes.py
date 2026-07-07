@@ -40,28 +40,28 @@ DISTANCE_TYPES = [
 
 def _apply_common_filters(query):
     discipline = request.args.get("discipline", "")
+    age_category = request.args.get("age_category", "")
     gender = request.args.get("gender", "")
-    rank = request.args.get("rank", "")
     territory = request.args.get("territory", "")
-    category = request.args.get("category", "")
+    organization = request.args.get("organization", "")
 
     if discipline:
         query = query.filter(Athlete.discipline.contains(discipline))
+    if age_category:
+        query = query.filter(Athlete.age_category == age_category)
     if gender:
         query = query.filter(Athlete.gender == gender)
-    if rank:
-        query = query.filter(Athlete.rank == rank)
     if territory:
         query = query.filter(Athlete.territory == territory)
-    if category:
-        query = query.filter(Athlete.category == category)
+    if organization:
+        query = query.filter(Athlete.organization.contains(organization))
 
     filters = {
         "discipline": discipline,
+        "age_category": age_category,
         "gender": gender,
-        "rank": rank,
         "territory": territory,
-        "category": category,
+        "organization": organization,
     }
     return query, filters
 
