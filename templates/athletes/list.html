@@ -4,13 +4,13 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">{{ heading }}</h1>
     {% if show_add_button %}
-    <a href="{{ url_for('athletes.athletes_new') }}" class="btn btn-primary">Добавить спортсмена</a>
+    <a href="{{ url_for('athletes.athletes_new', discipline=discipline_preset) if discipline_preset else url_for('athletes.athletes_new') }}" class="btn btn-primary">Добавить спортсмена</a>
     {% endif %}
 </div>
 
 {% if list_buttons %}
 <div class="mb-3 d-flex flex-wrap gap-2">
-    {% for _path, label, endpoint, _pattern in list_buttons %}
+    {% for _path, label, endpoint, _pattern, _heading, _discipline_preset in list_buttons %}
     <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
     {% endfor %}
 </div>
