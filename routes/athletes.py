@@ -104,7 +104,10 @@ def athletes_distances_list():
     query = Athlete.query.filter_by(is_active=True).filter(
         Athlete.discipline.op("REGEXP")(DISTANCE_DISCIPLINE_PATTERN)
     )
-    return _render_athletes_list(query, list_buttons=DISTANCE_TYPES)
+    return _render_athletes_list(
+        query, list_buttons=DISTANCE_TYPES,
+        heading="Группа дисциплин ДИСТАНЦИЯ", show_add_button=False,
+    )
 
 
 def _make_discipline_type_view(pattern):
