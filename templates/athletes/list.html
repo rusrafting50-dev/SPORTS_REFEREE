@@ -33,14 +33,6 @@
         </select>
     </div>
     <div class="col-md-2">
-        <select name="gender" class="form-select">
-            <option value="">Пол: все</option>
-            {% for g in references.GENDERS %}
-                <option value="{{ g }}" {% if filters.gender == g %}selected{% endif %}>{{ g }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-md-2">
         <select name="territory" class="form-select">
             <option value="">Территория: все</option>
             {% for t in references.TERRITORIES %}
@@ -49,7 +41,12 @@
         </select>
     </div>
     <div class="col-md-2">
-        <input type="text" name="organization" class="form-control" placeholder="Организация" value="{{ filters.organization }}">
+        <select name="organization" class="form-select">
+            <option value="">Организация: все</option>
+            {% for o in organizations %}
+                <option value="{{ o }}" {% if filters.organization == o %}selected{% endif %}>{{ o }}</option>
+            {% endfor %}
+        </select>
     </div>
     <div class="col-md-2">
         <button type="submit" class="btn btn-outline-secondary w-100">Применить фильтры</button>
