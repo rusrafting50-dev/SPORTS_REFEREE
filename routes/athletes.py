@@ -41,7 +41,6 @@ DISTANCE_TYPES = [
 def _apply_common_filters(query):
     discipline = request.args.get("discipline", "")
     age_category = request.args.get("age_category", "")
-    gender = request.args.get("gender", "")
     territory = request.args.get("territory", "")
     organization = request.args.get("organization", "")
 
@@ -49,21 +48,29 @@ def _apply_common_filters(query):
         query = query.filter(Athlete.discipline.contains(discipline))
     if age_category:
         query = query.filter(Athlete.age_category == age_category)
-    if gender:
-        query = query.filter(Athlete.gender == gender)
     if territory:
         query = query.filter(Athlete.territory == territory)
     if organization:
-        query = query.filter(Athlete.organization.contains(organization))
+        query = query.filter(Athlete.organization == organization)
 
     filters = {
         "discipline": discipline,
         "age_category": age_category,
-        "gender": gender,
         "territory": territory,
         "organization": organization,
     }
     return query, filters
+
+
+def _distinct_organizations():
+    rows = (
+        db.session.query(Athlete.organization)
+        .filter(Athlete.organization.isnot(None), Athlete.organization != "")
+        .distinct()
+        .order_by(Athlete.organization)
+        .all()
+    )
+    return [row[0] for row in rows]
 
 
 def _render_athletes_list(query, heading="Спортсмены", show_add_button=True, discipline_preset=None, **extra_context):
@@ -76,6 +83,7 @@ def _render_athletes_list(query, heading="Спортсмены", show_add_button
         pagination=pagination,
         filters=filters,
         references=references,
+        organizations=_distinct_organizations(),
         heading=heading,
         show_add_button=show_add_button,
         discipline_preset=discipline_preset,
