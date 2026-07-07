@@ -52,12 +52,17 @@
 
         <div class="col-md-6">
             <label class="form-label">Спортивная дисциплина или группа дисциплин</label>
+            {% if preset_discipline %}
+            <input type="hidden" name="discipline" value="{{ preset_discipline }}">
+            <input type="text" class="form-control" value="{{ preset_discipline }}" disabled>
+            {% else %}
             <select name="discipline" class="form-select">
                 <option value="">—</option>
                 {% for d in references.DISCIPLINES %}
                 <option value="{{ d }}" {% if athlete and athlete.discipline == d %}selected{% endif %}>{{ d }}</option>
                 {% endfor %}
             </select>
+            {% endif %}
         </div>
         <div class="col-md-3">
             <label class="form-label">Спортивное звание, разряд</label>

@@ -17,24 +17,24 @@ ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 DISTANCE_DISCIPLINE_PATTERN = r"(?i)дистанц"
 
 # Конкретные виды маршрутов для кнопок на странице /athletes/routes:
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины)
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении)
 ROUTE_TYPES = [
-    ("/routes/ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("/routes/hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("/routes/mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("/routes/water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
-    ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)"),
+    ("/routes/ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - лыжный (1-6 категория)", "Маршрут - лыжный (1-6 категория)"),
+    ("/routes/hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None),
+    ("/routes/mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None),
+    ("/routes/water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None),
+    ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None),
 ]
 
 # Конкретные виды дистанций для кнопок на странице /athletes/distances:
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины)
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении)
 DISTANCE_TYPES = [
-    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход"),
-    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн"),
-    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн"),
-    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн"),
-    ("/distances/vehicle-bike", "Дистанции на средствах передвижения (вело)", "athletes.athletes_distances_vehicle_bike", r"(?is)дистанц.*средствах передвижения.*вело"),
-    ("/distances/vehicle-horse", "Дистанции на средствах передвижения (конные)", "athletes.athletes_distances_vehicle_horse", r"(?is)дистанц.*средствах передвижения.*конн"),
+    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход", None, None),
+    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн", None, None),
+    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн", None, None),
+    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн", None, None),
+    ("/distances/vehicle-bike", "Дистанции на средствах передвижения (вело)", "athletes.athletes_distances_vehicle_bike", r"(?is)дистанц.*средствах передвижения.*вело", None, None),
+    ("/distances/vehicle-horse", "Дистанции на средствах передвижения (конные)", "athletes.athletes_distances_vehicle_horse", r"(?is)дистанц.*средствах передвижения.*конн", None, None),
 ]
 
 
@@ -66,7 +66,7 @@ def _apply_common_filters(query):
     return query, filters
 
 
-def _render_athletes_list(query, heading="Спортсмены", show_add_button=True, **extra_context):
+def _render_athletes_list(query, heading="Спортсмены", show_add_button=True, discipline_preset=None, **extra_context):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
     pagination = query.order_by(Athlete.last_name).paginate(page=page, per_page=PER_PAGE, error_out=False)
@@ -78,6 +78,7 @@ def _render_athletes_list(query, heading="Спортсмены", show_add_button
         references=references,
         heading=heading,
         show_add_button=show_add_button,
+        discipline_preset=discipline_preset,
         **extra_context,
     )
 
@@ -110,20 +111,25 @@ def athletes_distances_list():
     )
 
 
-def _make_discipline_type_view(pattern):
+def _make_discipline_type_view(pattern, heading, discipline_preset):
     def view():
         query = Athlete.query.filter_by(is_active=True).filter(
             Athlete.discipline.op("REGEXP")(pattern)
         )
-        return _render_athletes_list(query)
+        kwargs = {}
+        if heading:
+            kwargs["heading"] = heading
+        if discipline_preset:
+            kwargs["discipline_preset"] = discipline_preset
+        return _render_athletes_list(query, **kwargs)
     return view
 
 
-for _path, _label, _endpoint, _pattern in ROUTE_TYPES + DISTANCE_TYPES:
+for _path, _label, _endpoint, _pattern, _heading, _discipline_preset in ROUTE_TYPES + DISTANCE_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
-        view_func=_make_discipline_type_view(_pattern),
+        view_func=_make_discipline_type_view(_pattern, _heading, _discipline_preset),
     )
 
 
@@ -137,7 +143,10 @@ def athletes_new():
         flash("Спортсмен добавлен", "success")
         return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
-    return render_template("athletes/form.html", athlete=None, references=references)
+    preset_discipline = request.args.get("discipline", "")
+    return render_template(
+        "athletes/form.html", athlete=None, references=references, preset_discipline=preset_discipline
+    )
 
 
 @bp.route("/<int:athlete_id>")
