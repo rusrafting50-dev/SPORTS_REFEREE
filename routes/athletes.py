@@ -66,7 +66,7 @@ def _apply_common_filters(query):
     return query, filters
 
 
-def _render_athletes_list(query, **extra_context):
+def _render_athletes_list(query, heading="Спортсмены", show_add_button=True, **extra_context):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
     pagination = query.order_by(Athlete.last_name).paginate(page=page, per_page=PER_PAGE, error_out=False)
@@ -76,6 +76,8 @@ def _render_athletes_list(query, **extra_context):
         pagination=pagination,
         filters=filters,
         references=references,
+        heading=heading,
+        show_add_button=show_add_button,
         **extra_context,
     )
 
@@ -91,7 +93,10 @@ def athletes_routes_list():
     query = Athlete.query.filter_by(is_active=True).filter(
         Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
     )
-    return _render_athletes_list(query, list_buttons=ROUTE_TYPES)
+    return _render_athletes_list(
+        query, list_buttons=ROUTE_TYPES,
+        heading="Группа дисциплин МАРШРУТ", show_add_button=False,
+    )
 
 
 @bp.route("/distances")
