@@ -1,13 +1,14 @@
 # app.py — точка входа, инициализация Flask и БД
 import os
 import re
+from datetime import date, datetime
 
 from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
 from sqlalchemy import event, inspect, text
 from sqlalchemy.engine import Engine
 
-from models import ReportSettings, db
+from models import ListChangeRecord, ReportSettings, db
 from routes.athletes import bp as athletes_bp
 from routes.import_export import bp as import_export_bp
 from routes.reports import bp as reports_bp
@@ -95,11 +96,38 @@ def create_app():
             report_settings.sport_name = request.form.get("sport_name", "").strip()
             year_raw = request.form.get("year", "").strip()
             report_settings.year = int(year_raw) if year_raw.isdigit() else None
+            approval_date_raw = request.form.get("main_list_approval_date", "").strip()
+            report_settings.main_list_approval_date = (
+                datetime.strptime(approval_date_raw, "%Y-%m-%d").date() if approval_date_raw else None
+            )
             db.session.commit()
             flash("Настройки сохранены", "success")
             return redirect(url_for("settings"))
 
-        return render_template("settings.html", settings=report_settings)
+        list_changes = ListChangeRecord.query.order_by(
+            ListChangeRecord.date.desc(), ListChangeRecord.id.desc()
+        ).all()
+        return render_template(
+            "settings.html", settings=report_settings, list_changes=list_changes,
+            today=date.today().isoformat(),
+        )
+
+    @app.route("/settings/list-changes", methods=["POST"])
+    def settings_list_changes_add():
+        number = request.form.get("number", "").strip()
+        date_raw = request.form.get("date", "").strip()
+        if not number or not date_raw:
+            flash("Укажите номер и дату изменения", "error")
+            return redirect(url_for("settings"))
+        try:
+            change_date = datetime.strptime(date_raw, "%Y-%m-%d").date()
+        except ValueError:
+            flash("Некорректная дата", "error")
+            return redirect(url_for("settings"))
+        db.session.add(ListChangeRecord(number=number, date=change_date))
+        db.session.commit()
+        flash("Изменение в список добавлено", "success")
+        return redirect(url_for("settings"))
 
     return app
 

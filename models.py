@@ -71,3 +71,12 @@ class ReportSettings(db.Model):
     head_coach_name = db.Column(db.String(200))
     sport_name = db.Column(db.String(200))
     year = db.Column(db.Integer)
+    main_list_approval_date = db.Column(db.Date)
+
+
+class ListChangeRecord(db.Model):
+    __tablename__ = "list_change_record"
+
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.Date, nullable=False)
