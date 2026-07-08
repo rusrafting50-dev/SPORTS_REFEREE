@@ -1,4 +1,5 @@
 # routes/athletes.py — CRUD спортсменов
+import re
 from datetime import date, datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -113,6 +114,13 @@ def _apply_common_filters(query):
     return query, filters
 
 
+def _with_current_value(options, current_value):
+    """Список options, дополненный current_value, если его там ещё нет (чтобы не потерять при сохранении)."""
+    if current_value and current_value not in options:
+        return options + [current_value]
+    return options
+
+
 def _distinct_organizations():
     rows = (
         db.session.query(Athlete.organization)
@@ -126,7 +134,7 @@ def _distinct_organizations():
 
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
-    hide_discipline_filter=False, link_fio_to_new=False, discipline_group=None,
+    hide_discipline_filter=False, link_fio_to_new=False, link_fio_to_edit=False, discipline_group=None,
     add_button_label="Добавить спортсмена", add_form_variant=None, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
@@ -144,6 +152,7 @@ def _render_athletes_list(
         discipline_preset=discipline_preset,
         hide_discipline_filter=hide_discipline_filter,
         link_fio_to_new=link_fio_to_new,
+        link_fio_to_edit=link_fio_to_edit,
         discipline_group=discipline_group,
         add_button_label=add_button_label,
         add_form_variant=add_form_variant,
@@ -179,6 +188,7 @@ def athletes_trainers_list():
     return _render_athletes_list(
         query, heading="Тренеры",
         add_button_label="Добавить тренера", add_form_variant="trainer",
+        link_fio_to_edit=True,
     )
 
 
@@ -266,7 +276,26 @@ def athletes_edit(athlete_id):
         flash("Изменения сохранены", "success")
         return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
-    return render_template("athletes/form.html", athlete=athlete, references=references)
+    is_trainer = bool(athlete.category and re.search(TRAINER_CATEGORY_PATTERN, athlete.category))
+    if is_trainer:
+        # Текущее значение спортсмена может не совпадать буквально ни с одним
+        # из готовых вариантов (регистр, кавычки и т.п.) — добавляем его в список,
+        # чтобы оно корректно подставлялось и не терялось при сохранении без изменений.
+        category_options = _with_current_value(TRAINER_CATEGORY_OPTIONS, athlete.category)
+        age_category_options = _with_current_value(TRAINER_AGE_CATEGORY_OPTIONS, athlete.age_category)
+        discipline_options = _with_current_value(TRAINER_DISCIPLINE_OPTIONS, athlete.discipline)
+        entity_label = "тренера"
+    else:
+        category_options = None
+        age_category_options = None
+        discipline_options = None
+        entity_label = "спортсмена"
+
+    return render_template(
+        "athletes/form.html", athlete=athlete, references=references,
+        category_options=category_options, age_category_options=age_category_options,
+        discipline_options=discipline_options, entity_label=entity_label,
+    )
 
 
 @bp.route("/<int:athlete_id>/deactivate", methods=["POST"])
