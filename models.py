@@ -65,6 +65,7 @@ class ReportSettings(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     organization_name = db.Column(db.String(300))
+    chairman_position = db.Column(db.String(200))
     chairman_name = db.Column(db.String(200))
     head_coach_name = db.Column(db.String(200))
     sport_name = db.Column(db.String(200))
