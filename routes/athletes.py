@@ -39,6 +39,44 @@ ROUTE_TYPES = [
     ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - на средствах передвижения (1-6 категория)", "Маршрут - на средствах передвижения (1-6 категория)", True, "vehicle-route"),
 ]
 
+# Тренер / Главный тренер / тренер — без учёта регистра
+TRAINER_CATEGORY_PATTERN = r"(?i)тренер"
+
+# Варианты дисциплины для формы добавления тренера
+TRAINER_DISCIPLINE_OPTIONS = [
+    'Группа дисциплин «дистанция»',
+    "Дистанции пешеходные",
+    "Дистанции лыжные",
+    "Дистанции пешеходные, дистанции лыжные",
+    "Дистанции горные",
+    "Дистанции спелео",
+    "Дистанции водные",
+    "Дистанции на средствах передвижения",
+    'Группа дисциплин «маршрут»',
+    "Маршрут - пешеходный (1-6 категория)",
+    "Маршрут - лыжный (1-6 категория)",
+    "Маршрут - горный (1-6 категория)",
+    "Маршрут - водный (1-6 категория)",
+    "Маршрут – на средствах передвижения (1-6 категория)",
+]
+
+# Варианты категории для формы добавления тренера
+TRAINER_CATEGORY_OPTIONS = ["Главный тренер", "тренер"]
+
+# Варианты возрастной категории для формы добавления тренера
+TRAINER_AGE_CATEGORY_OPTIONS = [
+    "Все возрастные категории",
+    "Мужчины",
+    "Женщины",
+    "Мужчины, женщины",
+    "Юниоры",
+    "Юниорки",
+    "Юниоры, юниорки",
+    "Юноши",
+    "Девушки",
+    "Юноши, девушки",
+]
+
 # Конкретные виды дистанций для кнопок на странице /athletes/distances:
 # (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина", группа вариантов дисциплины)
 DISTANCE_TYPES = [
@@ -88,7 +126,8 @@ def _distinct_organizations():
 
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
-    hide_discipline_filter=False, link_fio_to_new=False, discipline_group=None, **extra_context,
+    hide_discipline_filter=False, link_fio_to_new=False, discipline_group=None,
+    add_button_label="Добавить спортсмена", add_form_variant=None, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
@@ -106,6 +145,8 @@ def _render_athletes_list(
         hide_discipline_filter=hide_discipline_filter,
         link_fio_to_new=link_fio_to_new,
         discipline_group=discipline_group,
+        add_button_label=add_button_label,
+        add_form_variant=add_form_variant,
         **extra_context,
     )
 
@@ -127,6 +168,17 @@ def athletes_routes_list():
     return _render_athletes_list(
         query, list_buttons=ROUTE_TYPES,
         heading="Группа дисциплин МАРШРУТ", show_add_button=False,
+    )
+
+
+@bp.route("/trainers")
+def athletes_trainers_list():
+    query = Athlete.query.filter_by(is_active=True).filter(
+        Athlete.category.op("REGEXP")(TRAINER_CATEGORY_PATTERN)
+    )
+    return _render_athletes_list(
+        query, heading="Тренеры",
+        add_button_label="Добавить тренера", add_form_variant="trainer",
     )
 
 
@@ -175,13 +227,26 @@ def athletes_new():
         flash("Спортсмен добавлен", "success")
         return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
-    discipline_options = DISCIPLINE_OPTION_GROUPS.get(request.args.get("discipline_group", ""))
+    if request.args.get("form_variant") == "trainer":
+        discipline_options = TRAINER_DISCIPLINE_OPTIONS
+        category_options = TRAINER_CATEGORY_OPTIONS
+        age_category_options = TRAINER_AGE_CATEGORY_OPTIONS
+        entity_label = "тренера"
+    else:
+        discipline_options = DISCIPLINE_OPTION_GROUPS.get(request.args.get("discipline_group", ""))
+        category_options = None
+        age_category_options = None
+        entity_label = "спортсмена"
+
     preset_discipline = request.args.get("discipline", "")
     if discipline_options and not preset_discipline:
         preset_discipline = discipline_options[0]
+
     return render_template(
         "athletes/form.html", athlete=None, references=references,
         preset_discipline=preset_discipline, discipline_options=discipline_options,
+        category_options=category_options, age_category_options=age_category_options,
+        entity_label=entity_label,
     )
 
 
