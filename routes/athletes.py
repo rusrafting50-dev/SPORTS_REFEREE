@@ -16,25 +16,38 @@ ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 # Дистанции / Дистанция / Группа дисциплин "дистанция" — без учёта регистра
 DISTANCE_DISCIPLINE_PATTERN = r"(?i)дистанц"
 
+# Группы вариантов дисциплины для выпадающего списка в форме добавления,
+# когда переход выполнен со страницы конкретного типа дистанции/маршрута
+DISCIPLINE_OPTION_GROUPS = {
+    "hiking-distance": ["Дистанции пешеходные", "Дистанции пешеходные, дистанции лыжные"],
+    "ski-distance": ["Дистанции лыжные", "Дистанции пешеходные, дистанции лыжные"],
+    "water-distance": ["Дистанции водные", "Дистанции водные, маршрут – водный (1-6 категория)"],
+    "water-route": ["Маршрут – водный (1-6 категория)", "Дистанции водные, маршрут – водный (1-6 категория)"],
+    "mountain-distance": ["Дистанции горные", "Дистанции горные, маршрут – горный (1-6 категория)"],
+    "mountain-route": ["Маршрут – горный (1-6 категория)", "Дистанции горные, маршрут – горный (1-6 категория)"],
+    "vehicle-distance": ["Дистанции на средствах передвижения", "Дистанции на средствах передвижения, маршрут – на средствах передвижения (1-6 категория)"],
+    "vehicle-route": ["Маршрут – на средствах передвижения (1-6 категория)", "Дистанции на средствах передвижения, маршрут – на средствах передвижения (1-6 категория)"],
+}
+
 # Конкретные виды маршрутов для кнопок на странице /athletes/routes:
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина")
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина", группа вариантов дисциплины)
 ROUTE_TYPES = [
-    ("/routes/ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - лыжный (1-6 категория)", "Маршрут - лыжный (1-6 категория)", True),
-    ("/routes/hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - пешеходный (1-6 категория)", "Маршрут - пешеходный (1-6 категория)", True),
-    ("/routes/mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - горный (1-6 категория)", "Маршрут - горный (1-6 категория)", True),
-    ("/routes/water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None, True),
-    ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - на средствах передвижения (1-6 категория)", "Маршрут - на средствах передвижения (1-6 категория)", True),
+    ("/routes/ski", "Маршрут - лыжный (1 - 6 категория)", "athletes.athletes_routes_ski", r"(?is)маршрут.*лыжн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - лыжный (1-6 категория)", "Маршрут - лыжный (1-6 категория)", True, None),
+    ("/routes/hiking", "Маршрут - пешеходный (1 - 6 категория)", "athletes.athletes_routes_hiking", r"(?is)маршрут.*пешеход.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - пешеходный (1-6 категория)", "Маршрут - пешеходный (1-6 категория)", True, None),
+    ("/routes/mountain", "Маршрут - горный (1 - 6 категория)", "athletes.athletes_routes_mountain", r"(?is)маршрут.*горн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - горный (1-6 категория)", "Маршрут - горный (1-6 категория)", True, "mountain-route"),
+    ("/routes/water", "Маршрут - водный (1 - 6 категория)", "athletes.athletes_routes_water", r"(?is)маршрут.*водн.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", None, None, True, "water-route"),
+    ("/routes/vehicle", "Маршрут – на средствах передвижения (1 - 6 категория)", "athletes.athletes_routes_vehicle", r"(?is)маршрут.*средствах передвижения.*\(\s*\d+\s*-\s*\d+\s*категория\s*\)", "Маршрут - на средствах передвижения (1-6 категория)", "Маршрут - на средствах передвижения (1-6 категория)", True, "vehicle-route"),
 ]
 
 # Конкретные виды дистанций для кнопок на странице /athletes/distances:
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина")
+# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина", группа вариантов дисциплины)
 DISTANCE_TYPES = [
-    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход", "Дистанции пешеходные", "Дистанции пешеходные", True),
-    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн", "Дистанции лыжные", "Дистанции лыжные", True),
-    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн", "Дистанции горные", "Дистанции горные", True),
-    ("/distances/speleo", "Дистанции спелео", "athletes.athletes_distances_speleo", r"(?is)дистанц.*спелео", "Дистанции спелео", "Дистанции спелео", True),
-    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн", "Дистанции водные", "Дистанции водные", True),
-    ("/distances/vehicle", "Дистанции на средствах передвижения", "athletes.athletes_distances_vehicle", r"(?is)дистанц.*средствах передвижения", "Дистанции на средствах передвижения", "Дистанции на средствах передвижения", True),
+    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход", "Дистанции пешеходные", "Дистанции пешеходные", True, "hiking-distance"),
+    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн", "Дистанции лыжные", "Дистанции лыжные", True, "ski-distance"),
+    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн", "Дистанции горные", "Дистанции горные", True, "mountain-distance"),
+    ("/distances/speleo", "Дистанции спелео", "athletes.athletes_distances_speleo", r"(?is)дистанц.*спелео", "Дистанции спелео", "Дистанции спелео", True, None),
+    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн", "Дистанции водные", "Дистанции водные", True, "water-distance"),
+    ("/distances/vehicle", "Дистанции на средствах передвижения", "athletes.athletes_distances_vehicle", r"(?is)дистанц.*средствах передвижения", "Дистанции на средствах передвижения", "Дистанции на средствах передвижения", True, "vehicle-distance"),
 ]
 
 
@@ -75,7 +88,7 @@ def _distinct_organizations():
 
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
-    hide_discipline_filter=False, link_fio_to_new=False, **extra_context,
+    hide_discipline_filter=False, link_fio_to_new=False, discipline_group=None, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
@@ -92,6 +105,7 @@ def _render_athletes_list(
         discipline_preset=discipline_preset,
         hide_discipline_filter=hide_discipline_filter,
         link_fio_to_new=link_fio_to_new,
+        discipline_group=discipline_group,
         **extra_context,
     )
 
@@ -127,7 +141,7 @@ def athletes_distances_list():
     )
 
 
-def _make_discipline_type_view(pattern, heading, discipline_preset, hide_discipline_filter):
+def _make_discipline_type_view(pattern, heading, discipline_preset, hide_discipline_filter, discipline_group):
     def view():
         query = Athlete.query.filter_by(is_active=True).filter(
             Athlete.discipline.op("REGEXP")(pattern)
@@ -137,15 +151,17 @@ def _make_discipline_type_view(pattern, heading, discipline_preset, hide_discipl
             kwargs["heading"] = heading
         if discipline_preset:
             kwargs["discipline_preset"] = discipline_preset
+        if discipline_group:
+            kwargs["discipline_group"] = discipline_group
         return _render_athletes_list(query, **kwargs)
     return view
 
 
-for _path, _label, _endpoint, _pattern, _heading, _discipline_preset, _hide_discipline_filter in ROUTE_TYPES + DISTANCE_TYPES:
+for _path, _label, _endpoint, _pattern, _heading, _discipline_preset, _hide_discipline_filter, _discipline_group in ROUTE_TYPES + DISTANCE_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
-        view_func=_make_discipline_type_view(_pattern, _heading, _discipline_preset, _hide_discipline_filter),
+        view_func=_make_discipline_type_view(_pattern, _heading, _discipline_preset, _hide_discipline_filter, _discipline_group),
     )
 
 
@@ -159,9 +175,13 @@ def athletes_new():
         flash("Спортсмен добавлен", "success")
         return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
+    discipline_options = DISCIPLINE_OPTION_GROUPS.get(request.args.get("discipline_group", ""))
     preset_discipline = request.args.get("discipline", "")
+    if discipline_options and not preset_discipline:
+        preset_discipline = discipline_options[0]
     return render_template(
-        "athletes/form.html", athlete=None, references=references, preset_discipline=preset_discipline
+        "athletes/form.html", athlete=None, references=references,
+        preset_discipline=preset_discipline, discipline_options=discipline_options,
     )
 
 
