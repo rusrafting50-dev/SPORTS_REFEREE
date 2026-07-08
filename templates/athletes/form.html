@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Редактирование' if athlete else 'Добавление' }} спортсмена — Сборная команда{% endblock %}
+{% block title %}{{ 'Редактирование' if athlete else 'Добавление' }} {{ entity_label|default('спортсмена') }} — Сборная команда{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">{{ 'Редактирование спортсмена' if athlete else 'Добавление спортсмена' }}</h1>
+<h1 class="h3 mb-3">{{ 'Редактирование' if athlete else 'Добавление' }} {{ entity_label|default('спортсмена') }}</h1>
 
 <form method="post" action="{{ url_for('athletes.athletes_edit', athlete_id=athlete.id) if athlete else url_for('athletes.athletes_new') }}">
     <div class="row g-3">
@@ -33,21 +33,37 @@
         </div>
         <div class="col-md-3">
             <label class="form-label">Категория</label>
+            {% if category_options %}
+            <select name="category" class="form-select" required>
+                {% for c in category_options %}
+                <option value="{{ c }}" {% if athlete and athlete.category == c %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
             <select name="category" class="form-select" required>
                 <option value="">—</option>
                 {% for c in references.CATEGORIES %}
                 <option value="{{ c }}" {% if athlete and athlete.category == c %}selected{% endif %}>{{ c }}</option>
                 {% endfor %}
             </select>
+            {% endif %}
         </div>
         <div class="col-md-3">
             <label class="form-label">Возрастная категория (ЕВСК)</label>
+            {% if age_category_options %}
+            <select name="age_category" class="form-select">
+                {% for a in age_category_options %}
+                <option value="{{ a }}" {% if athlete and athlete.age_category == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
             <select name="age_category" class="form-select">
                 <option value="">—</option>
                 {% for a in references.AGE_CATEGORIES %}
                 <option value="{{ a }}" {% if athlete and athlete.age_category == a %}selected{% endif %}>{{ a }}</option>
                 {% endfor %}
             </select>
+            {% endif %}
         </div>
 
         <div class="col-md-6">
