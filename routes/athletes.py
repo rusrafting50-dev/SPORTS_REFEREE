@@ -169,7 +169,7 @@ def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
     return _render_athletes_list(
         query, heading="Список сборной команды",
-        show_add_button=False, link_fio_to_new=True,
+        show_add_button=False,
     )
 
 
