@@ -71,7 +71,7 @@
             {% if discipline_options %}
             <select name="discipline" class="form-select">
                 {% for opt in discipline_options %}
-                <option value="{{ opt }}" {% if preset_discipline == opt %}selected{% endif %}>{{ opt }}</option>
+                <option value="{{ opt }}" {% if (athlete and athlete.discipline == opt) or preset_discipline == opt %}selected{% endif %}>{{ opt }}</option>
                 {% endfor %}
             </select>
             {% elif preset_discipline %}
