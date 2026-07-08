@@ -73,10 +73,9 @@ def _row_to_athlete_fields(row):
 
 
 def _iter_data_rows(ws, start_row):
-    """Строки данных начиная с start_row до первой полностью пустой строки."""
+    """Строки данных начиная с start_row (пустые/служебные строки — включая пустые
+    разделители и вторую строку заголовка — пропускаются, а не обрывают импорт)."""
     for row in ws.iter_rows(min_row=start_row, values_only=True):
-        if all(c is None for c in row):
-            break
         name = row[1] if len(row) > 1 else None
         if isinstance(name, str) and name.strip():
             yield row
@@ -175,9 +174,6 @@ def import_changes_upload():
     section = None
 
     for row in ws.iter_rows(min_row=header_row + 1, values_only=True):
-        if all(c is None for c in row):
-            break
-
         marker = row[0].strip().lower() if isinstance(row[0], str) else ""
         if marker in ("исключить", "включить"):
             section = "exclude" if marker == "исключить" else "include"

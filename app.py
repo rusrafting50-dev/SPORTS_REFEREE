@@ -20,10 +20,12 @@ TRAINER_SEPARATOR = re.compile(r",\s*")
 
 
 def break_before_category(value):
-    """Переносит '(N-N категория)' на новую строку независимо от исходных пробелов/переводов строк."""
+    """Каждая дисциплина через запятую — на новую строку; внутри — перенос перед '(N-N категория)'."""
     if not value:
         return value
-    return Markup(CATEGORY_PATTERN.sub(r"<br>\1", str(escape(value))))
+    parts = TRAINER_SEPARATOR.split(str(escape(value)))
+    parts = [CATEGORY_PATTERN.sub(r"<br>\1", part) for part in parts]
+    return Markup(",<br>".join(parts))
 
 
 def break_trainers(value):
