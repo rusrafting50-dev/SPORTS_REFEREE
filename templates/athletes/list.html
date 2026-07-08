@@ -37,7 +37,7 @@
     <div class="col-md-3">
         <select name="age_category" class="form-select">
             <option value="">Возрастная категория: все</option>
-            {% for a in references.AGE_CATEGORIES %}
+            {% for a in age_category_filter_options %}
                 <option value="{{ a }}" {% if filters.age_category == a %}selected{% endif %}>{{ a }}</option>
             {% endfor %}
         </select>
