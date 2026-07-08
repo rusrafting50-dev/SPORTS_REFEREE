@@ -124,6 +124,31 @@ def _with_current_value(options, current_value):
     return options
 
 
+def _merge_discipline_family(distance_group, route_group):
+    """Объединяет варианты дистанции и маршрута одного вида (напр. водный) для формы редактирования."""
+    pure_distance, combined = DISCIPLINE_OPTION_GROUPS[distance_group]
+    pure_route, _ = DISCIPLINE_OPTION_GROUPS[route_group]
+    return [pure_distance, pure_route, combined]
+
+
+# Варианты дисциплины для формы редактирования спортсмена — объединяют выпадающие
+# списки страниц "Добавление спортсмена" для дистанции и маршрута одного вида,
+# чтобы при редактировании ничего не терялось независимо от того, откуда перешли.
+DISCIPLINE_EDIT_FAMILIES = [
+    _merge_discipline_family("hiking-distance", "ski-distance"),
+    _merge_discipline_family("water-distance", "water-route"),
+    _merge_discipline_family("mountain-distance", "mountain-route"),
+    _merge_discipline_family("vehicle-distance", "vehicle-route"),
+]
+
+
+def _discipline_family_options(discipline):
+    for family in DISCIPLINE_EDIT_FAMILIES:
+        if discipline in family:
+            return family
+    return None
+
+
 def _distinct_organizations():
     rows = (
         db.session.query(Athlete.organization)
@@ -292,7 +317,7 @@ def athletes_edit(athlete_id):
     else:
         category_options = None
         age_category_options = None
-        discipline_options = None
+        discipline_options = _discipline_family_options(athlete.discipline)
         entity_label = "спортсмена"
 
     return render_template(
