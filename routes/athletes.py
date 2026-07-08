@@ -138,7 +138,7 @@ def _distinct_organizations():
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
     hide_discipline_filter=False, link_fio_to_new=False, link_fio_to_edit=False, discipline_group=None,
-    add_button_label="Добавить спортсмена", add_form_variant=None, **extra_context,
+    add_button_label="Добавить спортсмена", add_form_variant=None, age_category_filter_options=None, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
@@ -156,6 +156,7 @@ def _render_athletes_list(
         hide_discipline_filter=hide_discipline_filter,
         link_fio_to_new=link_fio_to_new,
         link_fio_to_edit=link_fio_to_edit,
+        age_category_filter_options=age_category_filter_options or references.AGE_CATEGORIES,
         discipline_group=discipline_group,
         add_button_label=add_button_label,
         add_form_variant=add_form_variant,
@@ -191,6 +192,7 @@ def athletes_trainers_list():
     return _render_athletes_list(
         query, heading="Тренеры",
         add_button_label="Добавить тренера", add_form_variant="trainer",
+        age_category_filter_options=TRAINER_AGE_CATEGORY_OPTIONS,
     )
 
 
