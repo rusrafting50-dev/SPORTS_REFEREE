@@ -188,7 +188,6 @@ def athletes_trainers_list():
     return _render_athletes_list(
         query, heading="Тренеры",
         add_button_label="Добавить тренера", add_form_variant="trainer",
-        link_fio_to_edit=True,
     )
 
 
