@@ -138,7 +138,7 @@ def import_upload():
                 setattr(athlete, key, value)
             updated += 1
         else:
-            db.session.add(Athlete(**fields))
+            db.session.add(Athlete(is_active=True, **fields))
             added += 1
 
     db.session.commit()

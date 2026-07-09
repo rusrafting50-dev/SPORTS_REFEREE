@@ -344,12 +344,13 @@ def athletes_deactivate(athlete_id):
 @bp.route("/<int:athlete_id>/activate", methods=["POST"])
 def athletes_activate(athlete_id):
     athlete = Athlete.query.get_or_404(athlete_id)
+    is_first_add = not athlete.change_logs
     athlete.is_active = True
     db.session.add(
         ChangeLog(athlete_id=athlete.id, change_type="включён", change_date=date.today())
     )
     db.session.commit()
-    flash("Спортсмен возвращён в список", "success")
+    flash("Спортсмен добавлен в список" if is_first_add else "Спортсмен возвращён в список", "success")
     return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
 
