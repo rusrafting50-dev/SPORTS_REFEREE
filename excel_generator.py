@@ -185,16 +185,21 @@ def generate_report(athletes, settings, doc_date):
     head_coach = settings.head_coach_name if settings else ""
     sport_name = settings.sport_name if settings else ""
 
-    ws.row_dimensions[3].height = 20.25
+    ws.row_dimensions[3].height = 35.25
     ws.row_dimensions[4].height = 12.0
-    ws.row_dimensions[5].height = 23.25
+    ws.row_dimensions[5].height = 38.25
     ws.row_dimensions[6].height = 33.0
 
     _merge_value(ws, "B3:G3", org_name, BOLD_12, CENTER_WRAP)
+    _set_border_range(ws, "B3:G3", BORDER_BOTTOM)
     _merge_value(ws, "B4:G4", "наименование организации", CAPTION_10, CENTER_TOP_WRAP)
+    _set_border_range(ws, "B4:G4", BORDER_TOP)
 
     ws["B5"] = "Председатель"
     ws["B5"].font = PLAIN_12
+    _merge_value(ws, "C5:D5", None, PLAIN_12, CENTER_WRAP)
+    _set_border_range(ws, "C5:D5", BORDER_BOTTOM)
+    ws.merge_cells("F5:G5")
     ws["E5"] = chairman
     ws["E5"].font = PLAIN_12
     _write_counters(ws, "L5:M5", "Всего человек:", "N5", total, bold=True)
@@ -202,10 +207,13 @@ def generate_report(athletes, settings, doc_date):
     ws["B6"] = "(должность)"
     ws["B6"].font = CAPTION_10
     ws["B6"].alignment = CENTER_TOP_WRAP
+    ws["B6"].border = BORDER_TOP
     _merge_value(ws, "C6:D6", "(подпись)", CAPTION_10, CENTER_TOP_WRAP)
+    _set_border_range(ws, "C6:D6", BORDER_TOP)
     ws["E6"] = "(фамилия, инициалы)"
     ws["E6"].font = CAPTION_10
     ws["E6"].alignment = CENTER_TOP_WRAP
+    ws["E6"].border = BORDER_TOP
     _merge_value(
         ws, "F6:J6",
         "СПИСОК\nкандидатов в спортивную сборную команду Московской области",
@@ -215,6 +223,8 @@ def generate_report(athletes, settings, doc_date):
 
     ws["B7"] = "Главный тренер"
     ws["B7"].font = PLAIN_12
+    _merge_value(ws, "C7:D7", None, PLAIN_12, CENTER_WRAP)
+    _set_border_range(ws, "C7:D7", BORDER_BOTTOM)
     ws["E7"] = head_coach
     ws["E7"].font = PLAIN_12
     ws["F7"] = "по"
@@ -228,9 +238,11 @@ def generate_report(athletes, settings, doc_date):
     _write_counters(ws, "L7:M7", "тренеры:", "N7", trainers)
 
     _merge_value(ws, "C8:D8", "(подпись)", CAPTION_10, CENTER_TOP_WRAP)
+    _set_border_range(ws, "C8:D8", BORDER_TOP)
     ws["E8"] = "(фамилия, инициалы)"
     ws["E8"].font = CAPTION_10
     ws["E8"].alignment = CENTER_TOP_WRAP
+    ws["E8"].border = BORDER_TOP
     _merge_value(ws, "G8:I8", "(наименование вида спорта)", CAPTION_10, CENTER_TOP_WRAP)
     _set_border_range(ws, "G8:I8", BORDER_TOP)
     _write_counters(ws, "L8:M8", "специалисты:", "N8", specialists)
