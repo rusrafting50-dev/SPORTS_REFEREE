@@ -14,6 +14,17 @@ COLUMN_WIDTHS = {
     "N": 12.43, "O": 23.0,
 }
 
+# В шапке вид спорта выводится в дательном падеже ("по спортивному туризму на ... год")
+SPORT_NAME_DATIVE = {
+    "спортивный туризм": "спортивному туризму",
+}
+
+
+def _sport_name_dative(sport_name):
+    if not sport_name:
+        return sport_name
+    return SPORT_NAME_DATIVE.get(sport_name.strip().lower(), sport_name)
+
 COLUMN_HEADERS = [
     "№ п/п",
     "Фамилия, имя, \nотчество (при наличии)",
@@ -191,7 +202,7 @@ def generate_report(athletes, settings, doc_date):
     ws["F7"] = "по"
     ws["F7"].font = BOLD_12
     ws["F7"].alignment = CENTER
-    _merge_value(ws, "G7:I7", sport_name, BOLD_12, CENTER_WRAP)
+    _merge_value(ws, "G7:I7", _sport_name_dative(sport_name), BOLD_12, CENTER_WRAP)
     _set_border_range(ws, "G7:I7", BORDER_BOTTOM)
     ws["J7"] = f"на {year} год" if year else ""
     ws["J7"].font = BOLD_12
@@ -238,7 +249,7 @@ def generate_changes_report(exclude_list, include_list, settings, doc_date, doc_
     ws["F5"] = "по"
     ws["F5"].font = BOLD_12
     ws["F5"].alignment = CENTER
-    _merge_value(ws, "G5:I5", sport_name, BOLD_12, CENTER_WRAP)
+    _merge_value(ws, "G5:I5", _sport_name_dative(sport_name), BOLD_12, CENTER_WRAP)
     ws["J5"] = f"на {year} год" if year else ""
     ws["J5"].font = BOLD_12
     ws["J5"].alignment = CENTER
