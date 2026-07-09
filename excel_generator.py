@@ -196,7 +196,7 @@ def generate_report(athletes, settings, doc_date):
 
     _merge_value(ws, "B3:G3", org_name, BOLD_12, CENTER_BOTTOM_WRAP)
     _set_border_range(ws, "B3:G3", BORDER_BOTTOM)
-    _merge_value(ws, "B4:G4", "наименование организации", CAPTION_10, CENTER_TOP_WRAP)
+    _merge_value(ws, "B4:G4", "наименование организации", CAPTION_10, CENTER_WRAP)
     _set_border_range(ws, "B4:G4", BORDER_TOP)
 
     ws["B5"] = "Председатель"
