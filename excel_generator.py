@@ -151,7 +151,8 @@ def _write_athlete_row(ws, row, index, athlete, font=DATA_FONT):
         cell.alignment = LEFT_WRAP if col == 2 else CENTER_WRAP
         if col == 3 and value:
             cell.number_format = "dd.mm.yyyy"
-    ws.row_dimensions[row].height = 31.5
+    # Высота не задаётся явно: при открытии Excel сам подбирает высоту строки
+    # под перенесённый текст (wrap_text), так что длинные значения не обрезаются.
 
 
 def generate_report(athletes, settings, doc_date):
