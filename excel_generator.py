@@ -102,7 +102,7 @@ def _write_counters(ws, label_range, label, count_cell, count, bold=False, count
 
 
 def _count_by_category(athletes):
-    trainers = sum(1 for a in athletes if a.category == "Тренер")
+    trainers = sum(1 for a in athletes if a.category in ("Тренер", "Главный тренер"))
     specialists = sum(1 for a in athletes if a.category == "Специалист")
     sportsmen = sum(1 for a in athletes if a.category == "Спортсмен")
     return trainers, specialists, sportsmen
