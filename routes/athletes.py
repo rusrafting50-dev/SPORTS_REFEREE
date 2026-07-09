@@ -163,7 +163,8 @@ def _distinct_organizations():
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
     hide_discipline_filter=False, link_fio_to_new=False, link_fio_to_edit=False, discipline_group=None,
-    add_button_label="Добавить спортсмена", add_form_variant=None, age_category_filter_options=None, **extra_context,
+    add_button_label="Добавить спортсмена", add_form_variant=None, age_category_filter_options=None,
+    highlight_active=True, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
@@ -185,6 +186,7 @@ def _render_athletes_list(
         discipline_group=discipline_group,
         add_button_label=add_button_label,
         add_form_variant=add_form_variant,
+        highlight_active=highlight_active,
         **extra_context,
     )
 
@@ -194,7 +196,7 @@ def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
     return _render_athletes_list(
         query, heading="Список сборной команды",
-        show_add_button=False,
+        show_add_button=False, highlight_active=False,
     )
 
 
