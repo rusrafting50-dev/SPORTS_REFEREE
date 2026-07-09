@@ -1,4 +1,6 @@
 # excel_generator.py — генерация итоговых документов по образцу
+import re
+
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
@@ -8,6 +10,18 @@ THIN = Side(style="thin")
 BORDER_ALL = Border(top=THIN, bottom=THIN, left=THIN, right=THIN)
 BORDER_BOTTOM = Border(bottom=THIN)
 BORDER_TOP = Border(top=THIN)
+
+CATEGORY_PATTERN = re.compile(r"\s*(\(\s*\d+\s*-\s*\d+\s*категория\s*\))", re.IGNORECASE)
+DISCIPLINE_SEPARATOR = re.compile(r",\s*")
+
+
+def _break_discipline(value):
+    """Каждая дисциплина через запятую — на новую строку; внутри — перенос перед '(N-N категория)'."""
+    if not value:
+        return value
+    parts = DISCIPLINE_SEPARATOR.split(value)
+    parts = [CATEGORY_PATTERN.sub(r"\n\1", part) for part in parts]
+    return ",\n".join(parts)
 
 COLUMN_WIDTHS = {
     "A": 5.86, "B": 27.43, "C": 12.71, "D": 12.0, "E": 26.14, "F": 19.0, "G": 15.0,
@@ -139,7 +153,7 @@ def _write_athletes_header(ws, header_row, header_font=BOLD_12):
 def _write_athlete_row(ws, row, index, athlete, font=DATA_FONT):
     values = [
         index, athlete.full_name, athlete.birth_date, athlete.gender,
-        athlete.discipline, athlete.category, athlete.age_category, athlete.rank,
+        _break_discipline(athlete.discipline), athlete.category, athlete.age_category, athlete.rank,
         athlete.organization, athlete.territory, athlete.trainer,
         athlete.result_regional, athlete.result_national, athlete.result_international,
         athlete.national_team,
