@@ -52,7 +52,7 @@ CENTER_TOP_WRAP = Alignment(horizontal="center", vertical="top", wrap_text=True)
 LEFT_WRAP = Alignment(horizontal="left", vertical="center", wrap_text=True)
 RIGHT = Alignment(horizontal="right")
 LEFT = Alignment(horizontal="left")
-VERTICAL_TEXT = Alignment(horizontal="left", vertical="center", wrap_text=True, textRotation=90)
+VERTICAL_TEXT = Alignment(horizontal="center", vertical="bottom", wrap_text=True, textRotation=90)
 
 
 def _set_column_widths(ws):
