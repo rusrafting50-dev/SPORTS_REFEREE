@@ -200,6 +200,7 @@ def generate_report(athletes, settings, doc_date):
 
     ws["B5"] = "Председатель"
     ws["B5"].font = PLAIN_12
+    ws["B5"].alignment = CENTER
     _merge_value(ws, "C5:D5", None, PLAIN_12, CENTER_WRAP)
     _set_border_range(ws, "C5:D5", BORDER_BOTTOM)
     ws.merge_cells("F5:G5")
@@ -226,6 +227,7 @@ def generate_report(athletes, settings, doc_date):
 
     ws["B7"] = "Главный тренер"
     ws["B7"].font = PLAIN_12
+    ws["B7"].alignment = CENTER
     _merge_value(ws, "C7:D7", None, PLAIN_12, CENTER_WRAP)
     _set_border_range(ws, "C7:D7", BORDER_BOTTOM)
     ws["E7"] = head_coach
