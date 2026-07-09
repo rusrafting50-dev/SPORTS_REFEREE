@@ -146,7 +146,7 @@ def _write_athletes_header(ws, header_row, header_font=BOLD_12):
 
     ws.row_dimensions[header_row].height = 49.5
     ws.row_dimensions[header_row + 1].height = 93.75
-    ws.row_dimensions[numbers_row].height = 15.75
+    ws.row_dimensions[numbers_row].height = 15
 
     return numbers_row + 1
 
@@ -186,6 +186,7 @@ def generate_report(athletes, settings, doc_date):
     head_coach = settings.head_coach_name if settings else ""
     sport_name = settings.sport_name if settings else ""
 
+    ws.row_dimensions[1].height = 15.75
     ws.row_dimensions[3].height = 35.25
     ws.row_dimensions[4].height = 12.0
     ws.row_dimensions[5].height = 38.25
