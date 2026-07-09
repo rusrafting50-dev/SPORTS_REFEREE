@@ -6,6 +6,10 @@
 <form method="post" action="{{ url_for('reports.reports_preview') }}">
     <div class="row g-3">
         <div class="col-md-4">
+            <label class="form-label">Дата документа</label>
+            <input type="date" name="doc_date" class="form-control" value="{{ today }}">
+        </div>
+        <div class="col-md-4">
             <label class="form-label">Дисциплина</label>
             <select name="discipline" class="form-select">
                 <option value="">Все</option>
@@ -48,10 +52,6 @@
                 <label class="form-check-label" for="onlyNationalTeam">Только включённые в сборную РФ</label>
             </div>
         </div>
-        <div class="col-md-4">
-            <label class="form-label">Дата документа</label>
-            <input type="date" name="doc_date" class="form-control" value="{{ today }}">
-        </div>
     </div>
 
     <div class="mt-4">
@@ -61,7 +61,7 @@
 
 <hr class="my-5">
 
-<h2 class="h4 mb-3">Изменения в список (исключить / включить)</h2>
+<h2 class="h3 mb-4">Выгрузить изменения в список (исключить / включить)</h2>
 <form method="post" action="{{ url_for('reports.reports_changes_preview') }}" class="row g-3 align-items-end" style="max-width: 600px;">
     <div class="col-md-6">
         <label class="form-label">Дата документа</label>
