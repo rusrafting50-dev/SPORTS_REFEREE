@@ -10,7 +10,7 @@ BORDER_BOTTOM = Border(bottom=THIN)
 BORDER_TOP = Border(top=THIN)
 
 COLUMN_WIDTHS = {
-    "A": 5.86, "B": 27.43, "C": 12.71, "E": 26.14, "F": 19.0, "G": 15.0,
+    "A": 5.86, "B": 27.43, "C": 12.71, "D": 12.0, "E": 26.14, "F": 19.0, "G": 15.0,
     "H": 13.0, "I": 30.29, "J": 24.0, "K": 22.86, "L": 9.29, "M": 10.86,
     "N": 12.43, "O": 23.0,
 }
@@ -52,7 +52,7 @@ CENTER_TOP_WRAP = Alignment(horizontal="center", vertical="top", wrap_text=True)
 LEFT_WRAP = Alignment(horizontal="left", vertical="center", wrap_text=True)
 RIGHT = Alignment(horizontal="right")
 LEFT = Alignment(horizontal="left")
-VERTICAL_TEXT = Alignment(horizontal="left", vertical="center", wrap_text=True, textRotation=90)
+VERTICAL_TEXT = Alignment(horizontal="center", vertical="bottom", wrap_text=True, textRotation=90)
 
 
 def _set_column_widths(ws):
