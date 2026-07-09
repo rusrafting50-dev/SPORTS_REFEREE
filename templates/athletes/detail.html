@@ -9,6 +9,10 @@
         <form method="post" action="{{ url_for('athletes.athletes_deactivate', athlete_id=athlete.id) }}" class="d-inline">
             <button type="submit" class="btn btn-outline-danger">Исключить из списка</button>
         </form>
+        {% elif not athlete.change_logs %}
+        <form method="post" action="{{ url_for('athletes.athletes_activate', athlete_id=athlete.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-success">Добавить в список</button>
+        </form>
         {% else %}
         <form method="post" action="{{ url_for('athletes.athletes_activate', athlete_id=athlete.id) }}" class="d-inline">
             <button type="submit" class="btn btn-outline-success">Вернуть в список</button>
@@ -21,7 +25,11 @@
 </div>
 
 {% if not athlete.is_active %}
-<div class="alert alert-warning">Спортсмен исключён из активного списка</div>
+    {% if athlete.change_logs %}
+    <div class="alert alert-warning">Спортсмен исключён из активного списка</div>
+    {% else %}
+    <div class="alert alert-secondary">Спортсмен ещё не добавлен в список сборной команды</div>
+    {% endif %}
 {% endif %}
 
 <div class="d-flex flex-wrap align-items-start gap-4">

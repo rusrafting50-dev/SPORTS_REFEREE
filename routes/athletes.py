@@ -163,7 +163,8 @@ def _distinct_organizations():
 def _render_athletes_list(
     query, heading="Спортсмены", show_add_button=True, discipline_preset=None,
     hide_discipline_filter=False, link_fio_to_new=False, link_fio_to_edit=False, discipline_group=None,
-    add_button_label="Добавить спортсмена", add_form_variant=None, age_category_filter_options=None, **extra_context,
+    add_button_label="Добавить спортсмена", add_form_variant=None, age_category_filter_options=None,
+    highlight_active=True, **extra_context,
 ):
     query, filters = _apply_common_filters(query)
     page = request.args.get("page", 1, type=int)
@@ -185,6 +186,7 @@ def _render_athletes_list(
         discipline_group=discipline_group,
         add_button_label=add_button_label,
         add_form_variant=add_form_variant,
+        highlight_active=highlight_active,
         **extra_context,
     )
 
@@ -194,13 +196,13 @@ def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
     return _render_athletes_list(
         query, heading="Список сборной команды",
-        show_add_button=False,
+        show_add_button=False, highlight_active=False,
     )
 
 
 @bp.route("/routes")
 def athletes_routes_list():
-    query = Athlete.query.filter_by(is_active=True).filter(
+    query = Athlete.query.filter(
         Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
     )
     return _render_athletes_list(
@@ -211,7 +213,7 @@ def athletes_routes_list():
 
 @bp.route("/trainers")
 def athletes_trainers_list():
-    query = Athlete.query.filter_by(is_active=True).filter(
+    query = Athlete.query.filter(
         Athlete.category.op("REGEXP")(TRAINER_CATEGORY_PATTERN)
     )
     return _render_athletes_list(
@@ -223,7 +225,7 @@ def athletes_trainers_list():
 
 @bp.route("/distances")
 def athletes_distances_list():
-    query = Athlete.query.filter_by(is_active=True).filter(
+    query = Athlete.query.filter(
         Athlete.discipline.op("REGEXP")(DISTANCE_DISCIPLINE_PATTERN)
     )
     return _render_athletes_list(
@@ -234,7 +236,7 @@ def athletes_distances_list():
 
 def _make_discipline_type_view(pattern, heading, discipline_preset, hide_discipline_filter, discipline_group):
     def view():
-        query = Athlete.query.filter_by(is_active=True).filter(
+        query = Athlete.query.filter(
             Athlete.discipline.op("REGEXP")(pattern)
         )
         kwargs = {"hide_discipline_filter": hide_discipline_filter}
@@ -342,12 +344,13 @@ def athletes_deactivate(athlete_id):
 @bp.route("/<int:athlete_id>/activate", methods=["POST"])
 def athletes_activate(athlete_id):
     athlete = Athlete.query.get_or_404(athlete_id)
+    is_first_add = not athlete.change_logs
     athlete.is_active = True
     db.session.add(
         ChangeLog(athlete_id=athlete.id, change_type="включён", change_date=date.today())
     )
     db.session.commit()
-    flash("Спортсмен возвращён в список", "success")
+    flash("Спортсмен добавлен в список" if is_first_add else "Спортсмен возвращён в список", "success")
     return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
 

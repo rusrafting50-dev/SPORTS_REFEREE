@@ -90,7 +90,7 @@
     </thead>
     <tbody>
         {% for athlete in athletes %}
-        <tr>
+        <tr {% if highlight_active and athlete.is_active %}class="table-success"{% endif %}>
             <td class="text-center text-nowrap">{{ loop.index + pagination.per_page * (pagination.page - 1) }}</td>
             <td class="col-fio"><a href="{{ url_for('athletes.athletes_new', discipline=athlete.discipline) if link_fio_to_new else (url_for('athletes.athletes_edit', athlete_id=athlete.id) if link_fio_to_edit else url_for('athletes.athletes_detail', athlete_id=athlete.id)) }}">{{ athlete.full_name }}</a></td>
             <td class="text-center">{{ athlete.birth_date.strftime('%d.%m.%Y') if athlete.birth_date }}</td>
