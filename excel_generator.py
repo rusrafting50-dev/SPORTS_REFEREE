@@ -146,7 +146,7 @@ def _write_athletes_header(ws, header_row, header_font=BOLD_12):
 
     ws.row_dimensions[header_row].height = 49.5
     ws.row_dimensions[header_row + 1].height = 93.75
-    ws.row_dimensions[numbers_row].height = 15
+    ws.row_dimensions[numbers_row].height = 15.75
 
     return numbers_row + 1
 
