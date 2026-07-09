@@ -6,6 +6,7 @@ from openpyxl.utils import get_column_letter
 FONT_NAME = "Times New Roman"
 THIN = Side(style="thin")
 BORDER_ALL = Border(top=THIN, bottom=THIN, left=THIN, right=THIN)
+BORDER_BOTTOM = Border(bottom=THIN)
 
 COLUMN_WIDTHS = {
     "A": 5.86, "B": 27.43, "C": 12.71, "E": 26.14, "F": 19.0, "G": 15.0,
@@ -54,6 +55,12 @@ def _merge_value(ws, cell_range, value, font, alignment):
     cell.font = font
     cell.alignment = alignment
     return cell
+
+
+def _set_border_range(ws, cell_range, border):
+    for row in ws[cell_range]:
+        for cell in row:
+            cell.border = border
 
 
 def _write_counters(ws, label_range, label, count_cell, count, bold=False, count_alignment=CENTER_WRAP):
@@ -149,6 +156,11 @@ def generate_report(athletes, settings, doc_date):
     head_coach = settings.head_coach_name if settings else ""
     sport_name = settings.sport_name if settings else ""
 
+    ws.row_dimensions[3].height = 20.25
+    ws.row_dimensions[4].height = 12.0
+    ws.row_dimensions[5].height = 23.25
+    ws.row_dimensions[6].height = 33.0
+
     _merge_value(ws, "B3:G3", org_name, BOLD_12, CENTER_WRAP)
     _merge_value(ws, "B4:G4", "наименование организации", CAPTION_10, CENTER_TOP_WRAP)
 
@@ -180,6 +192,7 @@ def generate_report(athletes, settings, doc_date):
     ws["F7"].font = BOLD_12
     ws["F7"].alignment = CENTER
     _merge_value(ws, "G7:I7", sport_name, BOLD_12, CENTER_WRAP)
+    _set_border_range(ws, "G7:I7", BORDER_BOTTOM)
     ws["J7"] = f"на {year} год" if year else ""
     ws["J7"].font = BOLD_12
     ws["J7"].alignment = CENTER
