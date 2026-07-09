@@ -32,8 +32,8 @@
     {% endif %}
 {% endif %}
 
-<div class="d-flex flex-wrap align-items-start gap-4">
-    <table class="table table-bordered w-auto">
+<div class="d-flex flex-nowrap align-items-start gap-4">
+    <table class="table table-bordered w-auto flex-shrink-0">
         <tbody>
             <tr><th>Дата рождения</th><td>{{ athlete.birth_date.strftime('%d.%m.%Y') if athlete.birth_date }}</td></tr>
             <tr><th>Пол</th><td>{{ athlete.gender }}</td></tr>
@@ -51,10 +51,10 @@
         </tbody>
     </table>
 
-    <div>
+    <div style="min-width: 0; max-width: 520px; overflow-x: auto;">
         <h2 class="h5 mb-2">Членство в сборной команде</h2>
         {% if athlete.change_logs %}
-        <table class="table table-sm table-bordered w-auto">
+        <table class="table table-sm table-bordered">
             <thead>
                 <tr>
                     <th>Статус</th>
