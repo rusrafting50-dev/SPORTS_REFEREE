@@ -52,6 +52,7 @@ CENTER_TOP_WRAP = Alignment(horizontal="center", vertical="top", wrap_text=True)
 LEFT_WRAP = Alignment(horizontal="left", vertical="center", wrap_text=True)
 RIGHT = Alignment(horizontal="right")
 LEFT = Alignment(horizontal="left")
+VERTICAL_TEXT = Alignment(horizontal="left", vertical="center", wrap_text=True, textRotation=90)
 
 
 def _set_column_widths(ws):
@@ -110,7 +111,7 @@ def _write_athletes_header(ws, header_row, header_font=BOLD_12):
         cell = ws[f"{letter}{header_row + 1}"]
         cell.value = text
         cell.font = header_font
-        cell.alignment = CENTER_WRAP
+        cell.alignment = VERTICAL_TEXT
 
     _merge_value(
         ws, f"O{header_row}:O{header_row + 1}",
