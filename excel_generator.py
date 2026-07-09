@@ -7,6 +7,7 @@ FONT_NAME = "Times New Roman"
 THIN = Side(style="thin")
 BORDER_ALL = Border(top=THIN, bottom=THIN, left=THIN, right=THIN)
 BORDER_BOTTOM = Border(bottom=THIN)
+BORDER_TOP = Border(top=THIN)
 
 COLUMN_WIDTHS = {
     "A": 5.86, "B": 27.43, "C": 12.71, "E": 26.14, "F": 19.0, "G": 15.0,
@@ -214,6 +215,7 @@ def generate_report(athletes, settings, doc_date):
     ws["E8"].font = CAPTION_10
     ws["E8"].alignment = CENTER_TOP_WRAP
     _merge_value(ws, "G8:I8", "(наименование вида спорта)", CAPTION_10, CENTER_TOP_WRAP)
+    _set_border_range(ws, "G8:I8", BORDER_TOP)
     _write_counters(ws, "L8:M8", "специалисты:", "N8", specialists)
 
     _write_counters(ws, "L9:M9", "спортсмены:", "N9", sportsmen)
@@ -238,6 +240,11 @@ def generate_changes_report(exclude_list, include_list, settings, doc_date, doc_
     ex_trainers, ex_specialists, ex_sportsmen = _count_by_category(exclude_list)
     in_trainers, in_specialists, in_sportsmen = _count_by_category(include_list)
 
+    ws.row_dimensions[1].height = 20.25
+    ws.row_dimensions[2].height = 12.0
+    ws.row_dimensions[3].height = 23.25
+    ws.row_dimensions[4].height = 33.0
+
     _merge_value(
         ws, "F4:J4",
         "ИЗМЕНЕНИЯ В СПИСОК\nкандидатов в спортивную сборную команду Московской области",
@@ -250,6 +257,7 @@ def generate_changes_report(exclude_list, include_list, settings, doc_date, doc_
     ws["F5"].font = BOLD_12
     ws["F5"].alignment = CENTER
     _merge_value(ws, "G5:I5", _sport_name_dative(sport_name), BOLD_12, CENTER_WRAP)
+    _set_border_range(ws, "G5:I5", BORDER_BOTTOM)
     ws["J5"] = f"на {year} год" if year else ""
     ws["J5"].font = BOLD_12
     ws["J5"].alignment = CENTER
@@ -264,6 +272,7 @@ def generate_changes_report(exclude_list, include_list, settings, doc_date, doc_
     _write_counters(ws, "N7", "спортсмены:", "O7", in_sportsmen, count_alignment=LEFT)
 
     _merge_value(ws, "G6:I6", "(наименование вида спорта)", CAPTION_10, CENTER_TOP_WRAP)
+    _set_border_range(ws, "G6:I6", BORDER_TOP)
 
     row = _write_athletes_header(ws, 9)
 
