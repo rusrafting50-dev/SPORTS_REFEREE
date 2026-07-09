@@ -221,9 +221,9 @@ def generate_report(athletes, settings, doc_date):
 
     _write_counters(ws, "L9:M9", "спортсмены:", "N9", sportsmen)
 
-    first_data_row = _write_athletes_header(ws, 11)
+    first_data_row = _write_athletes_header(ws, 11, header_font=PLAIN_12)
     for i, athlete in enumerate(athletes, start=1):
-        _write_athlete_row(ws, first_data_row + i - 1, i, athlete)
+        _write_athlete_row(ws, first_data_row + i - 1, i, athlete, font=DATA_FONT_12)
 
     return wb
 
