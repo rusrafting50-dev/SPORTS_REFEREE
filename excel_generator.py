@@ -63,6 +63,7 @@ DATA_FONT_12 = Font(name=FONT_NAME, size=12)
 CENTER = Alignment(horizontal="center")
 CENTER_WRAP = Alignment(horizontal="center", vertical="center", wrap_text=True)
 CENTER_TOP_WRAP = Alignment(horizontal="center", vertical="top", wrap_text=True)
+CENTER_BOTTOM_WRAP = Alignment(horizontal="center", vertical="bottom", wrap_text=True)
 LEFT_WRAP = Alignment(horizontal="left", vertical="center", wrap_text=True)
 RIGHT = Alignment(horizontal="right")
 LEFT = Alignment(horizontal="left")
@@ -190,7 +191,9 @@ def generate_report(athletes, settings, doc_date):
     ws.row_dimensions[5].height = 38.25
     ws.row_dimensions[6].height = 33.0
 
-    _merge_value(ws, "B3:G3", org_name, BOLD_12, CENTER_WRAP)
+    _merge_value(ws, "B2:G2", "СФОРМИРОВАН", BOLD_12, CENTER)
+
+    _merge_value(ws, "B3:G3", org_name, BOLD_12, CENTER_BOTTOM_WRAP)
     _set_border_range(ws, "B3:G3", BORDER_BOTTOM)
     _merge_value(ws, "B4:G4", "наименование организации", CAPTION_10, CENTER_TOP_WRAP)
     _set_border_range(ws, "B4:G4", BORDER_TOP)
