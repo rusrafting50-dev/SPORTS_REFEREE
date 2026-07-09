@@ -9,12 +9,10 @@
 <p>Найдено спортсменов: <strong>{{ athletes|length }}</strong></p>
 
 <form method="post" action="{{ url_for('reports.reports_export') }}" class="mb-3">
-    {% for value in filters.discipline %}<input type="hidden" name="discipline" value="{{ value }}">{% endfor %}
-    {% for value in filters.age_category %}<input type="hidden" name="age_category" value="{{ value }}">{% endfor %}
-    {% for value in filters.rank %}<input type="hidden" name="rank" value="{{ value }}">{% endfor %}
-    {% for value in filters.territory %}<input type="hidden" name="territory" value="{{ value }}">{% endfor %}
+    <input type="hidden" name="discipline" value="{{ filters.discipline }}">
+    <input type="hidden" name="age_category" value="{{ filters.age_category }}">
+    <input type="hidden" name="territory" value="{{ filters.territory }}">
     <input type="hidden" name="gender" value="{{ filters.gender }}">
-    <input type="hidden" name="category" value="{{ filters.category }}">
     <input type="hidden" name="only_national_team" value="{{ 'on' if filters.only_national_team else '' }}">
     <input type="hidden" name="doc_date" value="{{ filters.doc_date }}">
     <button type="submit" class="btn btn-primary">Выгрузить Excel</button>

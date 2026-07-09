@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Отчёты — Сборная команда{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">Формирование отчёта</h1>
+<h1 class="h3 mb-4">Выгрузить полный список</h1>
 
 <form method="post" action="{{ url_for('reports.reports_preview') }}">
     <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Дисциплина</label>
-            <select name="discipline" class="form-select" multiple size="6">
+            <select name="discipline" class="form-select">
+                <option value="">Все</option>
                 {% for d in references.DISCIPLINES %}
                 <option value="{{ d }}">{{ d }}</option>
                 {% endfor %}
@@ -15,23 +16,17 @@
         </div>
         <div class="col-md-4">
             <label class="form-label">Возрастная категория</label>
-            <select name="age_category" class="form-select" multiple size="6">
+            <select name="age_category" class="form-select">
+                <option value="">Все</option>
                 {% for a in references.AGE_CATEGORIES %}
                 <option value="{{ a }}">{{ a }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-4">
-            <label class="form-label">Разряд</label>
-            <select name="rank" class="form-select" multiple size="6">
-                {% for r in references.RANKS %}
-                <option value="{{ r }}">{{ r }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
             <label class="form-label">Территория</label>
-            <select name="territory" class="form-select" multiple size="6">
+            <select name="territory" class="form-select">
+                <option value="">Все</option>
                 {% for t in references.TERRITORIES %}
                 <option value="{{ t }}">{{ t }}</option>
                 {% endfor %}
@@ -43,15 +38,6 @@
                 <option value="">Все</option>
                 {% for g in references.GENDERS %}
                 <option value="{{ g }}">{{ g }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Категория участника</label>
-            <select name="category" class="form-select">
-                <option value="">Все</option>
-                {% for c in references.CATEGORIES %}
-                <option value="{{ c }}">{{ c }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -82,8 +68,8 @@
         <input type="date" name="doc_date" class="form-control" value="{{ today }}">
     </div>
     <div class="col-md-5">
-        <label class="form-label">Номер документа (необязательно)</label>
-        <input type="text" name="document_number" class="form-control" placeholder="например, 31">
+        <label class="form-label">Номер документа</label>
+        <input type="text" name="document_number" class="form-control" placeholder="например, 1">
     </div>
     <div class="col-md-2">
         <button type="submit" class="btn btn-primary w-100">Предпросмотр</button>
