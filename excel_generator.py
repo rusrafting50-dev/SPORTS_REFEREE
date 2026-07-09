@@ -102,7 +102,7 @@ def _write_counters(ws, label_range, label, count_cell, count, bold=False, count
 
 
 def _count_by_category(athletes):
-    trainers = sum(1 for a in athletes if a.category == "Тренер")
+    trainers = sum(1 for a in athletes if a.category in ("Тренер", "Главный тренер"))
     specialists = sum(1 for a in athletes if a.category == "Специалист")
     sportsmen = sum(1 for a in athletes if a.category == "Спортсмен")
     return trainers, specialists, sportsmen
@@ -208,7 +208,7 @@ def generate_report(athletes, settings, doc_date):
     ws.merge_cells("F5:G5")
     ws["E5"] = chairman
     ws["E5"].font = PLAIN_12
-    _write_counters(ws, "L5:M5", "Всего человек:", "N5", total, bold=True)
+    _write_counters(ws, "L5:M5", "Всего человек:", "N5", total, bold=True, count_alignment=CENTER_BOTTOM_WRAP)
 
     ws["B6"] = "(должность)"
     ws["B6"].font = CAPTION_10
