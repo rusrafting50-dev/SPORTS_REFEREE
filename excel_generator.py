@@ -10,7 +10,7 @@ BORDER_ALL = Border(top=THIN, bottom=THIN, left=THIN, right=THIN)
 COLUMN_WIDTHS = {
     "A": 5.86, "B": 27.43, "C": 12.71, "E": 26.14, "F": 19.0, "G": 15.0,
     "H": 13.0, "I": 30.29, "J": 24.0, "K": 22.86, "L": 9.29, "M": 10.86,
-    "N": 12.43, "O": 22.86,
+    "N": 12.43, "O": 23.0,
 }
 
 COLUMN_HEADERS = [
