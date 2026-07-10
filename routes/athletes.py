@@ -23,6 +23,14 @@ AGE_CATEGORY_TYPES = [
     ("/age-categories/youth", "Юноши, девушки", "athletes.athletes_age_categories_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
 ]
 
+# Кнопки на странице / ("Список сборной команды") — те же группы возрастных
+# категорий, но только среди действующих (is_active) членов сборной
+TEAM_AGE_CATEGORY_TYPES = [
+    ("/team/men-women", "Мужчины, женщины", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
+    ("/team/juniors", "Юниоры, юниорки", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
+    ("/team/youth", "Юноши, девушки", "athletes.athletes_team_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
+]
+
 # Тренер / Главный тренер / тренер — без учёта регистра
 TRAINER_CATEGORY_PATTERN = r"(?i)тренер"
 
@@ -121,7 +129,8 @@ def _render_athletes_list(
 def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
     return _render_athletes_list(
-        query, heading="Список сборной команды",
+        query, list_buttons=TEAM_AGE_CATEGORY_TYPES,
+        heading="Список сборной команды",
         show_add_button=False, highlight_active=False,
     )
 
@@ -146,12 +155,15 @@ def athletes_trainers_list():
     )
 
 
-def _make_age_category_view(age_categories, heading):
+def _make_age_category_view(age_categories, heading, active_only=False):
     def view():
         query = Athlete.query.filter(Athlete.age_category.in_(age_categories))
+        if active_only:
+            query = query.filter_by(is_active=True)
         return _render_athletes_list(
             query, heading=heading, show_add_button=False,
             age_category_filter_options=age_categories,
+            highlight_active=not active_only,
         )
     return view
 
@@ -161,6 +173,13 @@ for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES:
         _path,
         endpoint=_endpoint.split(".")[1],
         view_func=_make_age_category_view(_age_categories, _heading),
+    )
+
+for _path, _label, _endpoint, _age_categories, _heading in TEAM_AGE_CATEGORY_TYPES:
+    bp.add_url_rule(
+        _path,
+        endpoint=_endpoint.split(".")[1],
+        view_func=_make_age_category_view(_age_categories, _heading, active_only=True),
     )
 
 
