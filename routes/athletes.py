@@ -14,18 +14,9 @@ PER_PAGE = 20
 # Маршрут (Маршрут - лыжный, водный, горный и т.д. "N-N категория") — независимо от пробелов/дефиса
 ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 
-# Группы вариантов дисциплины для выпадающего списка в форме добавления,
-# когда переход выполнен со страницы конкретного типа дистанции/маршрута
-DISCIPLINE_OPTION_GROUPS = {
-    "hiking-distance": ["Дистанции пешеходные", "Дистанции пешеходные, дистанции лыжные"],
-    "ski-distance": ["Дистанции лыжные", "Дистанции пешеходные, дистанции лыжные"],
-    "water-distance": ["Дистанции водные", "Дистанции водные, маршрут – водный (1-6 категория)"],
-    "water-route": ["Маршрут – водный (1-6 категория)", "Дистанции водные, маршрут – водный (1-6 категория)"],
-    "mountain-distance": ["Дистанции горные", "Дистанции горные, маршрут – горный (1-6 категория)"],
-    "mountain-route": ["Маршрут – горный (1-6 категория)", "Дистанции горные, маршрут – горный (1-6 категория)"],
-    "vehicle-distance": ["Дистанции на средствах передвижения", "Дистанции на средствах передвижения, маршрут – на средствах передвижения (1-6 категория)"],
-    "vehicle-route": ["Маршрут – на средствах передвижения (1-6 категория)", "Дистанции на средствах передвижения, маршрут – на средствах передвижения (1-6 категория)"],
-}
+# Варианты поля "Спортивная дисциплина или группа дисциплин" в формах
+# добавления/редактирования спортсмена и тренера
+DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дисциплин R4", "Группа дисциплин R6"]
 
 # Кнопки на странице /athletes/routes ("Дисциплины"):
 # (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, группа вариантов дисциплины)
@@ -35,24 +26,6 @@ ROUTE_TYPES = [
 
 # Тренер / Главный тренер / тренер — без учёта регистра
 TRAINER_CATEGORY_PATTERN = r"(?i)тренер"
-
-# Варианты дисциплины для формы добавления тренера
-TRAINER_DISCIPLINE_OPTIONS = [
-    'Группа дисциплин «дистанция»',
-    "Дистанции пешеходные",
-    "Дистанции лыжные",
-    "Дистанции пешеходные, дистанции лыжные",
-    "Дистанции горные",
-    "Дистанции спелео",
-    "Дистанции водные",
-    "Дистанции на средствах передвижения",
-    'Группа дисциплин «маршрут»',
-    "Маршрут - пешеходный (1-6 категория)",
-    "Маршрут - лыжный (1-6 категория)",
-    "Маршрут - горный (1-6 категория)",
-    "Маршрут - водный (1-6 категория)",
-    "Маршрут – на средствах передвижения (1-6 категория)",
-]
 
 # Варианты категории для формы добавления тренера
 TRAINER_CATEGORY_OPTIONS = ["Главный тренер", "Тренер", "Специалист"]
@@ -100,31 +73,6 @@ def _with_current_value(options, current_value):
     if current_value and current_value not in options:
         return options + [current_value]
     return options
-
-
-def _merge_discipline_family(distance_group, route_group):
-    """Объединяет варианты дистанции и маршрута одного вида (напр. водный) для формы редактирования."""
-    pure_distance, combined = DISCIPLINE_OPTION_GROUPS[distance_group]
-    pure_route, _ = DISCIPLINE_OPTION_GROUPS[route_group]
-    return [pure_distance, pure_route, combined]
-
-
-# Варианты дисциплины для формы редактирования спортсмена — объединяют выпадающие
-# списки страниц "Добавление спортсмена" для дистанции и маршрута одного вида,
-# чтобы при редактировании ничего не терялось независимо от того, откуда перешли.
-DISCIPLINE_EDIT_FAMILIES = [
-    _merge_discipline_family("hiking-distance", "ski-distance"),
-    _merge_discipline_family("water-distance", "water-route"),
-    _merge_discipline_family("mountain-distance", "mountain-route"),
-    _merge_discipline_family("vehicle-distance", "vehicle-route"),
-]
-
-
-def _discipline_family_options(discipline):
-    for family in DISCIPLINE_EDIT_FAMILIES:
-        if discipline in family:
-            return family
-    return None
 
 
 def _distinct_organizations():
@@ -234,13 +182,12 @@ def athletes_new():
         flash("Спортсмен добавлен", "success")
         return redirect(url_for("athletes.athletes_detail", athlete_id=athlete.id))
 
+    discipline_options = DISCIPLINE_SELECT_OPTIONS
     if request.args.get("form_variant") == "trainer":
-        discipline_options = TRAINER_DISCIPLINE_OPTIONS
         category_options = TRAINER_CATEGORY_OPTIONS
         age_category_options = TRAINER_AGE_CATEGORY_OPTIONS
         entity_label = "тренера"
     else:
-        discipline_options = DISCIPLINE_OPTION_GROUPS.get(request.args.get("discipline_group", ""))
         category_options = ATHLETE_CATEGORY_OPTIONS
         age_category_options = None
         entity_label = "спортсмена"
@@ -280,13 +227,12 @@ def athletes_edit(athlete_id):
         # чтобы оно корректно подставлялось и не терялось при сохранении без изменений.
         category_options = _with_current_value(TRAINER_CATEGORY_OPTIONS, athlete.category)
         age_category_options = _with_current_value(TRAINER_AGE_CATEGORY_OPTIONS, athlete.age_category)
-        discipline_options = _with_current_value(TRAINER_DISCIPLINE_OPTIONS, athlete.discipline)
         entity_label = "тренера"
     else:
         category_options = None
         age_category_options = None
-        discipline_options = _discipline_family_options(athlete.discipline)
         entity_label = "спортсмена"
+    discipline_options = _with_current_value(DISCIPLINE_SELECT_OPTIONS, athlete.discipline)
 
     return render_template(
         "athletes/form.html", athlete=athlete, references=references,
