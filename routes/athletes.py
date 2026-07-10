@@ -14,9 +14,6 @@ PER_PAGE = 20
 # Маршрут (Маршрут - лыжный, водный, горный и т.д. "N-N категория") — независимо от пробелов/дефиса
 ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
 
-# Дистанции / Дистанция / Группа дисциплин "дистанция" — без учёта регистра
-DISTANCE_DISCIPLINE_PATTERN = r"(?i)дистанц"
-
 # Группы вариантов дисциплины для выпадающего списка в форме добавления,
 # когда переход выполнен со страницы конкретного типа дистанции/маршрута
 DISCIPLINE_OPTION_GROUPS = {
@@ -79,17 +76,6 @@ TRAINER_AGE_CATEGORY_OPTIONS = [
     "Юноши",
     "Девушки",
     "Юноши, девушки",
-]
-
-# Конкретные виды дистанций для кнопок на странице /athletes/distances:
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, скрыть фильтр "Дисциплина", группа вариантов дисциплины)
-DISTANCE_TYPES = [
-    ("/distances/hiking", "Дистанции пешеходные", "athletes.athletes_distances_hiking", r"(?is)дистанц.*пешеход", "Дистанции пешеходные", "Дистанции пешеходные", True, "hiking-distance"),
-    ("/distances/ski", "Дистанции лыжные", "athletes.athletes_distances_ski", r"(?is)дистанц.*лыжн", "Дистанции лыжные", "Дистанции лыжные", True, "ski-distance"),
-    ("/distances/mountain", "Дистанции горные", "athletes.athletes_distances_mountain", r"(?is)дистанц.*горн", "Дистанции горные", "Дистанции горные", True, "mountain-distance"),
-    ("/distances/speleo", "Дистанции спелео", "athletes.athletes_distances_speleo", r"(?is)дистанц.*спелео", "Дистанции спелео", "Дистанции спелео", True, None),
-    ("/distances/water", "Дистанции водные", "athletes.athletes_distances_water", r"(?is)дистанц.*водн", "Дистанции водные", "Дистанции водные", True, "water-distance"),
-    ("/distances/vehicle", "Дистанции на средствах передвижения", "athletes.athletes_distances_vehicle", r"(?is)дистанц.*средствах передвижения", "Дистанции на средствах передвижения", "Дистанции на средствах передвижения", True, "vehicle-distance"),
 ]
 
 
@@ -207,7 +193,7 @@ def athletes_routes_list():
     )
     return _render_athletes_list(
         query, list_buttons=ROUTE_TYPES,
-        heading="Группа дисциплин МАРШРУТ", show_add_button=False,
+        heading="Дисциплины", show_add_button=False,
     )
 
 
@@ -220,17 +206,6 @@ def athletes_trainers_list():
         query, heading="Тренеры",
         add_button_label="Добавить тренера", add_form_variant="trainer",
         age_category_filter_options=TRAINER_AGE_CATEGORY_OPTIONS,
-    )
-
-
-@bp.route("/distances")
-def athletes_distances_list():
-    query = Athlete.query.filter(
-        Athlete.discipline.op("REGEXP")(DISTANCE_DISCIPLINE_PATTERN)
-    )
-    return _render_athletes_list(
-        query, list_buttons=DISTANCE_TYPES,
-        heading="Группа дисциплин ДИСТАНЦИЯ", show_add_button=False,
     )
 
 
@@ -250,7 +225,7 @@ def _make_discipline_type_view(pattern, heading, discipline_preset, hide_discipl
     return view
 
 
-for _path, _label, _endpoint, _pattern, _heading, _discipline_preset, _hide_discipline_filter, _discipline_group in ROUTE_TYPES + DISTANCE_TYPES:
+for _path, _label, _endpoint, _pattern, _heading, _discipline_preset, _hide_discipline_filter, _discipline_group in ROUTE_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
