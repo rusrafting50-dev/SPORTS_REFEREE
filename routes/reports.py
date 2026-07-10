@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, send_file
 
 import references
 from excel_generator import generate_changes_report, generate_report
-from models import Athlete, ChangeLog, ReportSettings
+from models import Athlete, ChangeLog, ReportSettings, db
 
 bp = Blueprint("reports", __name__, url_prefix="/reports")
 
@@ -36,17 +36,48 @@ def apply_filters(query, args):
     return query
 
 
-def get_filtered_athletes(args):
-    query = Athlete.query.filter_by(is_active=True)
-    query = apply_filters(query, args)
-    return query.order_by(Athlete.last_name).all()
-
-
 def get_doc_date(args):
     doc_date_raw = args.get("doc_date", "")
     if doc_date_raw:
         return datetime.strptime(doc_date_raw, "%Y-%m-%d").date()
     return datetime.today().date()
+
+
+def _athlete_ids_active_as_of(doc_date):
+    """ID спортсменов, состоявших в сборной на указанную дату — по истории «Членство в сборной
+    команде» (как и в выгрузке «Изменения в список»). Для спортсменов без единой записи истории
+    (например, добавленных обычным импортом основного списка) используется их текущий статус
+    is_active, чтобы такие данные не пропадали из отчёта."""
+    logs = (
+        ChangeLog.query
+        .filter(ChangeLog.change_date <= doc_date)
+        .order_by(ChangeLog.change_date, ChangeLog.id)
+        .all()
+    )
+    status_as_of = {}
+    for log in logs:
+        status_as_of[log.athlete_id] = log.change_type
+    included_ids = {aid for aid, status in status_as_of.items() if status == "включён"}
+
+    history_athlete_ids = {aid for (aid,) in db.session.query(ChangeLog.athlete_id).distinct()}
+    no_history_active = (
+        db.session.query(Athlete.id)
+        .filter(Athlete.is_active.is_(True), ~Athlete.id.in_(history_athlete_ids))
+        .all()
+    )
+    included_ids.update(aid for (aid,) in no_history_active)
+
+    return included_ids
+
+
+def get_filtered_athletes(args):
+    doc_date = get_doc_date(args)
+    athlete_ids = _athlete_ids_active_as_of(doc_date)
+    if not athlete_ids:
+        return []
+    query = Athlete.query.filter(Athlete.id.in_(athlete_ids))
+    query = apply_filters(query, args)
+    return query.order_by(Athlete.last_name).all()
 
 
 def get_selected_filters(args):
