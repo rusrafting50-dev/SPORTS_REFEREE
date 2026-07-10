@@ -15,16 +15,7 @@ PER_PAGE = 20
 # добавления/редактирования спортсмена и тренера
 DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дисциплин R4", "Группа дисциплин R6"]
 
-# Кнопки на странице /athletes/age-categories ("Возрастные категории"):
-# (путь, подпись кнопки, эндпоинт, значения возрастной категории, заголовок страницы)
-AGE_CATEGORY_TYPES = [
-    ("/age-categories/men-women", "Мужчины, женщины", "athletes.athletes_age_categories_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
-    ("/age-categories/juniors", "Юниоры, юниорки", "athletes.athletes_age_categories_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
-    ("/age-categories/youth", "Юноши, девушки", "athletes.athletes_age_categories_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
-]
-
-# Кнопки на странице / ("Список сборной команды") — те же группы возрастных
-# категорий, но только среди действующих (is_active) членов сборной
+# Кнопки на странице / ("Список сборной команды") — по группам возрастных категорий
 TEAM_AGE_CATEGORY_TYPES = [
     ("/team/men-women", "Мужчины, женщины", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
     ("/team/juniors", "Юниоры, юниорки", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
@@ -138,14 +129,6 @@ def athletes_list():
     )
 
 
-@bp.route("/age-categories")
-def athletes_age_categories_list():
-    return _render_athletes_list(
-        Athlete.query, list_buttons=AGE_CATEGORY_TYPES,
-        heading="Возрастные категории", show_add_button=False,
-    )
-
-
 @bp.route("/trainers")
 def athletes_trainers_list():
     query = Athlete.query.filter(
@@ -169,7 +152,7 @@ def _make_age_category_view(age_categories, heading):
     return view
 
 
-for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES + TEAM_AGE_CATEGORY_TYPES:
+for _path, _label, _endpoint, _age_categories, _heading in TEAM_AGE_CATEGORY_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
