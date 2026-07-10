@@ -15,16 +15,7 @@ PER_PAGE = 20
 # добавления/редактирования спортсмена и тренера
 DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дисциплин R4", "Группа дисциплин R6"]
 
-# Кнопки на странице /athletes/age-categories ("Возрастные категории"):
-# (путь, подпись кнопки, эндпоинт, значения возрастной категории, заголовок страницы)
-AGE_CATEGORY_TYPES = [
-    ("/age-categories/men-women", "Мужчины, женщины", "athletes.athletes_age_categories_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
-    ("/age-categories/juniors", "Юниоры, юниорки", "athletes.athletes_age_categories_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
-    ("/age-categories/youth", "Юноши, девушки", "athletes.athletes_age_categories_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
-]
-
-# Кнопки на странице / ("Список сборной команды") — те же группы возрастных
-# категорий, но только среди действующих (is_active) членов сборной
+# Кнопки на странице / ("Список сборной команды") — по группам возрастных категорий
 TEAM_AGE_CATEGORY_TYPES = [
     ("/team/men-women", "Мужчины, женщины", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
     ("/team/juniors", "Юниоры, юниорки", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
@@ -128,18 +119,13 @@ def _render_athletes_list(
 @bp.route("/")
 def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
+    list_buttons = TEAM_AGE_CATEGORY_TYPES + [
+        ("", "Тренеры", "athletes.athletes_trainers_list", [], "Тренеры"),
+    ]
     return _render_athletes_list(
-        query, list_buttons=TEAM_AGE_CATEGORY_TYPES,
+        query, list_buttons=list_buttons,
         heading="Список сборной команды",
         show_add_button=False, highlight_active=False,
-    )
-
-
-@bp.route("/age-categories")
-def athletes_age_categories_list():
-    return _render_athletes_list(
-        Athlete.query, list_buttons=AGE_CATEGORY_TYPES,
-        heading="Возрастные категории", show_add_button=False,
     )
 
 
@@ -155,31 +141,22 @@ def athletes_trainers_list():
     )
 
 
-def _make_age_category_view(age_categories, heading, active_only=False):
+def _make_age_category_view(age_categories, heading):
     def view():
         query = Athlete.query.filter(Athlete.age_category.in_(age_categories))
-        if active_only:
-            query = query.filter_by(is_active=True)
         return _render_athletes_list(
             query, heading=heading, show_add_button=False,
             age_category_filter_options=age_categories,
-            highlight_active=not active_only,
+            highlight_active=True,
         )
     return view
 
-
-for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES:
-    bp.add_url_rule(
-        _path,
-        endpoint=_endpoint.split(".")[1],
-        view_func=_make_age_category_view(_age_categories, _heading),
-    )
 
 for _path, _label, _endpoint, _age_categories, _heading in TEAM_AGE_CATEGORY_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
-        view_func=_make_age_category_view(_age_categories, _heading, active_only=True),
+        view_func=_make_age_category_view(_age_categories, _heading),
     )
 
 
