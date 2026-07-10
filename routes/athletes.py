@@ -158,31 +158,22 @@ def athletes_trainers_list():
     )
 
 
-def _make_age_category_view(age_categories, heading, active_only=False):
+def _make_age_category_view(age_categories, heading):
     def view():
         query = Athlete.query.filter(Athlete.age_category.in_(age_categories))
-        if active_only:
-            query = query.filter_by(is_active=True)
         return _render_athletes_list(
             query, heading=heading, show_add_button=False,
             age_category_filter_options=age_categories,
-            highlight_active=not active_only,
+            highlight_active=True,
         )
     return view
 
 
-for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES:
+for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES + TEAM_AGE_CATEGORY_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
         view_func=_make_age_category_view(_age_categories, _heading),
-    )
-
-for _path, _label, _endpoint, _age_categories, _heading in TEAM_AGE_CATEGORY_TYPES:
-    bp.add_url_rule(
-        _path,
-        endpoint=_endpoint.split(".")[1],
-        view_func=_make_age_category_view(_age_categories, _heading, active_only=True),
     )
 
 
