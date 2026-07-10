@@ -12,7 +12,7 @@
         <label class="form-label">Должность руководителя организации</label>
         <input type="text" name="chairman_position" class="form-control" value="{{ settings.chairman_position if settings else '' }}">
     </div>
-    <div class="col-12">
+    <div class="col-md-6">
         <label class="form-label text-nowrap">Фамилия инициалы руководителя организации</label>
         <input type="text" name="chairman_name" class="form-control" value="{{ settings.chairman_name if settings else '' }}">
     </div>
@@ -20,15 +20,15 @@
         <label class="form-label">Фамилия инициалы Главный тренер</label>
         <input type="text" name="head_coach_name" class="form-control" value="{{ settings.head_coach_name if settings else '' }}">
     </div>
-    <div class="col-md-8">
+    <div class="col-md-6">
         <label class="form-label">Наименование вида спорта</label>
         <input type="text" name="sport_name" class="form-control" value="{{ settings.sport_name if settings else '' }}">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <label class="form-label">Год</label>
         <input type="number" name="year" class="form-control" value="{{ settings.year if settings else '' }}">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <label class="form-label">Основной список, дата утверждения</label>
         <input type="date" name="main_list_approval_date" class="form-control" value="{{ settings.main_list_approval_date.isoformat() if settings and settings.main_list_approval_date else '' }}">
     </div>
