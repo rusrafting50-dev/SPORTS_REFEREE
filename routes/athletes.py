@@ -149,7 +149,10 @@ def athletes_trainers_list():
 def _make_age_category_view(age_categories, heading):
     def view():
         query = Athlete.query.filter(Athlete.age_category.in_(age_categories))
-        return _render_athletes_list(query, heading=heading, show_add_button=False)
+        return _render_athletes_list(
+            query, heading=heading, show_add_button=False,
+            age_category_filter_options=age_categories,
+        )
     return view
 
 
