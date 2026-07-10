@@ -10,15 +10,6 @@
             <input type="date" name="doc_date" class="form-control" value="{{ today }}">
         </div>
         <div class="col-md-4">
-            <label class="form-label">Дисциплина</label>
-            <select name="discipline" class="form-select">
-                <option value="">Все</option>
-                {% for d in references.DISCIPLINES %}
-                <option value="{{ d }}">{{ d }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
             <label class="form-label">Возрастная категория</label>
             <select name="age_category" class="form-select">
                 <option value="">Все</option>

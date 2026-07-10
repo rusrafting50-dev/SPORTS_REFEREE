@@ -18,22 +18,12 @@
 
 {% if list_buttons %}
 <div class="mb-3 d-flex flex-wrap gap-2">
-    {% for _path, label, endpoint, _pattern, _heading, _discipline_preset, _hide_discipline_filter, _discipline_group in list_buttons %}
+    {% for _path, label, endpoint, _age_categories, _heading in list_buttons %}
     <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
     {% endfor %}
 </div>
 {% else %}
 <form method="get" action="{{ url_for(request.endpoint) }}" class="row g-2 mb-3">
-    {% if not hide_discipline_filter %}
-    <div class="col-md-2">
-        <select name="discipline" class="form-select">
-            <option value="">Дисциплина: все</option>
-            {% for d in references.DISCIPLINES %}
-                <option value="{{ d }}" {% if filters.discipline == d %}selected{% endif %}>{{ d }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    {% endif %}
     <div class="col-md-3">
         <select name="age_category" class="form-select">
             <option value="">Возрастная категория: все</option>

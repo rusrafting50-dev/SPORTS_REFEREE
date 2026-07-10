@@ -9,7 +9,6 @@
 <p>Найдено спортсменов: <strong>{{ athletes|length }}</strong></p>
 
 <form method="post" action="{{ url_for('reports.reports_export') }}" class="mb-3">
-    <input type="hidden" name="discipline" value="{{ filters.discipline }}">
     <input type="hidden" name="age_category" value="{{ filters.age_category }}">
     <input type="hidden" name="territory" value="{{ filters.territory }}">
     <input type="hidden" name="gender" value="{{ filters.gender }}">

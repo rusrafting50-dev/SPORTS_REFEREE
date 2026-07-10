@@ -16,14 +16,11 @@ def get_settings():
 
 
 def apply_filters(query, args):
-    discipline = args.get("discipline", "")
     age_category = args.get("age_category", "")
     territory = args.get("territory", "")
     gender = args.get("gender", "")
     only_national_team = args.get("only_national_team") == "on"
 
-    if discipline:
-        query = query.filter(Athlete.discipline == discipline)
     if age_category:
         query = query.filter(Athlete.age_category == age_category)
     if territory:
@@ -82,7 +79,6 @@ def get_filtered_athletes(args):
 
 def get_selected_filters(args):
     return {
-        "discipline": args.get("discipline", ""),
         "age_category": args.get("age_category", ""),
         "territory": args.get("territory", ""),
         "gender": args.get("gender", ""),
