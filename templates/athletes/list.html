@@ -18,7 +18,7 @@
 
 {% if list_buttons %}
 <div class="mb-3 d-flex flex-wrap gap-2">
-    {% for _path, label, endpoint, _pattern, _heading, _discipline_preset, _discipline_group in list_buttons %}
+    {% for _path, label, endpoint, _age_categories, _heading in list_buttons %}
     <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
     {% endfor %}
 </div>

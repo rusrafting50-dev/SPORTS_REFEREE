@@ -11,17 +11,16 @@ bp = Blueprint("athletes", __name__, url_prefix="/athletes")
 
 PER_PAGE = 20
 
-# Маршрут (Маршрут - лыжный, водный, горный и т.д. "N-N категория") — независимо от пробелов/дефиса
-ROUTE_DISCIPLINE_PATTERN = r"\(\s*\d+\s*-\s*\d+\s*категория\s*\)"
-
 # Варианты поля "Спортивная дисциплина или группа дисциплин" в формах
 # добавления/редактирования спортсмена и тренера
 DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дисциплин R4", "Группа дисциплин R6"]
 
-# Кнопки на странице /athletes/routes ("Дисциплины"):
-# (путь, подпись кнопки, эндпоинт, паттерн дисциплины, заголовок страницы, дисциплина для предзаполнения при добавлении, группа вариантов дисциплины)
-ROUTE_TYPES = [
-    ("/routes/all", "Все дисциплины", "athletes.athletes_routes_all", r".*", "Все дисциплины", None, None),
+# Кнопки на странице /athletes/age-categories ("Возрастные категории"):
+# (путь, подпись кнопки, эндпоинт, значения возрастной категории, заголовок страницы)
+AGE_CATEGORY_TYPES = [
+    ("/age-categories/men-women", "Мужчины, женщины", "athletes.athletes_age_categories_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
+    ("/age-categories/juniors", "Юниоры, юниорки", "athletes.athletes_age_categories_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
+    ("/age-categories/youth", "Юноши, девушки", "athletes.athletes_age_categories_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
 ]
 
 # Тренер / Главный тренер / тренер — без учёта регистра
@@ -127,14 +126,11 @@ def athletes_list():
     )
 
 
-@bp.route("/routes")
-def athletes_routes_list():
-    query = Athlete.query.filter(
-        Athlete.discipline.op("REGEXP")(ROUTE_DISCIPLINE_PATTERN)
-    )
+@bp.route("/age-categories")
+def athletes_age_categories_list():
     return _render_athletes_list(
-        query, list_buttons=ROUTE_TYPES,
-        heading="Дисциплины", show_add_button=False,
+        Athlete.query, list_buttons=AGE_CATEGORY_TYPES,
+        heading="Возрастные категории", show_add_button=False,
     )
 
 
@@ -150,27 +146,18 @@ def athletes_trainers_list():
     )
 
 
-def _make_discipline_type_view(pattern, heading, discipline_preset, discipline_group):
+def _make_age_category_view(age_categories, heading):
     def view():
-        query = Athlete.query.filter(
-            Athlete.discipline.op("REGEXP")(pattern)
-        )
-        kwargs = {}
-        if heading:
-            kwargs["heading"] = heading
-        if discipline_preset:
-            kwargs["discipline_preset"] = discipline_preset
-        if discipline_group:
-            kwargs["discipline_group"] = discipline_group
-        return _render_athletes_list(query, **kwargs)
+        query = Athlete.query.filter(Athlete.age_category.in_(age_categories))
+        return _render_athletes_list(query, heading=heading, show_add_button=False)
     return view
 
 
-for _path, _label, _endpoint, _pattern, _heading, _discipline_preset, _discipline_group in ROUTE_TYPES:
+for _path, _label, _endpoint, _age_categories, _heading in AGE_CATEGORY_TYPES:
     bp.add_url_rule(
         _path,
         endpoint=_endpoint.split(".")[1],
-        view_func=_make_discipline_type_view(_pattern, _heading, _discipline_preset, _discipline_group),
+        view_func=_make_age_category_view(_age_categories, _heading),
     )
 
 
