@@ -17,9 +17,9 @@ DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дис
 
 # Кнопки на странице / ("Список сборной команды") — по группам возрастных категорий
 TEAM_AGE_CATEGORY_TYPES = [
-    ("/team/men-women", "ССВК", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
-    ("/team/juniors", "СС1К", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
-    ("/team/youth", "СС2К и СС3К", "athletes.athletes_team_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
+    ("/team/men-women", "ССВК", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Спортивные судьи всероссийской категории"),
+    ("/team/juniors", "СС1К", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Спортивные судьи первой категории"),
+    ("/team/youth", "СС2К", "athletes.athletes_team_youth", ["Юноши", "Девушки"], "Спортивные судьи второй категории"),
 ]
 
 # Тренер / Главный тренер / тренер — без учёта регистра
@@ -120,7 +120,7 @@ def _render_athletes_list(
 def athletes_list():
     query = Athlete.query.filter_by(is_active=True)
     list_buttons = TEAM_AGE_CATEGORY_TYPES + [
-        ("", "Тренеры", "athletes.athletes_trainers_list", [], "Тренеры"),
+        ("", "СС3К", "athletes.athletes_trainers_list", [], "Спортивные судьи третьей категории"),
     ]
     return _render_athletes_list(
         query, list_buttons=list_buttons,
@@ -135,7 +135,7 @@ def athletes_trainers_list():
         Athlete.category.op("REGEXP")(TRAINER_CATEGORY_PATTERN)
     )
     return _render_athletes_list(
-        query, heading="Тренеры",
+        query, heading="Спортивные судьи третьей категории",
         add_button_label="Добавить тренера", add_form_variant="trainer",
         age_category_filter_options=TRAINER_AGE_CATEGORY_OPTIONS,
     )
