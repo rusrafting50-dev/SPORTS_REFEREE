@@ -17,9 +17,9 @@ DISCIPLINE_SELECT_OPTIONS = ["Все дисциплины", "Группа дис
 
 # Кнопки на странице / ("Список сборной команды") — по группам возрастных категорий
 TEAM_AGE_CATEGORY_TYPES = [
-    ("/team/men-women", "Мужчины, женщины", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
-    ("/team/juniors", "Юниоры, юниорки", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
-    ("/team/youth", "Юноши, девушки", "athletes.athletes_team_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
+    ("/team/men-women", "ССВК", "athletes.athletes_team_men_women", ["Мужчины", "Женщины"], "Мужчины, женщины"),
+    ("/team/juniors", "СС1К", "athletes.athletes_team_juniors", ["Юниоры", "Юниорки"], "Юниоры, юниорки"),
+    ("/team/youth", "СС2К и СС3К", "athletes.athletes_team_youth", ["Юноши", "Девушки"], "Юноши, девушки"),
 ]
 
 # Тренер / Главный тренер / тренер — без учёта регистра
@@ -124,7 +124,7 @@ def athletes_list():
     ]
     return _render_athletes_list(
         query, list_buttons=list_buttons,
-        heading="Список сборной команды",
+        heading="Список спортивных судей",
         show_add_button=False, highlight_active=False,
     )
 
