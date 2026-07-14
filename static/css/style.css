@@ -1,4 +1,4 @@
-/* style.css — общие стили Сборной команды */
+/* style.css — общие стили */
 
 /* Контейнер таблиц на экране шире на ~10% относительно стандартных брейкпоинтов Bootstrap */
 @media (min-width: 576px) {
@@ -15,67 +15,4 @@
 }
 @media (min-width: 1400px) {
     .container { max-width: 1455px; }
-}
-
-/* Компактная таблица со спортсменами: мелкий шрифт, чтобы уместиться на экране без горизонтальной прокрутки */
-.table-report {
-    font-size: 0.68rem;
-}
-.table-report th,
-.table-report td {
-    padding: 0.25rem 0.3rem;
-}
-.table-report thead th {
-    font-weight: normal;
-    vertical-align: middle;
-}
-
-/* Вертикальный текст снизу вверх для заголовков МО/РФ/Межд., выровнен по левому краю.
-   Трансформация применяется к внутреннему span, а не к самой ячейке th — иначе
-   поворот визуально перекрывает границы ячейки и часть рамки пропадает. */
-.header-vertical {
-    display: inline-block;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    white-space: nowrap;
-}
-.header-vertical-cell {
-    text-align: left !important;
-}
-.header-vertical-wrap {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-/* Столбец дисциплины: ширина под "Дистанции пешеходные,", более длинные значения переносятся на новую строку внутри этой ширины */
-.col-discipline {
-    width: 13em;
-    max-width: 13em;
-    white-space: normal;
-    word-break: break-word;
-}
-
-/* Столбец организации: ширина под 'МБУ ДО СШ "Старт" ГОЩ', более длинные значения переносятся на новую строку внутри этой ширины */
-.col-organization {
-    width: 13em;
-    max-width: 13em;
-    white-space: normal;
-    word-break: break-word;
-}
-
-/* Столбец состава сборной РФ: ширина под перенос "Основной состав (мужчины, женщины)" ровно в две строки */
-.col-national-team {
-    width: 11.5em;
-    max-width: 11.5em;
-    white-space: normal;
-    word-break: break-word;
-}
-
-/* Столбец ФИО: ширина под "Кузин Дмитрий Игоревич" в одну строку, более длинные ФИО переносятся внутри этой ширины */
-.col-fio {
-    width: 12.5em;
-    max-width: 12.5em;
-    white-space: normal;
-    word-break: break-word;
 }
