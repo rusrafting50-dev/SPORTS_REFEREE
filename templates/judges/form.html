@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактирование' if judge else 'Добавление' }} судьи — Спортивные судьи{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">{{ 'Редактирование судьи' if judge else 'Добавление судьи' }}</h1>
+
+<form method="post" class="row g-3" style="max-width: 900px;">
+    <div class="col-md-4">
+        <label class="form-label">Фамилия</label>
+        <input type="text" name="last_name" class="form-control" value="{{ judge.last_name if judge else '' }}" required>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Имя</label>
+        <input type="text" name="first_name" class="form-control" value="{{ judge.first_name if judge else '' }}" required>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Отчество (при наличии)</label>
+        <input type="text" name="middle_name" class="form-control" value="{{ judge.middle_name if judge else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата рождения</label>
+        <input type="date" name="birth_date" class="form-control" value="{{ judge.birth_date.isoformat() if judge and judge.birth_date else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="region" class="form-control" value="{{ judge.region if judge else 'Московская область' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Муниципальное образование</label>
+        <input type="text" name="municipality" class="form-control" value="{{ judge.municipality if judge else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Спортивное звание в данном виде спорта (при наличии)</label>
+        <input type="text" name="rank" class="form-control" value="{{ judge.rank if judge else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Образование</label>
+        <input type="text" name="education" class="form-control" value="{{ judge.education if judge else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Место работы (учёбы), должность</label>
+        <input type="text" name="workplace" class="form-control" value="{{ judge.workplace if judge else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Контактные телефоны, адрес электронной почты</label>
+        <input type="text" name="contacts" class="form-control" value="{{ judge.contacts if judge else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата начала судейской деятельности</label>
+        <input type="date" name="judging_start_date" class="form-control" value="{{ judge.judging_start_date.isoformat() if judge and judge.judging_start_date else '' }}">
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('judges.judges_detail', judge_id=judge.id) if judge else url_for('judges.judges_list') }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}

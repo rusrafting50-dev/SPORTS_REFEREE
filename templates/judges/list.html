@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — Спортивные судьи{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{{ heading }}</h1>
+    {% if show_add_button %}
+    <a href="{{ url_for('judges.judges_new') }}" class="btn btn-primary">Добавить судью</a>
+    {% endif %}
+</div>
+
+{% if list_buttons %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+    {% for _path, label, endpoint, _category, _heading in list_buttons %}
+    <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="table-responsive">
+<table class="table table-sm table-striped table-bordered align-middle">
+    <thead>
+        <tr class="text-center">
+            <th>№<br>п/п</th>
+            <th>Фамилия, имя, отчество</th>
+            <th>Дата рождения</th>
+            <th>Субъект РФ</th>
+            <th>Муниципальное образование</th>
+            <th>Квалификационная категория</th>
+            <th>Дата начала судейской деятельности</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for judge in judges %}
+        <tr {% if highlight_active and judge.is_active %}class="table-success"{% endif %}>
+            <td class="text-center text-nowrap">{{ loop.index }}</td>
+            <td><a href="{{ url_for('judges.judges_detail', judge_id=judge.id) }}">{{ judge.full_name }}</a></td>
+            <td class="text-center">{{ judge.birth_date.strftime('%d.%m.%Y') if judge.birth_date }}</td>
+            <td class="text-center">{{ judge.region }}</td>
+            <td class="text-center">{{ judge.municipality }}</td>
+            <td class="text-center">{{ judge.current_category }}</td>
+            <td class="text-center">{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7" class="text-center text-muted">Список пуст</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

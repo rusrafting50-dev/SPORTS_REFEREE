@@ -1,99 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Настройки — Сборная команда{% endblock %}
+{% block title %}Настройки — Спортивные судьи{% endblock %}
 {% block content %}
 <h1 class="h3 mb-4">Настройки</h1>
 
-<form method="post" action="{{ url_for('settings') }}" class="row g-3 mb-5" style="max-width: 900px;">
-    <div class="col-12">
-        <label class="form-label">Наименование организации</label>
-        <input type="text" name="organization_name" class="form-control" value="{{ settings.organization_name if settings else '' }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Должность руководителя организации</label>
-        <input type="text" name="chairman_position" class="form-control" value="{{ settings.chairman_position if settings else '' }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label text-nowrap">Фамилия инициалы руководителя организации</label>
-        <input type="text" name="chairman_name" class="form-control" value="{{ settings.chairman_name if settings else '' }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Фамилия инициалы Главный тренер</label>
-        <input type="text" name="head_coach_name" class="form-control" value="{{ settings.head_coach_name if settings else '' }}">
-    </div>
+<form method="post" action="{{ url_for('settings') }}" class="row g-3" style="max-width: 900px;">
     <div class="col-md-6">
         <label class="form-label">Наименование вида спорта</label>
         <input type="text" name="sport_name" class="form-control" value="{{ settings.sport_name if settings else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Год</label>
-        <input type="number" name="year" class="form-control" value="{{ settings.year if settings else '' }}">
+        <label class="form-label">Номер-код вида спорта</label>
+        <input type="text" name="sport_code" class="form-control" value="{{ settings.sport_code if settings else '' }}">
+    </div>
+    <div class="col-12">
+        <label class="form-label">Наименование организации, осуществляющей учёт судейской деятельности</label>
+        <input type="text" name="organization_name" class="form-control" value="{{ settings.organization_name if settings else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Основной список, дата утверждения</label>
-        <input type="date" name="main_list_approval_date" class="form-control" value="{{ settings.main_list_approval_date.isoformat() if settings and settings.main_list_approval_date else '' }}">
+        <label class="form-label">Адрес (место нахождения) организации</label>
+        <input type="text" name="organization_address" class="form-control" value="{{ settings.organization_address if settings else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Телефон, адрес электронной почты организации</label>
+        <input type="text" name="organization_contacts" class="form-control" value="{{ settings.organization_contacts if settings else '' }}">
     </div>
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </div>
 </form>
-
-<h2 class="h5 mb-3">Изменения в список</h2>
-
-<form method="post" action="{{ url_for('settings_list_changes_add') }}" class="row g-2 mb-3 align-items-end" style="max-width: 500px;">
-    <div class="col-auto">
-        <label class="form-label">№ изменения в список</label>
-        <input type="text" name="number" class="form-control" required>
-    </div>
-    <div class="col-auto">
-        <label class="form-label">Дата</label>
-        <input type="date" name="date" class="form-control" value="{{ today }}" required>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-outline-primary">Добавить изменение в список</button>
-    </div>
-</form>
-
-<table class="table table-sm table-bordered w-auto">
-    <thead>
-        <tr>
-            <th>№ изменения в список</th>
-            <th>Дата</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for change in list_changes %}
-        <tr id="list-change-view-{{ change.id }}">
-            <td>{{ change.number }}</td>
-            <td>{{ change.date.strftime('%d.%m.%Y') if change.date }}</td>
-            <td class="text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('list-change-view-{{ change.id }}').classList.add('d-none'); document.getElementById('list-change-edit-{{ change.id }}').classList.remove('d-none');">Изменить</button>
-                <form method="post" action="{{ url_for('settings_list_changes_delete', record_id=change.id) }}" class="d-inline" onsubmit="return confirm('Удалить это изменение в список?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                </form>
-            </td>
-        </tr>
-        <tr id="list-change-edit-{{ change.id }}" class="d-none">
-            <td colspan="3">
-                <form method="post" action="{{ url_for('settings_list_changes_edit', record_id=change.id) }}" class="d-flex flex-wrap align-items-end gap-2">
-                    <div>
-                        <label class="form-label mb-0">№ изменения в список</label>
-                        <input type="text" name="number" class="form-control form-control-sm" value="{{ change.number }}" required>
-                    </div>
-                    <div>
-                        <label class="form-label mb-0">Дата</label>
-                        <input type="date" name="date" class="form-control form-control-sm" value="{{ change.date.isoformat() if change.date else '' }}" required>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-primary">Сохранить изменения</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('list-change-edit-{{ change.id }}').classList.add('d-none'); document.getElementById('list-change-view-{{ change.id }}').classList.remove('d-none');">Отмена</button>
-                </form>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="3" class="text-center text-muted">Изменений пока нет</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}

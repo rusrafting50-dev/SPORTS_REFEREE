@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}{{ judge.full_name }} — Спортивные судьи{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{{ judge.full_name }}</h1>
+    <div>
+        <a href="{{ url_for('judges.judges_export', judge_id=judge.id) }}" class="btn btn-success">Скачать карточку (Word)</a>
+        <a href="{{ url_for('judges.judges_edit', judge_id=judge.id) }}" class="btn btn-outline-primary">Редактировать</a>
+        {% if judge.is_active %}
+        <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger">Исключить из списка</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('judges.judges_activate', judge_id=judge.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-success">Вернуть в список</button>
+        </form>
+        {% endif %}
+        <form method="post" action="{{ url_for('judges.judges_delete', judge_id=judge.id) }}" class="d-inline" onsubmit="return confirm('Удалить без возможности восстановления?');">
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+    </div>
+</div>
+
+{% if not judge.is_active %}
+<div class="alert alert-warning">Судья исключён из активного списка</div>
+{% endif %}
+
+<table class="table table-bordered w-auto mb-4">
+    <tbody>
+        <tr><th>Дата рождения</th><td>{{ judge.birth_date.strftime('%d.%m.%Y') if judge.birth_date }}</td></tr>
+        <tr><th>Субъект Российской Федерации</th><td>{{ judge.region }}</td></tr>
+        <tr><th>Муниципальное образование</th><td>{{ judge.municipality }}</td></tr>
+        <tr><th>Спортивное звание</th><td>{{ judge.rank }}</td></tr>
+        <tr><th>Образование</th><td>{{ judge.education }}</td></tr>
+        <tr><th>Место работы (учёбы), должность</th><td>{{ judge.workplace }}</td></tr>
+        <tr><th>Контактные телефоны, адрес электронной почты</th><td>{{ judge.contacts }}</td></tr>
+        <tr><th>Дата начала судейской деятельности</th><td>{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td></tr>
+        <tr><th>Текущая квалификационная категория</th><td>{{ judge.current_category }}</td></tr>
+    </tbody>
+</table>
+
+<h2 class="h5 mb-2">История квалификационных категорий</h2>
+<div class="table-responsive mb-3">
+<table class="table table-sm table-bordered align-middle">
+    <thead>
+        <tr class="text-center">
+            <th>Категория</th>
+            <th>Присвоена / подтверждена / лишена / восстановлена</th>
+            <th>Дата</th>
+            <th>Номер документа</th>
+            <th>Организация, принявшая решение</th>
+            <th>Подписал</th>
+            <th>Ответственный за оформление карточки</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in judge.category_records %}
+        <tr id="category-view-{{ record.id }}">
+            <td>{{ record.category }}</td>
+            <td>{{ record.action }}</td>
+            <td>{{ record.date.strftime('%d.%m.%Y') if record.date }}</td>
+            <td>{{ record.document_number }}</td>
+            <td>{{ record.issuing_organization }}</td>
+            <td>{{ record.signed_by }}</td>
+            <td>{{ record.record_keeper }}</td>
+            <td class="text-nowrap">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('category-view-{{ record.id }}').classList.add('d-none'); document.getElementById('category-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                <form method="post" action="{{ url_for('judges.category_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        <tr id="category-edit-{{ record.id }}" class="d-none">
+            <td colspan="8">
+                <form method="post" action="{{ url_for('judges.category_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
+                    <div>
+                        <label class="form-label mb-0">Категория</label>
+                        <select name="category" class="form-select form-select-sm">
+                            {% for c in references.JUDGE_CATEGORIES %}
+                            <option value="{{ c }}" {% if record.category == c %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Действие</label>
+                        <select name="action" class="form-select form-select-sm">
+                            {% for a in references.CATEGORY_ACTIONS %}
+                            <option value="{{ a }}" {% if record.action == a %}selected{% endif %}>{{ a }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Дата</label>
+                        <input type="date" name="date" class="form-control form-control-sm" value="{{ record.date.isoformat() if record.date else '' }}">
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Номер документа</label>
+                        <input type="text" name="document_number" class="form-control form-control-sm" value="{{ record.document_number or '' }}">
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Организация, принявшая решение</label>
+                        <input type="text" name="issuing_organization" class="form-control form-control-sm" value="{{ record.issuing_organization or '' }}">
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Подписал</label>
+                        <input type="text" name="signed_by" class="form-control form-control-sm" value="{{ record.signed_by or '' }}">
+                    </div>
+                    <div>
+                        <label class="form-label mb-0">Ответственный за оформление карточки</label>
+                        <input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('category-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('category-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted">Записей пока нет</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<form method="post" action="{{ url_for('judges.category_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-5">
+    <div>
+        <label class="form-label mb-0">Категория</label>
+        <select name="category" class="form-select form-select-sm">
+            {% for c in references.JUDGE_CATEGORIES %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="form-label mb-0">Действие</label>
+        <select name="action" class="form-select form-select-sm">
+            {% for a in references.CATEGORY_ACTIONS %}
+            <option value="{{ a }}">{{ a }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="form-label mb-0">Дата</label>
+        <input type="date" name="date" class="form-control form-control-sm">
+    </div>
+    <div>
+        <label class="form-label mb-0">Номер документа</label>
+        <input type="text" name="document_number" class="form-control form-control-sm">
+    </div>
+    <div>
+        <label class="form-label mb-0">Организация, принявшая решение</label>
+        <input type="text" name="issuing_organization" class="form-control form-control-sm">
+    </div>
+    <div>
+        <label class="form-label mb-0">Подписал</label>
+        <input type="text" name="signed_by" class="form-control form-control-sm">
+    </div>
+    <div>
+        <label class="form-label mb-0">Ответственный за оформление карточки</label>
+        <input type="text" name="record_keeper" class="form-control form-control-sm">
+    </div>
+    <button type="submit" class="btn btn-sm btn-outline-primary">Добавить запись</button>
+</form>
+
+<h2 class="h5 mb-2">Прохождение теоретической подготовки спортивного судьи, сдача квалификационного зачёта</h2>
+<div class="table-responsive mb-3">
+<table class="table table-sm table-bordered align-middle">
+    <thead>
+        <tr class="text-center">
+            <th>Наименование семинара</th>
+            <th>Дата</th>
+            <th>Проводящая организация</th>
+            <th>Место проведения</th>
+            <th>Квалификация (участник)</th>
+            <th>Оценка (участник)</th>
+            <th>Дата (участник)</th>
+            <th>Квалификация (лектор)</th>
+            <th>Оценка (лектор)</th>
+            <th>Дата (лектор)</th>
+            <th>№ протокола зачёта</th>
+            <th>Оценка зачёта</th>
+            <th>Дата внесения записи</th>
+            <th>Ответственный за оформление карточки</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in judge.training_records %}
+        <tr id="training-view-{{ record.id }}">
+            <td>{{ record.seminar_name }}</td>
+            <td>{{ record.seminar_date }}</td>
+            <td>{{ record.organizer }}</td>
+            <td>{{ record.location }}</td>
+            <td>{{ record.participant_category }}</td>
+            <td>{{ record.participant_score }}</td>
+            <td>{{ record.participant_date }}</td>
+            <td>{{ record.lecturer_category }}</td>
+            <td>{{ record.lecturer_score }}</td>
+            <td>{{ record.lecturer_date }}</td>
+            <td>{{ record.exam_protocol_number }}</td>
+            <td>{{ record.exam_score }}</td>
+            <td>{{ record.record_date }}</td>
+            <td>{{ record.record_keeper }}</td>
+            <td class="text-nowrap">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('training-view-{{ record.id }}').classList.add('d-none'); document.getElementById('training-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                <form method="post" action="{{ url_for('judges.training_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        <tr id="training-edit-{{ record.id }}" class="d-none">
+            <td colspan="15">
+                <form method="post" action="{{ url_for('judges.training_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
+                    <div><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm" style="min-width:220px" value="{{ record.seminar_name or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата</label><input type="text" name="seminar_date" class="form-control form-control-sm" value="{{ record.seminar_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Проводящая организация</label><input type="text" name="organizer" class="form-control form-control-sm" value="{{ record.organizer or '' }}"></div>
+                    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
+                    <div><label class="form-label mb-0">Квалификация (участник)</label><input type="text" name="participant_category" class="form-control form-control-sm" value="{{ record.participant_category or '' }}"></div>
+                    <div><label class="form-label mb-0">Оценка (участник)</label><input type="text" name="participant_score" class="form-control form-control-sm" value="{{ record.participant_score or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата (участник)</label><input type="text" name="participant_date" class="form-control form-control-sm" value="{{ record.participant_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm" value="{{ record.lecturer_category or '' }}"></div>
+                    <div><label class="form-label mb-0">Оценка (лектор)</label><input type="text" name="lecturer_score" class="form-control form-control-sm" value="{{ record.lecturer_score or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="lecturer_date" class="form-control form-control-sm" value="{{ record.lecturer_date or '' }}"></div>
+                    <div><label class="form-label mb-0">№ протокола зачёта</label><input type="text" name="exam_protocol_number" class="form-control form-control-sm" value="{{ record.exam_protocol_number or '' }}"></div>
+                    <div><label class="form-label mb-0">Оценка зачёта</label><input type="text" name="exam_score" class="form-control form-control-sm" value="{{ record.exam_score or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
+                    <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('training-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('training-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="15" class="text-center text-muted">Записей пока нет</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<form method="post" action="{{ url_for('judges.training_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-5">
+    <div><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm" style="min-width:220px"></div>
+    <div><label class="form-label mb-0">Дата</label><input type="text" name="seminar_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Проводящая организация</label><input type="text" name="organizer" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Квалификация (участник)</label><input type="text" name="participant_category" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Оценка (участник)</label><input type="text" name="participant_score" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Дата (участник)</label><input type="text" name="participant_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Оценка (лектор)</label><input type="text" name="lecturer_score" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="lecturer_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">№ протокола зачёта</label><input type="text" name="exam_protocol_number" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Оценка зачёта</label><input type="text" name="exam_score" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>
+    <button type="submit" class="btn btn-sm btn-outline-primary">Добавить запись</button>
+</form>
+
+<h2 class="h5 mb-2">Практика судейства официальных спортивных соревнований</h2>
+<div class="table-responsive mb-3">
+<table class="table table-sm table-bordered align-middle">
+    <thead>
+        <tr class="text-center">
+            <th>Дата проведения</th>
+            <th>Место проведения (адрес)</th>
+            <th>Должность спортивного судьи</th>
+            <th>Наименование соревнования, вид программы</th>
+            <th>Статус официального соревнования</th>
+            <th>Оценка</th>
+            <th>Дата внесения записи</th>
+            <th>Ответственный за оформление карточки</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in judge.competition_records %}
+        <tr id="competition-view-{{ record.id }}">
+            <td>{{ record.event_date }}</td>
+            <td>{{ record.location }}</td>
+            <td>{{ record.judge_position }}</td>
+            <td>{{ record.competition_name }}</td>
+            <td>{{ record.competition_status }}</td>
+            <td>{{ record.score }}</td>
+            <td>{{ record.record_date }}</td>
+            <td>{{ record.record_keeper }}</td>
+            <td class="text-nowrap">
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('competition-view-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                <form method="post" action="{{ url_for('judges.competition_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        <tr id="competition-edit-{{ record.id }}" class="d-none">
+            <td colspan="9">
+                <form method="post" action="{{ url_for('judges.competition_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
+                    <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" value="{{ record.event_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
+                    <div><label class="form-label mb-0">Должность спортивного судьи</label><input type="text" name="judge_position" class="form-control form-control-sm" value="{{ record.judge_position or '' }}"></div>
+                    <div><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm" style="min-width:220px" value="{{ record.competition_name or '' }}"></div>
+                    <div><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm" style="min-width:180px" value="{{ record.competition_status or '' }}"></div>
+                    <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm" value="{{ record.score or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
+                    <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('competition-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted">Записей пока нет</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<form method="post" action="{{ url_for('judges.competition_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+    <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Должность спортивного судьи</label><input type="text" name="judge_position" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm" style="min-width:220px"></div>
+    <div><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm" style="min-width:180px"></div>
+    <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>
+    <button type="submit" class="btn btn-sm btn-outline-primary">Добавить запись</button>
+</form>
+
+<a href="{{ url_for('judges.judges_list') }}" class="btn btn-outline-secondary">Назад к списку</a>
+{% endblock %}
