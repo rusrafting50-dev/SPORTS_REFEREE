@@ -90,15 +90,37 @@ def judges_list():
     )
 
 
+def _distinct_municipalities():
+    rows = (
+        db.session.query(Judge.municipality)
+        .filter(Judge.municipality.isnot(None), Judge.municipality != "")
+        .distinct()
+        .order_by(Judge.municipality)
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
 def _make_category_view(category, heading):
     def view():
+        municipality = request.args.get("municipality", "")
+        specialization = request.args.get("specialization", "")
+
         judges = [
             j for j in Judge.query.order_by(Judge.last_name).all()
             if j.current_category == category
         ]
+        if municipality:
+            judges = [j for j in judges if j.municipality == municipality]
+        if specialization:
+            judges = [j for j in judges if j.specialization == specialization]
+
         return render_template(
             "judges/list.html", judges=judges, heading=heading,
             list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=False, highlight_active=True,
+            show_filters=True, filters={"municipality": municipality, "specialization": specialization},
+            municipality_options=_distinct_municipalities(),
+            specialization_options=references.JUDGE_SPECIALIZATIONS,
         )
     return view
 
