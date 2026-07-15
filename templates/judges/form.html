@@ -3,7 +3,16 @@
 {% block content %}
 <h1 class="h3 mb-4">{{ 'Редактирование судьи' if judge else 'Добавление судьи' }}</h1>
 
-<form method="post" class="row g-3" style="max-width: 900px;">
+<form method="post" enctype="multipart/form-data" class="row g-3" style="max-width: 900px;">
+    <div class="col-md-4">
+        <label class="form-label">Фотография</label>
+        {% if judge and judge.photo_filename %}
+        <div class="mb-2">
+            <img src="{{ url_for('static', filename='uploads/judges/' ~ judge.photo_filename) }}" alt="" style="width:120px; height:150px; object-fit:cover;" class="border rounded">
+        </div>
+        {% endif %}
+        <input type="file" name="photo" class="form-control" accept="image/*">
+    </div>
     <div class="col-md-4">
         <label class="form-label">Фамилия</label>
         <input type="text" name="last_name" class="form-control" value="{{ judge.last_name if judge else '' }}" required>

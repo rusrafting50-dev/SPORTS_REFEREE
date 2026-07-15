@@ -25,21 +25,30 @@
 <div class="alert alert-warning">Судья исключён из активного списка</div>
 {% endif %}
 
-<table class="table table-bordered w-auto mb-4">
-    <tbody>
-        <tr><th>Дата рождения</th><td>{{ judge.birth_date.strftime('%d.%m.%Y') if judge.birth_date }}</td></tr>
-        <tr><th>Субъект Российской Федерации</th><td>{{ judge.region }}</td></tr>
-        <tr><th>Муниципальное образование</th><td>{{ judge.municipality }}</td></tr>
-        <tr><th>Спортивное звание</th><td>{{ judge.rank }}</td></tr>
-        <tr><th>Образование</th><td>{{ judge.education }}</td></tr>
-        <tr><th>Место работы (учёбы), должность</th><td>{{ judge.workplace }}</td></tr>
-        <tr><th>Контактные телефоны, адрес электронной почты</th><td>{{ judge.contacts }}</td></tr>
-        <tr><th>Дата начала судейской деятельности</th><td>{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td></tr>
-        <tr><th>Текущая квалификационная категория</th><td>{{ judge.current_category }}</td></tr>
-    </tbody>
-</table>
+<div class="d-flex flex-nowrap align-items-start gap-4 mb-4">
+    <div class="flex-shrink-0">
+        {% if judge.photo_filename %}
+        <img src="{{ url_for('static', filename='uploads/judges/' ~ judge.photo_filename) }}" alt="Фотография {{ judge.full_name }}" style="width:150px; height:190px; object-fit:cover;" class="border rounded">
+        {% else %}
+        <div class="border rounded d-flex align-items-center justify-content-center text-muted bg-light text-center" style="width:150px; height:190px;">Нет фотографии</div>
+        {% endif %}
+    </div>
+    <table class="table table-bordered w-auto mb-0">
+        <tbody>
+            <tr><th>Дата рождения</th><td>{{ judge.birth_date.strftime('%d.%m.%Y') if judge.birth_date }}</td></tr>
+            <tr><th>Субъект Российской Федерации</th><td>{{ judge.region }}</td></tr>
+            <tr><th>Муниципальное образование</th><td>{{ judge.municipality }}</td></tr>
+            <tr><th>Спортивное звание</th><td>{{ judge.rank }}</td></tr>
+            <tr><th>Образование</th><td>{{ judge.education }}</td></tr>
+            <tr><th>Место работы (учёбы), должность</th><td>{{ judge.workplace }}</td></tr>
+            <tr><th>Контактные телефоны, адрес электронной почты</th><td>{{ judge.contacts }}</td></tr>
+            <tr><th>Дата начала судейской деятельности</th><td>{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td></tr>
+            <tr><th>Текущая квалификационная категория</th><td>{{ judge.current_category }}</td></tr>
+        </tbody>
+    </table>
+</div>
 
-<h2 class="h5 mb-2">История квалификационных категорий</h2>
+<h2 class="h5 mb-2">Квалификационная категория спортивного судьи</h2>
 <div class="table-responsive mb-3">
 <table class="table table-sm table-bordered align-middle">
     <thead>

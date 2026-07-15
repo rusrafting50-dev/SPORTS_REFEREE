@@ -40,6 +40,8 @@ class Judge(db.Model):
 
     judging_start_date = db.Column(db.Date)     # Дата начала судейской деятельности спортивного судьи
 
+    photo_filename = db.Column(db.String(300))  # имя файла фотографии в static/uploads/judges/
+
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
