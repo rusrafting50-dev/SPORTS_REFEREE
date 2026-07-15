@@ -26,11 +26,20 @@
 {% endif %}
 
 <div class="d-flex flex-nowrap align-items-start gap-4 mb-4">
-    <div class="flex-shrink-0">
+    <div class="flex-shrink-0" style="width:150px;">
         {% if judge.photo_filename %}
         <img src="{{ url_for('static', filename='uploads/judges/' ~ judge.photo_filename) }}" alt="Фотография {{ judge.full_name }}" style="width:150px; height:190px; object-fit:cover;" class="border rounded">
         {% else %}
         <div class="border rounded d-flex align-items-center justify-content-center text-muted bg-light text-center" style="width:150px; height:190px;">Нет фотографии</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('judges.judges_photo_upload', judge_id=judge.id) }}" enctype="multipart/form-data" class="mt-2">
+            <input type="file" name="photo" accept="image/*" required class="form-control form-control-sm mb-1">
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Добавить</button>
+        </form>
+        {% if judge.photo_filename %}
+        <form method="post" action="{{ url_for('judges.judges_photo_delete', judge_id=judge.id) }}" class="mt-1" onsubmit="return confirm('Удалить фотографию?');">
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
+        </form>
         {% endif %}
     </div>
     <table class="table table-bordered w-auto mb-0">

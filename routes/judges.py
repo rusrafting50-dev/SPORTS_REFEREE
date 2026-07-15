@@ -66,17 +66,18 @@ def _delete_photo_file(filename):
 
 def _save_photo(judge, file_storage):
     if not file_storage or not file_storage.filename:
-        return
+        return False
     ext = file_storage.filename.rsplit(".", 1)[-1].lower() if "." in file_storage.filename else ""
     if ext not in ALLOWED_PHOTO_EXTENSIONS:
         flash("Недопустимый формат фотографии (допустимо: jpg, jpeg, png, gif, webp)", "error")
-        return
+        return False
     old_filename = judge.photo_filename
     filename = f"judge_{judge.id}.{ext}"
     file_storage.save(os.path.join(_photo_upload_dir(), filename))
     judge.photo_filename = filename
     if old_filename and old_filename != filename:
         _delete_photo_file(old_filename)
+    return True
 
 
 @bp.route("/")
@@ -127,6 +128,26 @@ def judges_new():
 def judges_detail(judge_id):
     judge = Judge.query.get_or_404(judge_id)
     return render_template("judges/detail.html", judge=judge, references=references)
+
+
+@bp.route("/<int:judge_id>/photo", methods=["POST"])
+def judges_photo_upload(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    if _save_photo(judge, request.files.get("photo")):
+        db.session.commit()
+        flash("Фотография обновлена", "success")
+    return redirect(url_for("judges.judges_detail", judge_id=judge.id))
+
+
+@bp.route("/<int:judge_id>/photo/delete", methods=["POST"])
+def judges_photo_delete(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    if judge.photo_filename:
+        _delete_photo_file(judge.photo_filename)
+        judge.photo_filename = None
+        db.session.commit()
+        flash("Фотография удалена", "success")
+    return redirect(url_for("judges.judges_detail", judge_id=judge.id))
 
 
 @bp.route("/<int:judge_id>/edit", methods=["GET", "POST"])
