@@ -194,24 +194,45 @@
 
 <h2 class="h5 mb-2">Прохождение теоретической подготовки спортивного судьи, сдача квалификационного зачёта</h2>
 <div class="table-responsive mb-3">
-<table class="table table-sm table-bordered align-middle">
+<table class="table table-sm table-bordered align-middle text-center" style="table-layout: fixed; overflow-wrap: break-word; width: 1173px;">
+    <colgroup>
+        <col style="width: 153px;">
+        <col style="width: 57px;">
+        <col style="width: 95px;">
+        <col style="width: 127px;">
+        <col style="width: 104px;">
+        <col style="width: 57px;">
+        <col style="width: 47px;">
+        <col style="width: 104px;">
+        <col style="width: 57px;">
+        <col style="width: 45px;">
+        <col style="width: 76px;">
+        <col style="width: 57px;">
+        <col style="width: 104px;">
+        <col style="width: 90px;">
+    </colgroup>
     <thead>
-        <tr class="text-center">
-            <th>Наименование семинара</th>
+        <tr>
+            <th colspan="4">Семинар по подготовке спортивных судей</th>
+            <th colspan="2">Теоретическая подготовка в качестве участника</th>
+            <th colspan="3">Участие в теоретической подготовке в качестве Лектора</th>
+            <th colspan="3">Сдача квалификационного зачёта</th>
+            <th rowspan="2">Дата внесения записи, подпись, фамилия и инициалы лица, ответственного за оформление карточки учёта</th>
+            <th rowspan="2">Действия</th>
+        </tr>
+        <tr>
+            <th>Наименование</th>
             <th>Дата</th>
             <th>Проводящая организация</th>
             <th>Место проведения</th>
-            <th>Квалификация (участник)</th>
-            <th>Оценка (участник)</th>
-            <th>Дата (участник)</th>
-            <th>Квалификация (лектор)</th>
-            <th>Оценка (лектор)</th>
-            <th>Дата (лектор)</th>
-            <th>№ протокола зачёта</th>
-            <th>Оценка зачёта</th>
-            <th>Дата внесения записи</th>
-            <th>Ответственный за оформление карточки</th>
-            <th>Действия</th>
+            <th>Спортивная квалификация</th>
+            <th>Оценка</th>
+            <th>Дата</th>
+            <th>Спортивная квалификация</th>
+            <th>Оценка</th>
+            <th>Дата</th>
+            <th>№ протокола</th>
+            <th>Оценка</th>
         </tr>
     </thead>
     <tbody>
@@ -229,17 +250,18 @@
             <td>{{ record.lecturer_date }}</td>
             <td>{{ record.exam_protocol_number }}</td>
             <td>{{ record.exam_score }}</td>
-            <td>{{ record.record_date }}</td>
-            <td>{{ record.record_keeper }}</td>
-            <td class="text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('training-view-{{ record.id }}').classList.add('d-none'); document.getElementById('training-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
-                <form method="post" action="{{ url_for('judges.training_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                </form>
+            <td>{{ record.record_date }}{% if record.record_date and record.record_keeper %}<br>{% endif %}{{ record.record_keeper }}</td>
+            <td>
+                <div class="d-flex flex-column gap-1" style="min-width: 0;">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="document.getElementById('training-view-{{ record.id }}').classList.add('d-none'); document.getElementById('training-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <form method="post" action="{{ url_for('judges.training_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
+                    </form>
+                </div>
             </td>
         </tr>
         <tr id="training-edit-{{ record.id }}" class="d-none">
-            <td colspan="15">
+            <td colspan="14">
                 <form method="post" action="{{ url_for('judges.training_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
                     <div><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm" style="min-width:220px" value="{{ record.seminar_name or '' }}"></div>
                     <div><label class="form-label mb-0">Дата</label><input type="text" name="seminar_date" class="form-control form-control-sm" value="{{ record.seminar_date or '' }}"></div>
@@ -261,7 +283,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="15" class="text-center text-muted">Записей пока нет</td></tr>
+        <tr><td colspan="14" class="text-center text-muted">Записей пока нет</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -286,17 +308,24 @@
 
 <h2 class="h5 mb-2">Практика судейства официальных спортивных соревнований</h2>
 <div class="table-responsive mb-3">
-<table class="table table-sm table-bordered align-middle">
+<table class="table table-sm table-bordered align-middle text-center" style="table-layout: fixed; overflow-wrap: break-word; width: 1155px;">
+    <colgroup>
+        <col style="width: 112px;">
+        <col style="width: 137px;">
+        <col style="width: 148px;">
+        <col style="width: 340px;">
+        <col style="width: 83px;">
+        <col style="width: 245px;">
+        <col style="width: 90px;">
+    </colgroup>
     <thead>
-        <tr class="text-center">
+        <tr>
             <th>Дата проведения</th>
             <th>Место проведения (адрес)</th>
-            <th>Должность спортивного судьи</th>
-            <th>Наименование соревнования, вид программы</th>
-            <th>Статус официального соревнования</th>
+            <th>Наименование должности спортивного судьи</th>
+            <th>Наименование и статус официальных спортивных соревнований, вид программы</th>
             <th>Оценка</th>
-            <th>Дата внесения записи</th>
-            <th>Ответственный за оформление карточки</th>
+            <th>Дата внесения записи, подпись, фамилия и инициалы лица, ответственного за оформление карточки учёта</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -306,20 +335,20 @@
             <td>{{ record.event_date }}</td>
             <td>{{ record.location }}</td>
             <td>{{ record.judge_position }}</td>
-            <td>{{ record.competition_name }}</td>
-            <td>{{ record.competition_status }}</td>
+            <td>{{ record.competition_name }}{% if record.competition_name and record.competition_status %}<br>{% endif %}{{ record.competition_status }}</td>
             <td>{{ record.score }}</td>
-            <td>{{ record.record_date }}</td>
-            <td>{{ record.record_keeper }}</td>
-            <td class="text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('competition-view-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
-                <form method="post" action="{{ url_for('judges.competition_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                </form>
+            <td>{{ record.record_date }}{% if record.record_date and record.record_keeper %}<br>{% endif %}{{ record.record_keeper }}</td>
+            <td>
+                <div class="d-flex flex-column gap-1" style="min-width: 0;">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="document.getElementById('competition-view-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <form method="post" action="{{ url_for('judges.competition_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
+                    </form>
+                </div>
             </td>
         </tr>
         <tr id="competition-edit-{{ record.id }}" class="d-none">
-            <td colspan="9">
+            <td colspan="7">
                 <form method="post" action="{{ url_for('judges.competition_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
                     <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" value="{{ record.event_date or '' }}"></div>
                     <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
@@ -335,7 +364,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="9" class="text-center text-muted">Записей пока нет</td></tr>
+        <tr><td colspan="7" class="text-center text-muted">Записей пока нет</td></tr>
         {% endfor %}
     </tbody>
 </table>
