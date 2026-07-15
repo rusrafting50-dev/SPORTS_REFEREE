@@ -155,8 +155,8 @@
     <div>
         <label class="form-label mb-0">Категория</label>
         <select name="category" class="form-select form-select-sm">
-            {% for c in references.JUDGE_CATEGORIES %}
-            <option value="{{ c }}">{{ c }}</option>
+            {% for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items() %}
+            <option value="{{ full }}">{{ abbr }}</option>
             {% endfor %}
         </select>
     </div>
