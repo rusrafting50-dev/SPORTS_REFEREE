@@ -61,8 +61,8 @@
 <div class="table-responsive mb-3">
 <table class="table table-sm table-bordered align-middle text-center" style="table-layout: fixed; overflow-wrap: break-word;">
     <colgroup>
-        <col style="width: 160px;">
-        <col style="width: 160px;">
+        <col style="width: 150px;">
+        <col style="width: 150px;">
         <col style="width: 85px;">
         <col style="width: 100px;">
         <col>
@@ -72,8 +72,8 @@
     </colgroup>
     <thead>
         <tr class="align-middle">
-            <th>Категория</th>
-            <th>Присвоена / подтверждена / лишена / восстановлена</th>
+            <th style="padding-left: 2px; padding-right: 2px;">Категория</th>
+            <th style="padding-left: 2px; padding-right: 2px;">Присвоена / подтверждена / лишена / восстановлена</th>
             <th>Дата</th>
             <th>Номер документа</th>
             <th>Организация, принявшая решение</th>
@@ -85,8 +85,8 @@
     <tbody>
         {% for record in judge.category_records %}
         <tr id="category-view-{{ record.id }}">
-            <td>{{ record.category }}</td>
-            <td>{{ record.action }}</td>
+            <td style="padding-left: 2px; padding-right: 2px;">{{ record.category }}</td>
+            <td style="padding-left: 2px; padding-right: 2px;">{{ record.action }}</td>
             <td>{{ record.date.strftime('%d.%m.%Y') if record.date }}</td>
             <td>{{ record.document_number }}</td>
             <td>{{ record.issuing_organization }}</td>
