@@ -8,11 +8,11 @@
         <a href="{{ url_for('judges.judges_edit', judge_id=judge.id) }}" class="btn btn-outline-primary">Редактировать</a>
         {% if judge.is_active %}
         <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
-            <button type="submit" class="btn btn-outline-danger">Исключить из списка</button>
+            <button type="submit" class="btn btn-outline-danger">Не аттестован</button>
         </form>
         {% else %}
         <form method="post" action="{{ url_for('judges.judges_activate', judge_id=judge.id) }}" class="d-inline">
-            <button type="submit" class="btn btn-outline-success">Вернуть в список</button>
+            <button type="submit" class="btn btn-outline-success">Аттестован</button>
         </form>
         {% endif %}
         <form method="post" action="{{ url_for('judges.judges_delete', judge_id=judge.id) }}" class="d-inline" onsubmit="return confirm('Удалить без возможности восстановления?');">
