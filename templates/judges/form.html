@@ -53,6 +53,15 @@
         <label class="form-label">Контактные телефоны, адрес электронной почты</label>
         <input type="text" name="contacts" class="form-control" value="{{ judge.contacts if judge else '' }}">
     </div>
+    <div class="col-md-6">
+        <label class="form-label">Специализация</label>
+        <select name="specialization" class="form-select">
+            <option value=""></option>
+            {% for s in references.JUDGE_SPECIALIZATIONS %}
+            <option value="{{ s }}" {% if judge and judge.specialization == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <div class="col-md-4">
         <label class="form-label">Дата начала судейской деятельности</label>
         <input type="date" name="judging_start_date" class="form-control" value="{{ judge.judging_start_date.isoformat() if judge and judge.judging_start_date else '' }}">

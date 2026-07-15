@@ -49,6 +49,7 @@ def _fill_judge_from_form(judge, form):
     judge.education = form.get("education", "").strip() or None
     judge.workplace = form.get("workplace", "").strip() or None
     judge.contacts = form.get("contacts", "").strip() or None
+    judge.specialization = form.get("specialization", "").strip() or None
     judge.judging_start_date = _parse_date(form.get("judging_start_date"))
 
 

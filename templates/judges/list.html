@@ -26,6 +26,7 @@
             <th>Субъект РФ</th>
             <th>Муниципальное образование</th>
             <th>Квалификационная категория</th>
+            <th>Специализация</th>
             <th>Дата начала судейской деятельности</th>
         </tr>
     </thead>
@@ -37,12 +38,13 @@
             <td class="text-center">{{ judge.birth_date.strftime('%d.%m.%Y') if judge.birth_date }}</td>
             <td class="text-center">{{ judge.region }}</td>
             <td class="text-center">{{ judge.municipality }}</td>
-            <td class="text-center">{{ judge.current_category }}</td>
+            <td class="text-center">{{ judge.current_category|category_abbr }}</td>
+            <td class="text-center">{{ judge.specialization }}</td>
             <td class="text-center">{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td>
         </tr>
         {% else %}
         <tr>
-            <td colspan="7" class="text-center text-muted">Список пуст</td>
+            <td colspan="8" class="text-center text-muted">Список пуст</td>
         </tr>
         {% endfor %}
     </tbody>

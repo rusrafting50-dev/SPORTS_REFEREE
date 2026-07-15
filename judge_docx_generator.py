@@ -8,15 +8,12 @@ import docx
 from docx.oxml.ns import qn
 from docx.table import _Cell
 
+import references
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATE_PATH = os.path.join(BASE_DIR, "data", "Учетная карточка судьи СС1К Серганова СА.docx")
 
-CATEGORY_ABBREVIATIONS = {
-    "Спортивный судья всероссийской категории": "ССВК",
-    "Спортивный судья первой категории": "СС1К",
-    "Спортивный судья второй категории": "СС2К",
-    "Спортивный судья третьей категории": "СС3К",
-}
+CATEGORY_ABBREVIATIONS = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
 
 def _tcs(tr):
