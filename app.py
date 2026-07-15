@@ -5,10 +5,13 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
 from sqlalchemy import inspect, text
 
+import references
 from models import Settings, db
 from routes.judges import bp as judges_bp
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+_CATEGORY_TO_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
 
 def break_after_comma(value):
@@ -16,6 +19,11 @@ def break_after_comma(value):
     if not value:
         return value
     return Markup(str(escape(value)).replace(",", ",<br>"))
+
+
+def category_abbr(value):
+    """Полное написание квалификационной категории судьи -> сокращение (ССВК/СС1К/...)."""
+    return _CATEGORY_TO_ABBR.get(value, value)
 
 
 def _sync_missing_columns():
@@ -42,6 +50,7 @@ def create_app():
 
     app.jinja_env.finalize = lambda value: "" if value is None else value
     app.jinja_env.filters["break_after_comma"] = break_after_comma
+    app.jinja_env.filters["category_abbr"] = category_abbr
 
     db.init_app(app)
     app.register_blueprint(judges_bp)
