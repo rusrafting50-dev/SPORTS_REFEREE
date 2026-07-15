@@ -86,7 +86,7 @@
         {% for record in judge.category_records %}
         <tr id="category-view-{{ record.id }}">
             <td style="padding-left: 2px; padding-right: 2px;">{{ record.category }}</td>
-            <td style="padding-left: 2px; padding-right: 2px;">{{ record.action }}</td>
+            <td style="padding-left: 2px; padding-right: 2px;">{{ record.action|capitalize }}</td>
             <td>{{ record.date.strftime('%d.%m.%Y') if record.date }}</td>
             <td>{{ record.document_number }}</td>
             <td>{{ record.issuing_organization }}</td>
@@ -155,8 +155,8 @@
     <div>
         <label class="form-label mb-0">Категория</label>
         <select name="category" class="form-select form-select-sm">
-            {% for c in references.JUDGE_CATEGORIES %}
-            <option value="{{ c }}">{{ c }}</option>
+            {% for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items() %}
+            <option value="{{ full }}">{{ abbr }}</option>
             {% endfor %}
         </select>
     </div>
@@ -164,7 +164,7 @@
         <label class="form-label mb-0">Действие</label>
         <select name="action" class="form-select form-select-sm">
             {% for a in references.CATEGORY_ACTIONS %}
-            <option value="{{ a }}">{{ a }}</option>
+            <option value="{{ a }}">{{ a|capitalize }}</option>
             {% endfor %}
         </select>
     </div>
