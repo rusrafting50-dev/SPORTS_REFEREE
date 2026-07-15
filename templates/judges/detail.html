@@ -242,7 +242,7 @@
             <td>{{ record.seminar_name }}</td>
             <td>{{ record.seminar_date }}</td>
             <td>{{ record.organizer }}</td>
-            <td>{{ record.location }}</td>
+            <td>{{ record.location|break_after_comma }}</td>
             <td>{{ record.participant_category }}</td>
             <td>{{ record.participant_score }}</td>
             <td>{{ record.lecturer_category }}</td>
@@ -342,7 +342,7 @@
         {% for record in judge.competition_records %}
         <tr id="competition-view-{{ record.id }}">
             <td>{{ record.event_date }}</td>
-            <td>{{ record.location }}</td>
+            <td>{{ record.location|break_after_comma }}</td>
             <td>{{ record.judge_position }}</td>
             <td>{{ record.competition_name }}</td>
             <td>{{ record.competition_status }}</td>

@@ -2,12 +2,20 @@
 import os
 
 from flask import Flask, flash, redirect, render_template, request, url_for
+from markupsafe import Markup, escape
 from sqlalchemy import inspect, text
 
 from models import Settings, db
 from routes.judges import bp as judges_bp
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+
+def break_after_comma(value):
+    """После каждой запятой в тексте — перенос на новую строку."""
+    if not value:
+        return value
+    return Markup(str(escape(value)).replace(",", ",<br>"))
 
 
 def _sync_missing_columns():
@@ -33,6 +41,7 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     app.jinja_env.finalize = lambda value: "" if value is None else value
+    app.jinja_env.filters["break_after_comma"] = break_after_comma
 
     db.init_app(app)
     app.register_blueprint(judges_bp)
