@@ -290,18 +290,20 @@
 </table>
 </div>
 <form method="post" action="{{ url_for('judges.training_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-5">
-    <div><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm" style="min-width:220px"></div>
+    <div class="flex-grow-1"><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm w-100"></div>
+    <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата</label><input type="text" name="seminar_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Проводящая организация</label><input type="text" name="organizer" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Квалификация (участник)</label><input type="text" name="participant_category" class="form-control form-control-sm"></div>
+    <div class="flex-grow-1"><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm w-100"></div>
+    <div class="w-100"></div>
+    <div><label class="form-label mb-0">Квалификация (участник)</label><input type="text" name="participant_category" class="form-control form-control-sm" style="width: 441px;"></div>
     <div><label class="form-label mb-0">Оценка (участник)</label><input type="text" name="participant_score" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Дата (участник)</label><input type="text" name="participant_date" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm" style="width: 405px;"></div>
     <div><label class="form-label mb-0">Оценка (лектор)</label><input type="text" name="lecturer_score" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="lecturer_date" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">Дата (зачёт)</label><input type="text" name="lecturer_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">№ протокола зачёта</label><input type="text" name="exam_protocol_number" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Оценка зачёта</label><input type="text" name="exam_score" class="form-control form-control-sm"></div>
+    <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>
     <button type="submit" class="btn btn-sm btn-outline-primary">Добавить запись</button>
