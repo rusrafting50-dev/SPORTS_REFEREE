@@ -16,6 +16,30 @@
 </div>
 {% endif %}
 
+{% if show_filters %}
+<form method="get" action="{{ url_for(request.endpoint) }}" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="municipality" class="form-select form-select-sm">
+            <option value="">Муниципальное образование: все</option>
+            {% for m in municipality_options %}
+            <option value="{{ m }}" {% if filters.municipality == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <select name="specialization" class="form-select form-select-sm">
+            <option value="">Специализация: все</option>
+            {% for s in specialization_options %}
+            <option value="{{ s }}" {% if filters.specialization == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Применить фильтры</button>
+    </div>
+</form>
+{% endif %}
+
 <div class="table-responsive">
 <table class="table table-sm table-striped table-bordered align-middle">
     <thead>
