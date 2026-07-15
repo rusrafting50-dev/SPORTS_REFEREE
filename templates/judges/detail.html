@@ -383,12 +383,15 @@
 </table>
 </div>
 <form method="post" action="{{ url_for('judges.competition_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-4">
-    <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Должность спортивного судьи</label><input type="text" name="judge_position" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm" style="min-width:220px"></div>
-    <div><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm" style="min-width:180px"></div>
+    <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" style="width: 148px;"></div>
+    <div class="flex-grow-1"><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm w-100"></div>
+    <div class="w-100"></div>
+    <div><label class="form-label mb-0">Должность спортивного судьи</label><input type="text" name="judge_position" class="form-control form-control-sm" style="width: 522px;"></div>
+    <div class="flex-grow-1"><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm w-100"></div>
+    <div class="w-100"></div>
+    <div class="w-50"><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm w-100"></div>
     <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm"></div>
+    <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>
     <button type="submit" class="btn btn-sm btn-outline-primary">Добавить запись</button>
