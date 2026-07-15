@@ -1,7 +1,8 @@
 # routes/judges.py — карточки спортивных судей, история категорий/подготовки/практики
+import os
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, current_app, flash, redirect, render_template, request, send_file, url_for
 
 import references
 from judge_docx_generator import generate_judge_card, judge_card_filename
@@ -10,6 +11,9 @@ from models import (
 )
 
 bp = Blueprint("judges", __name__, url_prefix="/judges")
+
+PHOTO_UPLOAD_SUBDIR = os.path.join("uploads", "judges")
+ALLOWED_PHOTO_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
 
 # Кнопки на странице «Список спортивных судей» — по квалификационным категориям
 JUDGE_CATEGORY_TYPES = [
@@ -46,6 +50,33 @@ def _fill_judge_from_form(judge, form):
     judge.workplace = form.get("workplace", "").strip() or None
     judge.contacts = form.get("contacts", "").strip() or None
     judge.judging_start_date = _parse_date(form.get("judging_start_date"))
+
+
+def _photo_upload_dir():
+    path = os.path.join(current_app.static_folder, PHOTO_UPLOAD_SUBDIR)
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _delete_photo_file(filename):
+    path = os.path.join(_photo_upload_dir(), filename)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def _save_photo(judge, file_storage):
+    if not file_storage or not file_storage.filename:
+        return
+    ext = file_storage.filename.rsplit(".", 1)[-1].lower() if "." in file_storage.filename else ""
+    if ext not in ALLOWED_PHOTO_EXTENSIONS:
+        flash("Недопустимый формат фотографии (допустимо: jpg, jpeg, png, gif, webp)", "error")
+        return
+    old_filename = judge.photo_filename
+    filename = f"judge_{judge.id}.{ext}"
+    file_storage.save(os.path.join(_photo_upload_dir(), filename))
+    judge.photo_filename = filename
+    if old_filename and old_filename != filename:
+        _delete_photo_file(old_filename)
 
 
 @bp.route("/")
@@ -85,6 +116,8 @@ def judges_new():
         _fill_judge_from_form(judge, request.form)
         db.session.add(judge)
         db.session.commit()
+        _save_photo(judge, request.files.get("photo"))
+        db.session.commit()
         flash("Судья добавлен", "success")
         return redirect(url_for("judges.judges_detail", judge_id=judge.id))
     return render_template("judges/form.html", judge=None, references=references)
@@ -101,6 +134,7 @@ def judges_edit(judge_id):
     judge = Judge.query.get_or_404(judge_id)
     if request.method == "POST":
         _fill_judge_from_form(judge, request.form)
+        _save_photo(judge, request.files.get("photo"))
         db.session.commit()
         flash("Изменения сохранены", "success")
         return redirect(url_for("judges.judges_detail", judge_id=judge.id))
@@ -128,6 +162,8 @@ def judges_activate(judge_id):
 @bp.route("/<int:judge_id>/delete", methods=["POST"])
 def judges_delete(judge_id):
     judge = Judge.query.get_or_404(judge_id)
+    if judge.photo_filename:
+        _delete_photo_file(judge.photo_filename)
     db.session.delete(judge)
     db.session.commit()
     flash("Судья удалён", "success")
