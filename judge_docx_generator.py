@@ -47,6 +47,30 @@ def _set_text(tr, tc_idx, table, value):
         run.add_text(line)
 
 
+def _remove_grid_column(table, col_index):
+    """Удаляет col_index-ю колонку сетки таблицы целиком: одну gridCol и
+    соответствующую ячейку (или -1 к gridSpan объединённой ячейки) в каждой
+    физической строке таблицы."""
+    tbl = table._tbl
+    tblGrid = tbl.find(qn("w:tblGrid"))
+    grid_cols = tblGrid.findall(qn("w:gridCol"))
+    tblGrid.remove(grid_cols[col_index])
+
+    for tr in tbl.findall(qn("w:tr")):
+        pos = 0
+        for tc in tr.findall(qn("w:tc")):
+            tcPr = tc.find(qn("w:tcPr"))
+            gridSpan = tcPr.find(qn("w:gridSpan")) if tcPr is not None else None
+            span = int(gridSpan.get(qn("w:val"))) if gridSpan is not None else 1
+            if pos <= col_index < pos + span:
+                if span > 1:
+                    gridSpan.set(qn("w:val"), str(span - 1))
+                else:
+                    tr.remove(tc)
+                break
+            pos += span
+
+
 def _replace_repeating_rows(table, header_row_count, group_size, records, fill_group):
     """Заменяет строки-образцы таблицы (после header_row_count строк заголовка)
     на group_size-строчные блоки — по одному на каждую запись из records."""
@@ -81,6 +105,10 @@ def _date_parts(value):
 def generate_judge_card(judge, settings):
     document = docx.Document(TEMPLATE_PATH)
     table0, table1, table2 = document.tables[0], document.tables[1], document.tables[2]
+
+    # Убираем столбец «Дата» (участника), стоящий под группой «Участие в
+    # теоретической подготовке в качестве Лектора»
+    _remove_grid_column(table1, 6)
 
     # --- Шапка: вид спорта, организация ---
     _set_text(table0.rows[0]._tr, 2, table0, settings.sport_name if settings else "")
@@ -126,6 +154,8 @@ def generate_judge_card(judge, settings):
     _replace_repeating_rows(table0, 14, 1, judge.category_records, fill_category_group)
 
     # --- Теоретическая подготовка, сдача квалификационного зачёта (table1, 3 строки на запись) ---
+    # Столбец «Дата (участник)» удалён из таблицы (_remove_grid_column выше),
+    # поэтому индексы столбцов с лектора и дальше сдвинуты на 1 влево.
     def fill_training_group(group_trs, record):
         tr0, tr2 = group_trs[0], group_trs[2]
         _set_text(tr0, 0, table1, record.seminar_name)
@@ -134,14 +164,13 @@ def generate_judge_card(judge, settings):
         _set_text(tr0, 3, table1, record.location)
         _set_text(tr0, 4, table1, record.participant_category)
         _set_text(tr0, 5, table1, record.participant_score)
-        _set_text(tr0, 6, table1, record.participant_date)
-        _set_text(tr0, 7, table1, record.lecturer_category)
-        _set_text(tr0, 8, table1, record.lecturer_score)
-        _set_text(tr0, 9, table1, record.lecturer_date)
-        _set_text(tr0, 10, table1, record.exam_protocol_number)
-        _set_text(tr0, 11, table1, record.exam_score)
-        _set_text(tr0, 12, table1, record.record_date)
-        _set_text(tr2, 12, table1, record.record_keeper)
+        _set_text(tr0, 6, table1, record.lecturer_category)
+        _set_text(tr0, 7, table1, record.lecturer_score)
+        _set_text(tr0, 8, table1, record.lecturer_date)
+        _set_text(tr0, 9, table1, record.exam_protocol_number)
+        _set_text(tr0, 10, table1, record.exam_score)
+        _set_text(tr0, 11, table1, record.record_date)
+        _set_text(tr2, 11, table1, record.record_keeper)
 
     _replace_repeating_rows(table1, 2, 3, judge.training_records, fill_training_group)
 
