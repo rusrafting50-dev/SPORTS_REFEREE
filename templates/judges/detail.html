@@ -76,7 +76,7 @@
             <th style="padding-left: 2px; padding-right: 2px;">Присвоена / подтверждена / лишена / восстановлена</th>
             <th>Дата</th>
             <th>Номер документа</th>
-            <th>Организация, принявшая решение</th>
+            <th>Организация, принявшая решение о присвоении/подтверждении/лишении/восстановлении квалификационной категории спортивного судьи</th>
             <th>Подписал</th>
             <th>Ответственный за оформление карточки</th>
             <th>Действия</th>
@@ -176,13 +176,14 @@
         <label class="form-label mb-0">Номер документа</label>
         <input type="text" name="document_number" class="form-control form-control-sm">
     </div>
-    <div>
-        <label class="form-label mb-0">Организация, принявшая решение</label>
-        <input type="text" name="issuing_organization" class="form-control form-control-sm">
+    <div class="flex-grow-1">
+        <label class="form-label mb-0">Организация, принявшая решение о присвоении/подтверждении/лишении/восстановлении</label>
+        <input type="text" name="issuing_organization" class="form-control form-control-sm w-100">
     </div>
+    <div class="w-100"></div>
     <div>
         <label class="form-label mb-0">Подписал</label>
-        <input type="text" name="signed_by" class="form-control form-control-sm">
+        <input type="text" name="signed_by" class="form-control form-control-sm" style="width: 240px;">
     </div>
     <div>
         <label class="form-label mb-0">Ответственный за оформление карточки</label>
