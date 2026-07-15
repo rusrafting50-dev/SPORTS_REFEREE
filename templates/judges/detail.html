@@ -59,7 +59,17 @@
 
 <h2 class="h5 mb-2">Квалификационная категория спортивного судьи</h2>
 <div class="table-responsive mb-3">
-<table class="table table-sm table-bordered align-middle text-center">
+<table class="table table-sm table-bordered align-middle text-center" style="table-layout: fixed; overflow-wrap: break-word;">
+    <colgroup>
+        <col style="width: 250px;">
+        <col style="width: 250px;">
+        <col style="width: 74px;">
+        <col style="width: 85px;">
+        <col>
+        <col style="width: 115px;">
+        <col style="width: 115px;">
+        <col style="width: 45px;">
+    </colgroup>
     <thead>
         <tr>
             <th>Категория</th>
@@ -69,7 +79,7 @@
             <th>Организация, принявшая решение</th>
             <th>Подписал</th>
             <th>Ответственный за оформление карточки</th>
-            <th>Действия</th>
+            <th style="overflow-wrap: anywhere; word-break: break-all;">Действия</th>
         </tr>
     </thead>
     <tbody>
@@ -82,11 +92,13 @@
             <td>{{ record.issuing_organization }}</td>
             <td>{{ record.signed_by }}</td>
             <td>{{ record.record_keeper }}</td>
-            <td class="text-nowrap">
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('category-view-{{ record.id }}').classList.add('d-none'); document.getElementById('category-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
-                <form method="post" action="{{ url_for('judges.category_record_delete', record_id=record.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту запись?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                </form>
+            <td style="overflow-wrap: break-word;">
+                <div class="d-flex flex-column gap-1" style="min-width: 0;">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" style="box-sizing: border-box; width: 41px; white-space: normal; word-break: break-all; overflow-wrap: anywhere; padding: 2px;" onclick="document.getElementById('category-view-{{ record.id }}').classList.add('d-none'); document.getElementById('category-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <form method="post" action="{{ url_for('judges.category_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="box-sizing: border-box; width: 41px; white-space: normal; word-break: break-all; overflow-wrap: anywhere; padding: 2px;">Удалить</button>
+                    </form>
+                </div>
             </td>
         </tr>
         <tr id="category-edit-{{ record.id }}" class="d-none">
