@@ -84,9 +84,15 @@ def _save_photo(judge, file_storage):
 
 @bp.route("/")
 def judges_list():
+    municipality = request.args.get("municipality", "")
+    specialization = request.args.get("specialization", "")
     discipline_group = request.args.get("discipline_group", "")
 
     query = Judge.query.filter_by(is_active=True)
+    if municipality:
+        query = query.filter_by(municipality=municipality)
+    if specialization:
+        query = query.filter_by(specialization=specialization)
     if discipline_group:
         query = query.filter_by(discipline_group=discipline_group)
     judges = query.order_by(Judge.last_name).all()
@@ -94,7 +100,13 @@ def judges_list():
     return render_template(
         "judges/list.html", judges=judges, heading="Список спортивных судей",
         list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=True, highlight_active=False,
-        filters={"discipline_group": discipline_group},
+        show_filters=True,
+        filters={
+            "municipality": municipality, "specialization": specialization,
+            "discipline_group": discipline_group,
+        },
+        municipality_options=_distinct_municipalities(),
+        specialization_options=references.JUDGE_SPECIALIZATIONS,
         discipline_group_options=references.JUDGE_DISCIPLINE_GROUPS,
     )
 
@@ -129,7 +141,7 @@ def _make_category_view(category, heading):
 
         return render_template(
             "judges/list.html", judges=judges, heading=heading,
-            list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=False, highlight_active=True,
+            show_add_button=False, highlight_active=True,
             show_filters=True,
             filters={
                 "municipality": municipality, "specialization": specialization,
