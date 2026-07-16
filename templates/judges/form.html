@@ -62,6 +62,15 @@
             {% endfor %}
         </select>
     </div>
+    <div class="col-md-6">
+        <label class="form-label">Группа спортивных дисциплин</label>
+        <select name="discipline_group" class="form-select">
+            <option value=""></option>
+            {% for d in references.JUDGE_DISCIPLINE_GROUPS %}
+            <option value="{{ d }}" {% if judge and judge.discipline_group == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <div class="col-md-4">
         <label class="form-label">Дата начала судейской деятельности</label>
         <input type="date" name="judging_start_date" class="form-control" value="{{ judge.judging_start_date.isoformat() if judge and judge.judging_start_date else '' }}">

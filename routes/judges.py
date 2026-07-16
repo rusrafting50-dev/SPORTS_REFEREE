@@ -50,6 +50,7 @@ def _fill_judge_from_form(judge, form):
     judge.workplace = form.get("workplace", "").strip() or None
     judge.contacts = form.get("contacts", "").strip() or None
     judge.specialization = form.get("specialization", "").strip() or None
+    judge.discipline_group = form.get("discipline_group", "").strip() or None
     judge.judging_start_date = _parse_date(form.get("judging_start_date"))
 
 
@@ -83,10 +84,18 @@ def _save_photo(judge, file_storage):
 
 @bp.route("/")
 def judges_list():
-    judges = Judge.query.filter_by(is_active=True).order_by(Judge.last_name).all()
+    discipline_group = request.args.get("discipline_group", "")
+
+    query = Judge.query.filter_by(is_active=True)
+    if discipline_group:
+        query = query.filter_by(discipline_group=discipline_group)
+    judges = query.order_by(Judge.last_name).all()
+
     return render_template(
         "judges/list.html", judges=judges, heading="Список спортивных судей",
         list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=True, highlight_active=False,
+        filters={"discipline_group": discipline_group},
+        discipline_group_options=references.JUDGE_DISCIPLINE_GROUPS,
     )
 
 
@@ -105,6 +114,7 @@ def _make_category_view(category, heading):
     def view():
         municipality = request.args.get("municipality", "")
         specialization = request.args.get("specialization", "")
+        discipline_group = request.args.get("discipline_group", "")
 
         judges = [
             j for j in Judge.query.order_by(Judge.last_name).all()
@@ -114,13 +124,20 @@ def _make_category_view(category, heading):
             judges = [j for j in judges if j.municipality == municipality]
         if specialization:
             judges = [j for j in judges if j.specialization == specialization]
+        if discipline_group:
+            judges = [j for j in judges if j.discipline_group == discipline_group]
 
         return render_template(
             "judges/list.html", judges=judges, heading=heading,
             list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=False, highlight_active=True,
-            show_filters=True, filters={"municipality": municipality, "specialization": specialization},
+            show_filters=True,
+            filters={
+                "municipality": municipality, "specialization": specialization,
+                "discipline_group": discipline_group,
+            },
             municipality_options=_distinct_municipalities(),
             specialization_options=references.JUDGE_SPECIALIZATIONS,
+            discipline_group_options=references.JUDGE_DISCIPLINE_GROUPS,
         )
     return view
 

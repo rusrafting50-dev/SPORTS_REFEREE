@@ -38,6 +38,7 @@ class Judge(db.Model):
     workplace = db.Column(db.String(300))       # Место работы (учёбы), должность
     contacts = db.Column(db.String(300))        # Контактные телефоны, адрес электронной почты
     specialization = db.Column(db.String(300))  # Специализация
+    discipline_group = db.Column(db.String(300))  # Группа спортивных дисциплин
 
     judging_start_date = db.Column(db.Date)     # Дата начала судейской деятельности спортивного судьи
 
