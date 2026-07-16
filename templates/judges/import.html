@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Импорт судейских карточек — Спортивные судьи{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Импорт судейских карточек</h1>
+
+<p class="text-muted" style="max-width: 700px;">
+    Загрузите один или несколько файлов «Карточка учёта судейской деятельности спортивного судьи»
+    в формате .docx, оформленных по установленному образцу. Для каждого файла будет создана
+    новая карточка судьи: личные данные, история квалификационных категорий, прохождение
+    теоретической подготовки и практика судейства соревнований будут заполнены автоматически.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="row g-3" style="max-width: 600px;">
+    <div class="col-12">
+        <label class="form-label">Файлы .docx</label>
+        <input type="file" name="files" class="form-control" accept=".docx" multiple required>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Импортировать</button>
+        <a href="{{ url_for('judges.judges_list') }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}

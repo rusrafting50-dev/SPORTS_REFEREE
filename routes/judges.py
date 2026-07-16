@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 
 import references
 from judge_docx_generator import generate_judge_card, judge_card_filename
+from judge_docx_importer import parse_judge_card
 from models import (
     Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, Settings, db,
 )
@@ -174,6 +175,41 @@ def judges_new():
         flash("Судья добавлен", "success")
         return redirect(url_for("judges.judges_detail", judge_id=judge.id))
     return render_template("judges/form.html", judge=None, references=references)
+
+
+@bp.route("/import", methods=["GET", "POST"])
+def judges_import():
+    if request.method == "POST":
+        files = [f for f in request.files.getlist("files") if f and f.filename]
+        if not files:
+            flash("Выберите хотя бы один файл .docx", "error")
+            return redirect(url_for("judges.judges_import"))
+
+        imported = []
+        errors = []
+        for file_storage in files:
+            try:
+                judge = parse_judge_card(file_storage.stream)
+                if not judge.last_name or not judge.first_name:
+                    raise ValueError("не удалось распознать фамилию и имя судьи")
+                db.session.add(judge)
+                db.session.flush()
+                imported.append(judge)
+            except Exception:
+                errors.append(file_storage.filename)
+
+        db.session.commit()
+
+        if imported:
+            flash(f"Импортировано карточек: {len(imported)} ({', '.join(j.full_name for j in imported)})", "success")
+        if errors:
+            flash(f"Не удалось импортировать: {', '.join(errors)}", "error")
+
+        if len(imported) == 1 and not errors:
+            return redirect(url_for("judges.judges_detail", judge_id=imported[0].id))
+        return redirect(url_for("judges.judges_list"))
+
+    return render_template("judges/import.html")
 
 
 @bp.route("/<int:judge_id>")
