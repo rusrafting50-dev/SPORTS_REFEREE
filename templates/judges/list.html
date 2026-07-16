@@ -16,8 +16,9 @@
 </div>
 {% endif %}
 
-{% if show_filters %}
+{% if show_filters or discipline_group_options %}
 <form method="get" action="{{ url_for(request.endpoint) }}" class="row g-2 mb-3">
+    {% if show_filters %}
     <div class="col-auto">
         <select name="municipality" class="form-select form-select-sm">
             <option value="">Муниципальное образование: все</option>
@@ -34,6 +35,17 @@
             {% endfor %}
         </select>
     </div>
+    {% endif %}
+    {% if discipline_group_options %}
+    <div class="col-auto">
+        <select name="discipline_group" class="form-select form-select-sm">
+            <option value="">Группа спортивных дисциплин: все</option>
+            {% for d in discipline_group_options %}
+            <option value="{{ d }}" {% if filters.discipline_group == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
     <div class="col-auto">
         <button type="submit" class="btn btn-sm btn-outline-secondary">Применить фильтры</button>
     </div>
@@ -51,7 +63,7 @@
             <th>Муниципальное образование</th>
             <th>Квалификационная категория</th>
             <th>Специализация</th>
-            <th>Дата начала судейской деятельности</th>
+            <th>Группа спортивных дисциплин</th>
         </tr>
     </thead>
     <tbody>
@@ -64,7 +76,7 @@
             <td class="text-center">{{ judge.municipality }}</td>
             <td class="text-center">{{ judge.current_category|category_abbr }}</td>
             <td class="text-center">{{ judge.specialization }}</td>
-            <td class="text-center">{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td>
+            <td class="text-center">{{ judge.discipline_group }}</td>
         </tr>
         {% else %}
         <tr>
