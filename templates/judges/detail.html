@@ -53,6 +53,7 @@
             <tr><th>Контактные телефоны, адрес электронной почты</th><td>{{ judge.contacts }}</td></tr>
             <tr><th>Дата начала судейской деятельности</th><td>{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td></tr>
             <tr><th>Текущая квалификационная категория</th><td>{{ judge.current_category }}</td></tr>
+            <tr><th>Группа спортивных дисциплин</th><td>{{ judge.discipline_group|break_after_comma }}</td></tr>
             <tr><th>Специализация</th><td>{{ judge.specialization }}</td></tr>
         </tbody>
     </table>
