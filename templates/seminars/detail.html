@@ -4,31 +4,64 @@
 {% set breadcrumb_current = seminar.name %}
 {% include "seminars/_header.html" %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">{{ seminar.name }}</h1>
-    <div>
-        <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-outline-primary">Изменить</a>
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <h1 class="h3 mb-0 text-uppercase">{{ seminar.name }}</h1>
+    <div class="text-nowrap">
+        <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-primary">Изменить</a>
         <form method="post" action="{{ url_for('seminars.seminars_delete', seminar_id=seminar.id) }}" class="d-inline" onsubmit="return confirm('Удалить этот семинар без возможности восстановления?');">
-            <button type="submit" class="btn btn-danger">Удалить</button>
+            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
         </form>
     </div>
 </div>
 
-<span class="badge {{ seminar.category|seminar_category_badge }} mb-3">{{ seminar.category }}</span>
+<div class="d-flex flex-wrap gap-2 mb-2">
+    {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
+    {% if seminar.organizer %}<span class="badge bg-light text-dark border">{{ seminar.organizer }}</span>{% endif %}
+</div>
 
-<table class="table table-bordered w-auto">
-    <tbody>
-        <tr><th>Дата начала семинара</th><td>{{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</td></tr>
-        <tr><th>Сроки проведения семинара</th><td>{{ seminar.period }}</td></tr>
-        <tr><th>Место проведения семинара</th><td>{{ seminar.location }}</td></tr>
-        <tr><th>Наименование присваиваемой (подтверждаемой) категории</th><td>{{ seminar.category }}</td></tr>
-        <tr><th>Организация, проводящая семинар</th><td>{{ seminar.organizer }}</td></tr>
-        <tr><th>Руководитель семинара — ФИО</th><td>{{ seminar.leader_full_name }}</td></tr>
-        <tr><th>Квалификация спортивного судьи руководителя</th><td>{{ seminar.leader_category }}</td></tr>
-        <tr><th>Субъект Российской Федерации руководителя</th><td>{{ seminar.leader_region }}</td></tr>
-        <tr><th>Телефон руководителя</th><td>{{ seminar.leader_phone }}</td></tr>
-    </tbody>
-</table>
+<p class="text-muted mb-1">
+    {{ seminar.period or (seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date) }}
+    {% if seminar.location %} — {{ seminar.location }}{% endif %}
+</p>
+{% if seminar.leader_full_name %}
+<p class="text-muted mb-4">
+    Руководитель семинара: {{ seminar.leader_full_name }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}{% if seminar.leader_phone %}, тел. {{ seminar.leader_phone }}{% endif %}
+</p>
+{% endif %}
+
+<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+    <span class="badge bg-secondary rounded-circle me-2">1</span>
+    <strong>ПОЛОЖЕНИЕ, ПРЕПОДАВАТЕЛЬСКИЙ СОСТАВ, УЧАСТНИКИ, ПРОТОКОЛ</strong>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-4">
+    {% for label in ["Положение", "Преподавательский состав", "Участники", "Протокол"] %}
+    <div class="border rounded px-3 py-2 d-flex justify-content-between align-items-center gap-3 flex-fill" style="min-width: 200px;">
+        <span>{{ label }}</span>
+        <span class="text-muted">−</span>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+    <span class="badge bg-secondary rounded-circle me-2">2</span>
+    <strong>ПРОГРАММА СЕМИНАРА</strong>
+</div>
+<div class="row g-3 mb-4">
+    {% for label, color in [("Судейство соревнований", "primary"), ("Дистанции", "info"), ("Документооборот соревнований", "warning"), ("Информационное обеспечение", "secondary")] %}
+    <div class="col-md-6">
+        <div class="border border-{{ color }} rounded overflow-hidden h-100">
+            <div class="bg-{{ color }} {{ 'text-dark' if color in ('info', 'warning') else 'text-white' }} px-3 py-2 d-flex justify-content-between align-items-center">
+                <strong>{{ label }}</strong>
+                <span>−</span>
+            </div>
+            <div class="p-2 d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline-{{ color }}">Программа</button>
+                <button type="button" class="btn btn-sm btn-outline-{{ color }}">Презентации</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
 <a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Назад к списку</a>
 {% endblock %}
