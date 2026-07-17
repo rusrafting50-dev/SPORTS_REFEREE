@@ -135,3 +135,28 @@ class JudgeCompetitionRecord(db.Model):
 
     record_date = db.Column(db.String(50))
     record_keeper = db.Column(db.String(150))
+
+
+class Seminar(db.Model):
+    """Семинар по подготовке спортивных судей по рафтингу."""
+    __tablename__ = "seminar"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    name = db.Column(db.String(500))            # Наименование семинара
+
+    start_date = db.Column(db.Date)              # Дата начала семинара
+    period = db.Column(db.String(150))           # Сроки проведения семинара
+    location = db.Column(db.String(300))         # Место проведения семинара
+
+    # Идентификаторы семинара
+    category = db.Column(db.String(100))         # Наименование присваиваемой (подтверждаемой) категории
+    organizer = db.Column(db.String(300))         # Организация, проводящая семинар
+
+    # Руководитель семинара
+    leader_full_name = db.Column(db.String(200))
+    leader_category = db.Column(db.String(100))   # Квалификация спортивного судьи
+    leader_region = db.Column(db.String(150))      # Субъект Российской Федерации
+    leader_phone = db.Column(db.String(100))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

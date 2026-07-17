@@ -1,0 +1,15 @@
+<nav class="navbar navbar-dark bg-secondary mb-3 rounded">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0">Подготовка спортивных судей</span>
+    </div>
+</nav>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        {% if breadcrumb_current %}
+        <li class="breadcrumb-item"><a href="{{ url_for('seminars.seminars_list') }}">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_current }}</li>
+        {% else %}
+        <li class="breadcrumb-item active" aria-current="page">Главная</li>
+        {% endif %}
+    </ol>
+</nav>
