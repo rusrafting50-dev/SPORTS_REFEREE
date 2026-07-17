@@ -48,3 +48,29 @@ def seminars_new():
         flash("Семинар добавлен", "success")
         return redirect(url_for("seminars.seminars_list"))
     return render_template("seminars/form.html", seminar=None, references=references)
+
+
+@bp.route("/<int:seminar_id>")
+def seminars_detail(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    return render_template("seminars/detail.html", seminar=seminar)
+
+
+@bp.route("/<int:seminar_id>/edit", methods=["GET", "POST"])
+def seminars_edit(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        _fill_seminar_from_form(seminar, request.form)
+        db.session.commit()
+        flash("Семинар обновлён", "success")
+        return redirect(url_for("seminars.seminars_detail", seminar_id=seminar.id))
+    return render_template("seminars/form.html", seminar=seminar, references=references)
+
+
+@bp.route("/<int:seminar_id>/delete", methods=["POST"])
+def seminars_delete(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    db.session.delete(seminar)
+    db.session.commit()
+    flash("Семинар удалён", "success")
+    return redirect(url_for("seminars.seminars_list"))
