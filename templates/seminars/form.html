@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Добавление семинара — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_current = "Добавить семинар" %}
+{% include "seminars/_header.html" %}
+
+<h1 class="h3 mb-4">Добавление семинара</h1>
+
+<form method="post" class="row g-3" style="max-width: 900px;">
+    <div class="col-12">
+        <h2 class="h6">Наименование семинара</h2>
+        <input type="text" name="name" class="form-control" value="{{ seminar.name if seminar else '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Сроки и место проведения</h2>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата начала семинара</label>
+        <input type="date" name="start_date" class="form-control" value="{{ seminar.start_date.isoformat() if seminar and seminar.start_date else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Сроки проведения семинара</label>
+        <input type="text" name="period" class="form-control" value="{{ seminar.period if seminar else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Место проведения семинара</label>
+        <input type="text" name="location" class="form-control" value="{{ seminar.location if seminar else '' }}">
+    </div>
+
+    <div class="col-12">
+        <label class="form-label">Наименование присваиваемой (подтверждаемой) квалификационной категории спортивного судьи</label>
+        <select name="category" class="form-select">
+            <option value=""></option>
+            {% for c in references.SEMINAR_CATEGORIES %}
+            <option value="{{ c }}" {% if seminar and seminar.category == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Дата</label>
+        <input type="date" name="exam_date" class="form-control" value="{{ seminar.exam_date.isoformat() if seminar and seminar.exam_date else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Место проведения</label>
+        <input type="text" name="exam_location" class="form-control" value="{{ seminar.exam_location if seminar else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Организация, проводящая семинар</label>
+        <input type="text" name="organizer" class="form-control" value="{{ seminar.organizer if seminar else '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Руководитель семинара</h2>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">ФИО</label>
+        <input type="text" name="leader_full_name" class="form-control" value="{{ seminar.leader_full_name if seminar else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Квалификация спортивного судьи</label>
+        <input type="text" name="leader_category" class="form-control" value="{{ seminar.leader_category if seminar else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="leader_region" class="form-control" value="{{ seminar.leader_region if seminar else '' }}">
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}

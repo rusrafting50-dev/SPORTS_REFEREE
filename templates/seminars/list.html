@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Семинары по подготовке спортивных судей по рафтингу — Спортивные судьи{% endblock %}
+{% block content %}
+{% include "seminars/_header.html" %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Семинары по подготовке спортивных судей по рафтингу</h1>
+    <a href="{{ url_for('seminars.seminars_new') }}" class="btn btn-primary">+ Добавить семинар</a>
+</div>
+
+<div class="table-responsive">
+<table class="table table-sm table-striped table-bordered align-middle text-center">
+    <thead>
+        <tr>
+            <th>Наименование семинара</th>
+            <th>Дата начала</th>
+            <th>Сроки проведения</th>
+            <th>Место проведения</th>
+            <th>Категория</th>
+            <th>Руководитель семинара</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for seminar in seminars %}
+        <tr>
+            <td>{{ seminar.name }}</td>
+            <td>{{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</td>
+            <td>{{ seminar.period }}</td>
+            <td>{{ seminar.location }}</td>
+            <td>{{ seminar.category }}</td>
+            <td>{{ seminar.leader_full_name }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center text-muted">Список пуст</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
