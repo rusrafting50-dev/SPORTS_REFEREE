@@ -28,6 +28,9 @@
         <input type="text" name="location" class="form-control" value="{{ seminar.location if seminar else '' }}">
     </div>
 
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Идентификаторы семинара</h2>
+    </div>
     <div class="col-12">
         <label class="form-label">Наименование присваиваемой (подтверждаемой) квалификационной категории спортивного судьи</label>
         <select name="category" class="form-select">
@@ -37,16 +40,7 @@
             {% endfor %}
         </select>
     </div>
-
-    <div class="col-md-4">
-        <label class="form-label">Дата</label>
-        <input type="date" name="exam_date" class="form-control" value="{{ seminar.exam_date.isoformat() if seminar and seminar.exam_date else '' }}">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Место проведения</label>
-        <input type="text" name="exam_location" class="form-control" value="{{ seminar.exam_location if seminar else '' }}">
-    </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <label class="form-label">Организация, проводящая семинар</label>
         <input type="text" name="organizer" class="form-control" value="{{ seminar.organizer if seminar else '' }}">
     </div>
@@ -54,21 +48,25 @@
     <div class="col-12 mt-4">
         <h2 class="h6 mb-0">Руководитель семинара</h2>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label class="form-label">ФИО</label>
         <input type="text" name="leader_full_name" class="form-control" value="{{ seminar.leader_full_name if seminar else '' }}">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label class="form-label">Квалификация спортивного судьи</label>
         <input type="text" name="leader_category" class="form-control" value="{{ seminar.leader_category if seminar else '' }}">
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <label class="form-label">Субъект Российской Федерации</label>
         <input type="text" name="leader_region" class="form-control" value="{{ seminar.leader_region if seminar else '' }}">
     </div>
+    <div class="col-md-3">
+        <label class="form-label">Телефон</label>
+        <input type="text" name="leader_phone" class="form-control" value="{{ seminar.leader_phone if seminar else '' }}">
+    </div>
 
     <div class="col-12">
-        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <button type="submit" class="btn btn-primary">Создать</button>
         <a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Отмена</a>
     </div>
 </form>

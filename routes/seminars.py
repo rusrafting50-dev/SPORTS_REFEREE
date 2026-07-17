@@ -25,18 +25,17 @@ def _fill_seminar_from_form(seminar, form):
     seminar.period = form.get("period", "").strip() or None
     seminar.location = form.get("location", "").strip() or None
     seminar.category = form.get("category", "").strip() or None
-    seminar.exam_date = _parse_date(form.get("exam_date"))
-    seminar.exam_location = form.get("exam_location", "").strip() or None
     seminar.organizer = form.get("organizer", "").strip() or None
     seminar.leader_full_name = form.get("leader_full_name", "").strip() or None
     seminar.leader_category = form.get("leader_category", "").strip() or None
     seminar.leader_region = form.get("leader_region", "").strip() or None
+    seminar.leader_phone = form.get("leader_phone", "").strip() or None
 
 
 @bp.route("/")
 def seminars_list():
     seminars = Seminar.query.order_by(Seminar.start_date.desc().nullslast(), Seminar.id.desc()).all()
-    return render_template("seminars/list.html", seminars=seminars)
+    return render_template("seminars/list.html", featured=seminars[:3], rest=seminars[3:])
 
 
 @bp.route("/new", methods=["GET", "POST"])

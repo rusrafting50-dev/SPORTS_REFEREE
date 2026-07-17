@@ -8,6 +8,30 @@
     <a href="{{ url_for('seminars.seminars_new') }}" class="btn btn-primary">+ Добавить семинар</a>
 </div>
 
+{% if not featured and not rest %}
+<p class="text-muted">Список пуст</p>
+{% endif %}
+
+{% if featured %}
+<div class="row mb-4">
+    {% for seminar in featured %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ seminar.name }}</h5>
+                <p class="card-text mb-1"><strong>Дата начала:</strong> {{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</p>
+                <p class="card-text mb-1"><strong>Сроки проведения:</strong> {{ seminar.period }}</p>
+                <p class="card-text mb-1"><strong>Место проведения:</strong> {{ seminar.location }}</p>
+                <p class="card-text mb-1"><strong>Категория:</strong> {{ seminar.category }}</p>
+                <p class="card-text mb-0"><strong>Руководитель:</strong> {{ seminar.leader_full_name }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if rest %}
 <div class="table-responsive">
 <table class="table table-sm table-striped table-bordered align-middle text-center">
     <thead>
@@ -21,7 +45,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for seminar in seminars %}
+        {% for seminar in rest %}
         <tr>
             <td>{{ seminar.name }}</td>
             <td>{{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</td>
@@ -30,12 +54,9 @@
             <td>{{ seminar.category }}</td>
             <td>{{ seminar.leader_full_name }}</td>
         </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" class="text-center text-muted">Список пуст</td>
-        </tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
+{% endif %}
 {% endblock %}

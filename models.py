@@ -149,14 +149,14 @@ class Seminar(db.Model):
     period = db.Column(db.String(150))           # Сроки проведения семинара
     location = db.Column(db.String(300))         # Место проведения семинара
 
+    # Идентификаторы семинара
     category = db.Column(db.String(100))         # Наименование присваиваемой (подтверждаемой) категории
-
-    exam_date = db.Column(db.Date)               # Дата (сдачи квалификационного зачёта)
-    exam_location = db.Column(db.String(300))     # Место проведения (зачёта)
     organizer = db.Column(db.String(300))         # Организация, проводящая семинар
 
-    leader_full_name = db.Column(db.String(200))  # ФИО руководителя семинара
-    leader_category = db.Column(db.String(100))   # Квалификация спортивного судьи руководителя
-    leader_region = db.Column(db.String(150))      # Субъект Российской Федерации руководителя
+    # Руководитель семинара
+    leader_full_name = db.Column(db.String(200))
+    leader_category = db.Column(db.String(100))   # Квалификация спортивного судьи
+    leader_region = db.Column(db.String(150))      # Субъект Российской Федерации
+    leader_phone = db.Column(db.String(100))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
