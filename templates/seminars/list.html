@@ -15,15 +15,27 @@
 {% if featured %}
 <div class="row mb-4">
     {% for seminar in featured %}
-    <div class="col-md-4 mb-3">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ seminar.name }}</h5>
-                <p class="card-text mb-1"><strong>Дата начала:</strong> {{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</p>
-                <p class="card-text mb-1"><strong>Сроки проведения:</strong> {{ seminar.period }}</p>
-                <p class="card-text mb-1"><strong>Место проведения:</strong> {{ seminar.location }}</p>
-                <p class="card-text mb-1"><strong>Категория:</strong> {{ seminar.category }}</p>
-                <p class="card-text mb-0"><strong>Руководитель:</strong> {{ seminar.leader_full_name }}</p>
+    <div class="col-md-4 mb-3 d-flex">
+        <div class="card h-100 w-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-uppercase">{{ seminar.name }}</h5>
+                {% if seminar.category %}
+                <div class="mb-2">
+                    <span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>
+                </div>
+                {% endif %}
+                <p class="card-text mb-1">📅 {{ seminar.period or (seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date) }}</p>
+                <p class="card-text mb-1">📍 {{ seminar.location }}</p>
+                <p class="card-text mb-3">
+                    🧑‍⚖️ Руководитель: {{ seminar.leader_full_name }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}
+                </p>
+                <div class="mt-auto d-flex gap-2">
+                    <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-primary flex-fill">Открыть</a>
+                    <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Изменить</a>
+                    <form method="post" action="{{ url_for('seminars.seminars_delete', seminar_id=seminar.id) }}" onsubmit="return confirm('Удалить этот семинар?');">
+                        <button type="submit" class="btn btn-outline-danger">Удалить</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -33,26 +45,37 @@
 
 {% if rest %}
 <div class="table-responsive">
-<table class="table table-sm table-striped table-bordered align-middle text-center">
+<table class="table table-sm table-striped table-bordered align-middle">
     <thead>
-        <tr>
+        <tr class="text-center">
+            <th>№<br>п/п</th>
             <th>Наименование семинара</th>
-            <th>Дата начала</th>
+            <th>Категория</th>
             <th>Сроки проведения</th>
             <th>Место проведения</th>
-            <th>Категория</th>
             <th>Руководитель семинара</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody>
         {% for seminar in rest %}
         <tr>
-            <td>{{ seminar.name }}</td>
-            <td>{{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</td>
-            <td>{{ seminar.period }}</td>
-            <td>{{ seminar.location }}</td>
-            <td>{{ seminar.category }}</td>
-            <td>{{ seminar.leader_full_name }}</td>
+            <td class="text-center">{{ loop.index }}</td>
+            <td><a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}">{{ seminar.name }}</a></td>
+            <td class="text-center">
+                {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
+            </td>
+            <td class="text-center">{{ seminar.period }}</td>
+            <td class="text-center">{{ seminar.location }}</td>
+            <td class="text-center">
+                {{ seminar.leader_full_name }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}
+            </td>
+            <td class="text-center text-nowrap">
+                <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-secondary">Изменить</a>
+                <form method="post" action="{{ url_for('seminars.seminars_delete', seminar_id=seminar.id) }}" class="d-inline" onsubmit="return confirm('Удалить этот семинар?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

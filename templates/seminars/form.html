@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Добавление семинара — Спортивные судьи{% endblock %}
+{% block title %}{{ 'Редактирование' if seminar else 'Добавление' }} семинара — Спортивные судьи{% endblock %}
 {% block content %}
-{% set breadcrumb_current = "Добавить семинар" %}
+{% set breadcrumb_current = "Редактировать семинар" if seminar else "Добавить семинар" %}
 {% include "seminars/_header.html" %}
 
-<h1 class="h3 mb-4">Добавление семинара</h1>
+<h1 class="h3 mb-4">{{ 'Редактирование семинара' if seminar else 'Добавление семинара' }}</h1>
 
 <form method="post" class="row g-3" style="max-width: 900px;">
     <div class="col-12">
@@ -66,8 +66,8 @@
     </div>
 
     <div class="col-12">
-        <button type="submit" class="btn btn-primary">Создать</button>
-        <a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Отмена</a>
+        <button type="submit" class="btn btn-primary">{{ 'Сохранить' if seminar else 'Создать' }}</button>
+        <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) if seminar else url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Отмена</a>
     </div>
 </form>
 {% endblock %}

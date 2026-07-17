@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_current = seminar.name %}
+{% include "seminars/_header.html" %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{{ seminar.name }}</h1>
+    <div>
+        <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-outline-primary">Изменить</a>
+        <form method="post" action="{{ url_for('seminars.seminars_delete', seminar_id=seminar.id) }}" class="d-inline" onsubmit="return confirm('Удалить этот семинар без возможности восстановления?');">
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+    </div>
+</div>
+
+<span class="badge {{ seminar.category|seminar_category_badge }} mb-3">{{ seminar.category }}</span>
+
+<table class="table table-bordered w-auto">
+    <tbody>
+        <tr><th>Дата начала семинара</th><td>{{ seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date }}</td></tr>
+        <tr><th>Сроки проведения семинара</th><td>{{ seminar.period }}</td></tr>
+        <tr><th>Место проведения семинара</th><td>{{ seminar.location }}</td></tr>
+        <tr><th>Наименование присваиваемой (подтверждаемой) категории</th><td>{{ seminar.category }}</td></tr>
+        <tr><th>Организация, проводящая семинар</th><td>{{ seminar.organizer }}</td></tr>
+        <tr><th>Руководитель семинара — ФИО</th><td>{{ seminar.leader_full_name }}</td></tr>
+        <tr><th>Квалификация спортивного судьи руководителя</th><td>{{ seminar.leader_category }}</td></tr>
+        <tr><th>Субъект Российской Федерации руководителя</th><td>{{ seminar.leader_region }}</td></tr>
+        <tr><th>Телефон руководителя</th><td>{{ seminar.leader_phone }}</td></tr>
+    </tbody>
+</table>
+
+<a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Назад к списку</a>
+{% endblock %}

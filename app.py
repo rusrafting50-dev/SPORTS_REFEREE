@@ -27,6 +27,20 @@ def category_abbr(value):
     return _CATEGORY_TO_ABBR.get(value, value)
 
 
+_SEMINAR_CATEGORY_BADGE = {
+    "Всероссийская": "bg-danger",
+    "Первая": "bg-warning text-dark",
+    "Вторая": "bg-info text-dark",
+    "Третья": "bg-secondary",
+    "Юный судья": "bg-success",
+}
+
+
+def seminar_category_badge(value):
+    """Категория семинара -> класс цветного бейджа Bootstrap."""
+    return _SEMINAR_CATEGORY_BADGE.get(value, "bg-secondary")
+
+
 def _sync_missing_columns():
     """Добавляет в уже существующую БД колонки, которых нет (db.create_all() таблицы не изменяет)."""
     inspector = inspect(db.engine)
@@ -52,6 +66,7 @@ def create_app():
     app.jinja_env.finalize = lambda value: "" if value is None else value
     app.jinja_env.filters["break_after_comma"] = break_after_comma
     app.jinja_env.filters["category_abbr"] = category_abbr
+    app.jinja_env.filters["seminar_category_badge"] = seminar_category_badge
 
     db.init_app(app)
     app.register_blueprint(judges_bp)
