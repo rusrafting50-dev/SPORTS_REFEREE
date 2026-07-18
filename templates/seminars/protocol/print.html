@@ -78,7 +78,7 @@
         </tbody>
     </table>
 
-    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
-    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
+    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name|initials_first or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
+    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name|initials_first or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
 </body>
 </html>
