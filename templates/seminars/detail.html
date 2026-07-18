@@ -8,6 +8,7 @@
 
 <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
     {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
+    {% if seminar.qualification_exam == "Да" %}<span class="badge bg-dark">квалификационный зачет</span>{% endif %}
     {% if seminar.organizer %}<span class="badge bg-light text-dark border">{{ seminar.organizer }}</span>{% endif %}
 </div>
 
@@ -60,6 +61,22 @@
     </div>
     {% endfor %}
 </div>
+
+{% if seminar.qualification_exam == "Да" %}
+<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+    <span class="badge bg-secondary rounded-circle me-2">3</span>
+    <strong>КВАЛИФИКАЦИОННЫЙ ЗАЧЁТ</strong>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-4">
+    {% for label in ["Всероссийская", "Первая", "Вторая", "Третья"] %}
+    {% if label == seminar.category %}
+    <button type="button" class="btn btn-primary">{{ label }}</button>
+    {% else %}
+    <button type="button" class="btn btn-outline-secondary" disabled>{{ label }}</button>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
 <a href="{{ url_for('seminars.seminars_list') }}" class="btn btn-outline-secondary">Назад к списку</a>
 {% endblock %}
