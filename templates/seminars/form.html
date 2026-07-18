@@ -44,6 +44,24 @@
         <label class="form-label">Организация, проводящая семинар</label>
         <input type="text" name="organizer" class="form-control" value="{{ seminar.organizer if seminar else '' }}">
     </div>
+    <div class="col-md-6">
+        <label class="form-label">Программа семинара (количество часов)</label>
+        <select name="program_hours" class="form-select">
+            <option value=""></option>
+            {% for h in references.SEMINAR_PROGRAM_HOURS %}
+            <option value="{{ h }}" {% if seminar and seminar.program_hours == h %}selected{% endif %}>{{ h }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Квалификационный зачёт</label>
+        <select name="qualification_exam" class="form-select">
+            <option value=""></option>
+            {% for v in references.SEMINAR_QUALIFICATION_EXAM_OPTIONS %}
+            <option value="{{ v }}" {% if seminar and seminar.qualification_exam == v %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     <div class="col-12 mt-4">
         <h2 class="h6 mb-0">Руководитель семинара</h2>

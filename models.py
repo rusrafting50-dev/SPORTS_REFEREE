@@ -152,6 +152,8 @@ class Seminar(db.Model):
     # Идентификаторы семинара
     category = db.Column(db.String(100))         # Наименование присваиваемой (подтверждаемой) категории
     organizer = db.Column(db.String(300))         # Организация, проводящая семинар
+    program_hours = db.Column(db.String(20))      # Программа семинара (количество часов)
+    qualification_exam = db.Column(db.String(10))  # Квалификационный зачёт: Да/Нет
 
     # Руководитель семинара
     leader_full_name = db.Column(db.String(200))

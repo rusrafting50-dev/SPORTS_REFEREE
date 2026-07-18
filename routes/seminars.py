@@ -28,6 +28,8 @@ def _fill_seminar_from_form(seminar, form):
     seminar.location = form.get("location", "").strip() or None
     seminar.category = form.get("category", "").strip() or None
     seminar.organizer = form.get("organizer", "").strip() or None
+    seminar.program_hours = form.get("program_hours", "").strip() or None
+    seminar.qualification_exam = form.get("qualification_exam", "").strip() or None
     seminar.leader_full_name = form.get("leader_full_name", "").strip() or None
     seminar.leader_category = form.get("leader_category", "").strip() or None
     seminar.leader_region = form.get("leader_region", "").strip() or None
