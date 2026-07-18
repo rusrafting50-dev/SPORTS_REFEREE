@@ -64,7 +64,8 @@
             <td class="text-center">{{ loop.index }}</td>
             <td class="text-center"><a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}">{{ seminar.name }}</a></td>
             <td class="text-center">
-                {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
+                {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}{% if seminar.program_hours %}, {{ seminar.program_hours }}{% endif %}</span>{% endif %}
+                {% if seminar.qualification_exam == "Да" %}<span class="badge bg-dark">квалификационный зачет</span>{% endif %}
             </td>
             <td class="text-center">{{ seminar.period }}</td>
             <td class="text-center">{{ seminar.location }}</td>
