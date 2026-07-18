@@ -202,6 +202,7 @@ class SeminarApplicationParticipant(db.Model):
     birth_date = db.Column(db.Date)
     judge_qualification = db.Column(db.String(100))   # Квалификация спортивного судьи
     assigned_category = db.Column(db.String(100))     # Присваиваемая (подтверждаемая) категория
+    specialization = db.Column(db.String(300))        # Специализация
 
     application = db.relationship("SeminarApplication", backref=db.backref(
         "participants", order_by="SeminarApplicationParticipant.id", cascade="all, delete-orphan",

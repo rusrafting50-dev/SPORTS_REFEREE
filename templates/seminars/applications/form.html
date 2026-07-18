@@ -35,6 +35,14 @@
             {% endfor %}
         </select>
     </td>
+    <td>
+        <select name="participant_specialization[]" class="form-select form-select-sm p-specialization">
+            <option value=""></option>
+            {% for s in references.SEMINAR_PARTICIPANT_SPECIALIZATIONS %}
+            <option value="{{ s }}" {% if p and p.specialization == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </td>
     <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-participant-row">×</button></td>
 </tr>
 {% endmacro %}
@@ -50,12 +58,12 @@
         <input type="text" name="region" class="form-control" value="{{ application.region if application else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Наименование организации</label>
+        <label class="form-label">Наименование региональной спортивной федерации</label>
         <input type="text" name="organization_name" class="form-control" value="{{ application.organization_name if application else '' }}">
     </div>
 
     <div class="col-12 mt-4">
-        <h2 class="h6 mb-0">Данные организации, направляющей команду на соревнования</h2>
+        <h2 class="h6 mb-0">Данные организации, направляющей для участия в семинаре</h2>
     </div>
     <div class="col-12">
         <label class="form-label">Наименование организации</label>
@@ -78,22 +86,6 @@
         <input type="text" name="sending_org_leader_email" class="form-control" value="{{ application.sending_org_leader_email if application else '' }}">
     </div>
 
-    <div class="col-12 mt-4">
-        <h2 class="h6 mb-0">Данные руководителя организации</h2>
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Фамилия Имя Отчество</label>
-        <input type="text" name="org_leader_full_name" class="form-control" value="{{ application.org_leader_full_name if application else '' }}">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">Телефон</label>
-        <input type="text" name="org_leader_phone" class="form-control" value="{{ application.org_leader_phone if application else '' }}">
-    </div>
-    <div class="col-md-4">
-        <label class="form-label">E-mail</label>
-        <input type="text" name="org_leader_email" class="form-control" value="{{ application.org_leader_email if application else '' }}">
-    </div>
-
     <div class="col-12 mt-4 d-flex justify-content-between align-items-center">
         <h2 class="h6 mb-0">Список участников</h2>
         <button type="button" id="add-participant-row" class="btn btn-sm btn-primary">+ Добавить</button>
@@ -109,6 +101,7 @@
                     <th style="width: 150px;">Дата рождения</th>
                     <th style="width: 160px;">Квалификация спортивного судьи</th>
                     <th style="width: 220px;">Присваиваемая (подтверждаемая) квалификационная категория спортивного судьи</th>
+                    <th style="width: 220px;">Специализация</th>
                     <th style="width: 40px;"></th>
                 </tr>
             </thead>
