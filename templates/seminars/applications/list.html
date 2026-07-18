@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Заявки — {{ seminar.name }} — Спортивные судьи{% endblock %}
 {% block content %}
+{% set breadcrumb_seminar = seminar.name %}
 {% set breadcrumb_current = "Заявки" %}
 {% include "seminars/_header.html" %}
 
