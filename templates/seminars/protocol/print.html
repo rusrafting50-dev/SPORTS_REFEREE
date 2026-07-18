@@ -38,7 +38,7 @@
     <p class="center bold">{{ seminar.name or '' }}</p>
     <div class="row-line italic">
         <span>{{ seminar.period or '' }}</span>
-        <span>{{ seminar.protocol_region or '' }}</span>
+        <span>{{ seminar.location or '' }}</span>
     </div>
     <p class="center bold">ПРОТОКОЛ №{{ seminar.protocol_number or '' }}</p>
     <p class="center bold">учёта теоретической подготовки и сдачи квалификационного зачёта</p>
@@ -78,7 +78,7 @@
         </tbody>
     </table>
 
-    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name|initials_surname or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
-    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name|initials_surname or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
+    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
+    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
 </body>
 </html>
