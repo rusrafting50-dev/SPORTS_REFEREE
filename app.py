@@ -46,6 +46,22 @@ def seminar_category_abbr(value):
     return references.SEMINAR_CATEGORY_ABBREVIATIONS.get(value, value)
 
 
+def _is_initial(token):
+    return len(token) <= 2 and token.endswith(".")
+
+
+def initials_first(full_name):
+    """«Милевский Е. В.» -> «Е. В. Милевский» (инициалы вперёд) для подписи в протоколе семинара."""
+    if not full_name:
+        return full_name
+    parts = full_name.split()
+    initials = [p for p in parts if _is_initial(p)]
+    rest = [p for p in parts if not _is_initial(p)]
+    if not initials or not rest:
+        return full_name
+    return " ".join(initials) + " " + " ".join(rest)
+
+
 def ru_plural(n, one, few, many):
     """Склонение существительного по числу n (1 заявка / 2 заявки / 5 заявок)."""
     n = abs(int(n))
@@ -83,6 +99,7 @@ def create_app():
     app.jinja_env.filters["category_abbr"] = category_abbr
     app.jinja_env.filters["seminar_category_badge"] = seminar_category_badge
     app.jinja_env.filters["seminar_category_abbr"] = seminar_category_abbr
+    app.jinja_env.filters["initials_first"] = initials_first
     app.jinja_env.filters["ru_plural"] = ru_plural
 
     db.init_app(app)
