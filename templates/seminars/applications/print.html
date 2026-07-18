@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Печать заявки — {{ application.organization_name or application.region or '' }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #333; padding: 6px 8px; font-size: 13px; }
+        th { background: #f0f0f0; text-align: center; }
+        h1 { font-size: 18px; }
+        p { margin: 4px 0; }
+        .no-print { margin-bottom: 16px; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button type="button" onclick="window.print()">Печать</button>
+        <a href="{{ url_for('seminars.applications_list', seminar_id=seminar.id) }}">Назад к заявкам</a>
+    </div>
+
+    <h1>Заявка — {{ seminar.name }}</h1>
+    <p><strong>Субъект Российской Федерации:</strong> {{ application.region or '' }}</p>
+    <p><strong>Организация:</strong> {{ application.organization_name or '' }}</p>
+    <p><strong>Руководитель организации:</strong> {{ application.org_leader_full_name or '' }}{% if application.org_leader_phone %}, тел. {{ application.org_leader_phone }}{% endif %}{% if application.org_leader_email %}, {{ application.org_leader_email }}{% endif %}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Фамилия, Имя, Отчество</th>
+                <th>Пол</th>
+                <th>Дата рождения</th>
+                <th>Квалификация спортивного судьи</th>
+                <th>Присваиваемая (подтверждаемая) квалификационная категория спортивного судьи</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in application.participants %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ p.full_name }}</td>
+                <td>{{ p.gender }}</td>
+                <td>{{ p.birth_date.strftime('%d.%m.%Y') if p.birth_date else '' }}</td>
+                <td>{{ p.judge_qualification }}</td>
+                <td>{{ p.assigned_category }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

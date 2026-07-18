@@ -160,3 +160,50 @@ class Seminar(db.Model):
     leader_phone = db.Column(db.String(100))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SeminarApplication(db.Model):
+    """Заявка на участие в семинаре (от направляющей организации субъекта РФ)."""
+    __tablename__ = "seminar_application"
+
+    id = db.Column(db.Integer, primary_key=True)
+    seminar_id = db.Column(db.Integer, db.ForeignKey("seminar.id"), nullable=False)
+
+    region = db.Column(db.String(150))               # Субъект Российской Федерации
+    organization_name = db.Column(db.String(300))     # Наименование организации
+
+    # Данные организации, направляющей команду на соревнования
+    sending_org_name = db.Column(db.String(300))
+    sending_org_leader_name = db.Column(db.String(200))
+    sending_org_leader_position = db.Column(db.String(150))
+    sending_org_leader_phone = db.Column(db.String(100))
+    sending_org_leader_email = db.Column(db.String(150))
+
+    # Данные руководителя организации
+    org_leader_full_name = db.Column(db.String(200))
+    org_leader_phone = db.Column(db.String(100))
+    org_leader_email = db.Column(db.String(150))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    seminar = db.relationship("Seminar", backref=db.backref("applications", cascade="all, delete-orphan"))
+
+
+class SeminarApplicationParticipant(db.Model):
+    """Участник заявки на семинар — запись из базы судей либо произвольно введённая."""
+    __tablename__ = "seminar_application_participant"
+
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey("seminar_application.id"), nullable=False)
+    judge_id = db.Column(db.Integer, db.ForeignKey("judge.id"), nullable=True)
+
+    full_name = db.Column(db.String(200))
+    gender = db.Column(db.String(10))
+    birth_date = db.Column(db.Date)
+    judge_qualification = db.Column(db.String(100))   # Квалификация спортивного судьи
+    assigned_category = db.Column(db.String(100))     # Присваиваемая (подтверждаемая) категория
+
+    application = db.relationship("SeminarApplication", backref=db.backref(
+        "participants", order_by="SeminarApplicationParticipant.id", cascade="all, delete-orphan",
+    ))
+    judge = db.relationship("Judge")

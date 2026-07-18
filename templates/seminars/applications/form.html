@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактирование' if application else 'Добавление' }} заявки — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_current = "Редактировать заявку" if application else "Добавить заявку" %}
+{% include "seminars/_header.html" %}
+
+{% macro participant_row(p=None) %}
+<tr class="participant-row">
+    <td class="text-center row-index"></td>
+    <td>
+        <input type="hidden" name="participant_judge_id[]" class="p-judge-id" value="{{ p.judge_id if p and p.judge_id else '' }}">
+        <input type="text" name="participant_full_name[]" class="form-control form-control-sm p-full-name" value="{{ p.full_name if p else '' }}">
+    </td>
+    <td>
+        <select name="participant_gender[]" class="form-select form-select-sm p-gender">
+            <option value=""></option>
+            <option value="м" {% if p and p.gender == "м" %}selected{% endif %}>м</option>
+            <option value="ж" {% if p and p.gender == "ж" %}selected{% endif %}>ж</option>
+        </select>
+    </td>
+    <td><input type="date" name="participant_birth_date[]" class="form-control form-control-sm p-birth-date" value="{{ p.birth_date.isoformat() if p and p.birth_date else '' }}"></td>
+    <td>
+        <select name="participant_qualification[]" class="form-select form-select-sm p-qualification">
+            <option value=""></option>
+            {% for abbr in judge_qualifications %}
+            <option value="{{ abbr }}" {% if p and p.judge_qualification == abbr %}selected{% endif %}>{{ abbr }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <select name="participant_category[]" class="form-select form-select-sm p-category">
+            <option value=""></option>
+            {% for c in references.SEMINAR_CATEGORIES %}
+            <option value="{{ c }}" {% if p and p.assigned_category == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-participant-row">×</button></td>
+</tr>
+{% endmacro %}
+
+<h1 class="h3 mb-4">{{ 'Редактирование заявки' if application else 'Добавление заявки' }}</h1>
+
+<form method="post" class="row g-3">
+    <div class="col-12">
+        <h2 class="h6 mb-0">Основные данные</h2>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="region" class="form-control" value="{{ application.region if application else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Наименование организации</label>
+        <input type="text" name="organization_name" class="form-control" value="{{ application.organization_name if application else '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Данные организации, направляющей команду на соревнования</h2>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Наименование организации</label>
+        <input type="text" name="sending_org_name" class="form-control" value="{{ application.sending_org_name if application else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Фамилия Имя Отчество руководителя</label>
+        <input type="text" name="sending_org_leader_name" class="form-control" value="{{ application.sending_org_leader_name if application else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Должность руководителя</label>
+        <input type="text" name="sending_org_leader_position" class="form-control" value="{{ application.sending_org_leader_position if application else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Телефон</label>
+        <input type="text" name="sending_org_leader_phone" class="form-control" value="{{ application.sending_org_leader_phone if application else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">E-mail</label>
+        <input type="text" name="sending_org_leader_email" class="form-control" value="{{ application.sending_org_leader_email if application else '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Данные руководителя организации</h2>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Фамилия Имя Отчество</label>
+        <input type="text" name="org_leader_full_name" class="form-control" value="{{ application.org_leader_full_name if application else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Телефон</label>
+        <input type="text" name="org_leader_phone" class="form-control" value="{{ application.org_leader_phone if application else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">E-mail</label>
+        <input type="text" name="org_leader_email" class="form-control" value="{{ application.org_leader_email if application else '' }}">
+    </div>
+
+    <div class="col-12 mt-4 d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0">Список участников</h2>
+        <button type="button" id="add-participant-row" class="btn btn-sm btn-primary">+ Добавить</button>
+    </div>
+    <div class="col-12">
+        <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+            <thead>
+                <tr class="text-center align-middle">
+                    <th style="width: 40px;">№</th>
+                    <th>Фамилия, Имя, Отчество</th>
+                    <th style="width: 70px;">Пол</th>
+                    <th style="width: 150px;">Дата рождения</th>
+                    <th style="width: 160px;">Квалификация спортивного судьи</th>
+                    <th style="width: 220px;">Присваиваемая (подтверждаемая) квалификационная категория спортивного судьи</th>
+                    <th style="width: 40px;"></th>
+                </tr>
+            </thead>
+            <tbody id="participants-tbody">
+                {% if application %}
+                {% for p in application.participants %}
+                {{ participant_row(p) }}
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить заявку</button>
+        <a href="{{ url_for('seminars.applications_list', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">Поиск судьи в базе</div>
+    <div class="card-body">
+        <input type="text" id="judge-search-input" class="form-control" placeholder="Начните вводить фамилию...">
+        <div id="judge-search-results" class="list-group mt-2"></div>
+        <p class="text-muted small mt-2 mb-0">Выберите судью из базы — новая строка добавится в таблицу с заполненными данными.</p>
+    </div>
+</div>
+
+<template id="participant-row-template">
+    {{ participant_row() }}
+</template>
+{% endblock %}
