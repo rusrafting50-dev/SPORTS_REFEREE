@@ -88,9 +88,6 @@ def _fill_application_from_form(application, form):
     application.sending_org_leader_position = form.get("sending_org_leader_position", "").strip() or None
     application.sending_org_leader_phone = form.get("sending_org_leader_phone", "").strip() or None
     application.sending_org_leader_email = form.get("sending_org_leader_email", "").strip() or None
-    application.org_leader_full_name = form.get("org_leader_full_name", "").strip() or None
-    application.org_leader_phone = form.get("org_leader_phone", "").strip() or None
-    application.org_leader_email = form.get("org_leader_email", "").strip() or None
 
 
 def _sync_participants(application, form):
@@ -103,6 +100,7 @@ def _sync_participants(application, form):
     birth_dates = form.getlist("participant_birth_date[]")
     qualifications = form.getlist("participant_qualification[]")
     categories = form.getlist("participant_category[]")
+    specializations = form.getlist("participant_specialization[]")
 
     for i, full_name in enumerate(full_names):
         full_name = full_name.strip()
@@ -117,6 +115,7 @@ def _sync_participants(application, form):
             birth_date=_parse_date(birth_dates[i]) if i < len(birth_dates) else None,
             judge_qualification=(qualifications[i].strip() or None) if i < len(qualifications) else None,
             assigned_category=(categories[i].strip() or None) if i < len(categories) else None,
+            specialization=(specializations[i].strip() or None) if i < len(specializations) else None,
         ))
 
 

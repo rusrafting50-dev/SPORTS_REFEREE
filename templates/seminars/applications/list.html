@@ -53,6 +53,7 @@
                             <th>Дата рождения</th>
                             <th>Квалификация спортивного судьи</th>
                             <th>Присваиваемая (подтверждаемая) квалификационная категория спортивного судьи</th>
+                            <th>Специализация</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,10 +65,11 @@
                             <td class="text-center">{{ p.birth_date.strftime('%d.%m.%Y') if p.birth_date else '' }}</td>
                             <td class="text-center">{{ p.judge_qualification }}</td>
                             <td class="text-center">{{ p.assigned_category }}</td>
+                            <td class="text-center">{{ p.specialization }}</td>
                         </tr>
                         {% endfor %}
                         {% if not application.participants %}
-                        <tr><td colspan="6" class="text-center text-muted">Участники не добавлены</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted">Участники не добавлены</td></tr>
                         {% endif %}
                     </tbody>
                 </table>
