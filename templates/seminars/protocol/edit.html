@@ -72,7 +72,7 @@
                     <td>{{ p.assigned_category|seminar_category_abbr }}</td>
                     <td>
                         <input type="hidden" name="protocol_participant_id[]" value="{{ p.id }}">
-                        <input type="text" name="protocol_participant_hours[]" class="form-control form-control-sm" value="{{ p.theory_participant_hours or '' }}">
+                        <input type="text" name="protocol_participant_hours[]" class="form-control form-control-sm" value="{{ p.theory_participant_hours or p.default_hours or '' }}">
                     </td>
                     <td><input type="text" name="protocol_lecturer_hours[]" class="form-control form-control-sm" value="{{ p.theory_lecturer_hours or '' }}"></td>
                     <td>

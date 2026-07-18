@@ -69,7 +69,7 @@
                 <td>{{ p.application.region or '' }}</td>
                 <td class="num">{{ p.judge_qualification or '' }}</td>
                 <td class="num">{{ p.assigned_category|seminar_category_abbr }}</td>
-                <td class="num">{{ p.theory_participant_hours or '-' }}</td>
+                <td class="num">{{ p.theory_participant_hours or p.default_hours or '-' }}</td>
                 <td class="num">{{ p.theory_lecturer_hours or '-' }}</td>
                 <td class="num">{{ p.exam_result or '-' }}</td>
                 <td class="num">{{ p.certificate_number or '' }}</td>

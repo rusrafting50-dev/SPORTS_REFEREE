@@ -220,14 +220,28 @@ def _sync_protocol_participants(form):
         participant.certificate_number = (certificate_numbers[i].strip() or None) if i < len(certificate_numbers) else None
 
 
-def _protocol_participants(seminar_id):
-    return (
+def _default_theory_hours(seminar, participant):
+    """Часы теоретических занятий участника — из карточки семинара (программа семинара, количество часов),
+    если присваиваемая (подтверждаемая) категория участника совпадает с категорией семинара."""
+    if not seminar.program_hours or not participant.assigned_category:
+        return None
+    if participant.assigned_category != seminar.category:
+        return None
+    digits = "".join(ch for ch in seminar.program_hours if ch.isdigit())
+    return digits or None
+
+
+def _protocol_participants(seminar_id, seminar):
+    participants = (
         SeminarApplicationParticipant.query
         .join(SeminarApplication, SeminarApplicationParticipant.application_id == SeminarApplication.id)
         .filter(SeminarApplication.seminar_id == seminar_id)
         .order_by(SeminarApplicationParticipant.full_name)
         .all()
     )
+    for p in participants:
+        p.default_hours = _default_theory_hours(seminar, p)
+    return participants
 
 
 @bp.route("/<int:seminar_id>/protocol", methods=["GET", "POST"])
@@ -239,7 +253,7 @@ def protocol_edit(seminar_id):
         db.session.commit()
         flash("Данные протокола сохранены", "success")
         return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
-    participants = _protocol_participants(seminar_id)
+    participants = _protocol_participants(seminar_id, seminar)
     return render_template(
         "seminars/protocol/edit.html", seminar=seminar, participants=participants,
         references=references,
@@ -249,5 +263,5 @@ def protocol_edit(seminar_id):
 @bp.route("/<int:seminar_id>/protocol/print")
 def protocol_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
-    participants = _protocol_participants(seminar_id)
+    participants = _protocol_participants(seminar_id, seminar)
     return render_template("seminars/protocol/print.html", seminar=seminar, participants=participants)
