@@ -4,15 +4,7 @@
 {% set breadcrumb_current = seminar.name %}
 {% include "seminars/_header.html" %}
 
-<div class="d-flex justify-content-between align-items-start mb-2">
-    <h1 class="h3 mb-0 text-uppercase">{{ seminar.name }}</h1>
-    <div class="text-nowrap">
-        <a href="{{ url_for('seminars.seminars_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-primary">Изменить</a>
-        <form method="post" action="{{ url_for('seminars.seminars_delete', seminar_id=seminar.id) }}" class="d-inline" onsubmit="return confirm('Удалить этот семинар без возможности восстановления?');">
-            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-        </form>
-    </div>
-</div>
+<h1 class="h3 mb-2 text-uppercase text-center">{{ seminar.name }}</h1>
 
 <div class="d-flex flex-wrap gap-2 mb-2">
     {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
@@ -29,7 +21,7 @@
 </p>
 {% endif %}
 
-<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+<div class="d-flex justify-content-center align-items-center bg-light rounded p-2 mb-2">
     <span class="badge bg-secondary rounded-circle me-2">1</span>
     <strong>ПОЛОЖЕНИЕ, ПРЕПОДАВАТЕЛЬСКИЙ СОСТАВ, УЧАСТНИКИ, ПРОТОКОЛ</strong>
 </div>
@@ -42,7 +34,7 @@
     {% endfor %}
 </div>
 
-<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+<div class="d-flex justify-content-center align-items-center bg-light rounded p-2 mb-2">
     <span class="badge bg-secondary rounded-circle me-2">2</span>
     <strong>ПРОГРАММА СЕМИНАРА</strong>
 </div>
