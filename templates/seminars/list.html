@@ -21,7 +21,7 @@
                 <h5 class="card-title text-uppercase">{{ seminar.name }}</h5>
                 {% if seminar.category %}
                 <div class="mb-2">
-                    <span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>
+                    <span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}{% if seminar.program_hours %}, {{ seminar.program_hours }}{% endif %}</span>
                     {% if seminar.qualification_exam == "Да" %}<span class="badge bg-dark">квалификационный зачет</span>{% endif %}
                 </div>
                 {% endif %}
