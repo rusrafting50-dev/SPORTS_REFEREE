@@ -41,6 +41,16 @@ def seminar_category_badge(value):
     return _SEMINAR_CATEGORY_BADGE.get(value, "bg-secondary")
 
 
+def ru_plural(n, one, few, many):
+    """Склонение существительного по числу n (1 заявка / 2 заявки / 5 заявок)."""
+    n = abs(int(n))
+    if n % 10 == 1 and n % 100 != 11:
+        return one
+    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
+        return few
+    return many
+
+
 def _sync_missing_columns():
     """Добавляет в уже существующую БД колонки, которых нет (db.create_all() таблицы не изменяет)."""
     inspector = inspect(db.engine)
@@ -67,6 +77,7 @@ def create_app():
     app.jinja_env.filters["break_after_comma"] = break_after_comma
     app.jinja_env.filters["category_abbr"] = category_abbr
     app.jinja_env.filters["seminar_category_badge"] = seminar_category_badge
+    app.jinja_env.filters["ru_plural"] = ru_plural
 
     db.init_app(app)
     app.register_blueprint(judges_bp)

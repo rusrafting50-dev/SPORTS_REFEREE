@@ -4,7 +4,9 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 import references
-from models import Seminar, db
+from models import Seminar, SeminarApplication, SeminarApplicationParticipant, db
+
+JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
 bp = Blueprint("seminars", __name__, url_prefix="/seminars")
 
@@ -74,3 +76,106 @@ def seminars_delete(seminar_id):
     db.session.commit()
     flash("Семинар удалён", "success")
     return redirect(url_for("seminars.seminars_list"))
+
+
+# --- Заявки на участие в семинаре ---
+
+def _fill_application_from_form(application, form):
+    application.region = form.get("region", "").strip() or None
+    application.organization_name = form.get("organization_name", "").strip() or None
+    application.sending_org_name = form.get("sending_org_name", "").strip() or None
+    application.sending_org_leader_name = form.get("sending_org_leader_name", "").strip() or None
+    application.sending_org_leader_position = form.get("sending_org_leader_position", "").strip() or None
+    application.sending_org_leader_phone = form.get("sending_org_leader_phone", "").strip() or None
+    application.sending_org_leader_email = form.get("sending_org_leader_email", "").strip() or None
+    application.org_leader_full_name = form.get("org_leader_full_name", "").strip() or None
+    application.org_leader_phone = form.get("org_leader_phone", "").strip() or None
+    application.org_leader_email = form.get("org_leader_email", "").strip() or None
+
+
+def _sync_participants(application, form):
+    for participant in list(application.participants):
+        db.session.delete(participant)
+
+    judge_ids = form.getlist("participant_judge_id[]")
+    full_names = form.getlist("participant_full_name[]")
+    genders = form.getlist("participant_gender[]")
+    birth_dates = form.getlist("participant_birth_date[]")
+    qualifications = form.getlist("participant_qualification[]")
+    categories = form.getlist("participant_category[]")
+
+    for i, full_name in enumerate(full_names):
+        full_name = full_name.strip()
+        if not full_name:
+            continue
+        judge_id_raw = judge_ids[i].strip() if i < len(judge_ids) else ""
+        db.session.add(SeminarApplicationParticipant(
+            application_id=application.id,
+            judge_id=int(judge_id_raw) if judge_id_raw.isdigit() else None,
+            full_name=full_name,
+            gender=(genders[i].strip() or None) if i < len(genders) else None,
+            birth_date=_parse_date(birth_dates[i]) if i < len(birth_dates) else None,
+            judge_qualification=(qualifications[i].strip() or None) if i < len(qualifications) else None,
+            assigned_category=(categories[i].strip() or None) if i < len(categories) else None,
+        ))
+
+
+@bp.route("/<int:seminar_id>/applications")
+def applications_list(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    applications = SeminarApplication.query.filter_by(seminar_id=seminar_id).order_by(SeminarApplication.region).all()
+    regions_count = len({a.region for a in applications if a.region})
+    return render_template(
+        "seminars/applications/list.html", seminar=seminar,
+        applications=applications, regions_count=regions_count,
+    )
+
+
+@bp.route("/<int:seminar_id>/applications/new", methods=["GET", "POST"])
+def applications_new(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        application = SeminarApplication(seminar_id=seminar.id)
+        _fill_application_from_form(application, request.form)
+        db.session.add(application)
+        db.session.flush()
+        _sync_participants(application, request.form)
+        db.session.commit()
+        flash("Заявка добавлена", "success")
+        return redirect(url_for("seminars.applications_list", seminar_id=seminar.id))
+    return render_template(
+        "seminars/applications/form.html", seminar=seminar, application=None,
+        references=references, judge_qualifications=JUDGE_QUALIFICATIONS,
+    )
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/edit", methods=["GET", "POST"])
+def applications_edit(seminar_id, application_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    application = SeminarApplication.query.get_or_404(application_id)
+    if request.method == "POST":
+        _fill_application_from_form(application, request.form)
+        _sync_participants(application, request.form)
+        db.session.commit()
+        flash("Заявка обновлена", "success")
+        return redirect(url_for("seminars.applications_list", seminar_id=seminar.id))
+    return render_template(
+        "seminars/applications/form.html", seminar=seminar, application=application,
+        references=references, judge_qualifications=JUDGE_QUALIFICATIONS,
+    )
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/delete", methods=["POST"])
+def applications_delete(seminar_id, application_id):
+    application = SeminarApplication.query.get_or_404(application_id)
+    db.session.delete(application)
+    db.session.commit()
+    flash("Заявка удалена", "success")
+    return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/print")
+def applications_print(seminar_id, application_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    application = SeminarApplication.query.get_or_404(application_id)
+    return render_template("seminars/applications/print.html", seminar=seminar, application=application)

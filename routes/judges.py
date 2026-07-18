@@ -2,7 +2,7 @@
 import os
 from datetime import datetime
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
 
 import references
 from judge_docx_generator import generate_judge_card, judge_card_filename
@@ -15,6 +15,8 @@ bp = Blueprint("judges", __name__, url_prefix="/judges")
 
 PHOTO_UPLOAD_SUBDIR = os.path.join("uploads", "judges")
 ALLOWED_PHOTO_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+
+_CATEGORY_TO_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
 # Кнопки на странице «Список спортивных судей» — по квалификационным категориям
 JUDGE_CATEGORY_TYPES = [
@@ -210,6 +212,31 @@ def judges_import():
         return redirect(url_for("judges.judges_list"))
 
     return render_template("judges/import.html")
+
+
+@bp.route("/search")
+def judges_search():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify([])
+    like = f"%{q}%"
+    judges = (
+        Judge.query.filter(
+            db.or_(Judge.last_name.ilike(like), Judge.first_name.ilike(like), Judge.middle_name.ilike(like))
+        )
+        .order_by(Judge.last_name)
+        .limit(20)
+        .all()
+    )
+    return jsonify([
+        {
+            "id": j.id,
+            "full_name": j.full_name,
+            "birth_date": j.birth_date.isoformat() if j.birth_date else "",
+            "qualification": _CATEGORY_TO_ABBR.get(j.current_category, ""),
+        }
+        for j in judges
+    ])
 
 
 @bp.route("/<int:judge_id>")
