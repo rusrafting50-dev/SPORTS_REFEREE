@@ -85,5 +85,14 @@
 </p>
 {% endif %}
 
-<a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary mt-3">Назад к семинару</a>
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Назад к семинару</a>
+    <form method="post" action="{{ url_for('seminars.applications_toggle_status', seminar_id=seminar.id) }}">
+        {% if seminar.applications_done %}
+        <button type="submit" class="btn btn-success rounded-pill">✓ Готово</button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-secondary rounded-pill">В работе</button>
+        {% endif %}
+    </form>
+</div>
 {% endblock %}

@@ -159,6 +159,8 @@ class Seminar(db.Model):
     leader_region = db.Column(db.String(150))      # Субъект Российской Федерации
     leader_phone = db.Column(db.String(100))
 
+    applications_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Заявки на участие»
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
