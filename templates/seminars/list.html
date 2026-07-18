@@ -47,7 +47,7 @@
 <div class="table-responsive">
 <table class="table table-sm table-striped table-bordered align-middle">
     <thead>
-        <tr class="text-center">
+        <tr class="text-center align-middle">
             <th>№<br>п/п</th>
             <th>Наименование семинара</th>
             <th>Категория</th>
@@ -61,7 +61,7 @@
         {% for seminar in rest %}
         <tr>
             <td class="text-center">{{ loop.index }}</td>
-            <td><a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}">{{ seminar.name }}</a></td>
+            <td class="text-center"><a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}">{{ seminar.name }}</a></td>
             <td class="text-center">
                 {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
             </td>
