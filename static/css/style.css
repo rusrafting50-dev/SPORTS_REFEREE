@@ -16,3 +16,8 @@
 @media (min-width: 1400px) {
     .container { max-width: 1455px; }
 }
+
+/* Заголовок семинара — переносится на две примерно равные по ширине строки */
+.seminar-title {
+    text-wrap: balance;
+}

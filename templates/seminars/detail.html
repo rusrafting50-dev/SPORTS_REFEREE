@@ -4,7 +4,7 @@
 {% set breadcrumb_current = seminar.name %}
 {% include "seminars/_header.html" %}
 
-<h1 class="h3 mb-2 text-uppercase text-center">{{ seminar.name }}</h1>
+<h1 class="h3 mb-2 text-uppercase text-center seminar-title">{{ seminar.name }}</h1>
 
 <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
     {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
