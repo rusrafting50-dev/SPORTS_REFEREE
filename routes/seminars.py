@@ -188,3 +188,80 @@ def applications_print(seminar_id, application_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     application = SeminarApplication.query.get_or_404(application_id)
     return render_template("seminars/applications/print.html", seminar=seminar, application=application)
+
+
+# --- Протокол семинара ---
+
+def _fill_protocol_from_form(seminar, form):
+    seminar.protocol_number = form.get("protocol_number", "").strip() or None
+    seminar.protocol_region = form.get("protocol_region", "").strip() or None
+    seminar.deputy_full_name = form.get("deputy_full_name", "").strip() or None
+    seminar.deputy_category = form.get("deputy_category", "").strip() or None
+    seminar.deputy_region = form.get("deputy_region", "").strip() or None
+
+
+def _sync_protocol_participants(form):
+    participant_ids = form.getlist("protocol_participant_id[]")
+    participant_hours = form.getlist("protocol_participant_hours[]")
+    lecturer_hours = form.getlist("protocol_lecturer_hours[]")
+    exam_results = form.getlist("protocol_exam_result[]")
+    certificate_numbers = form.getlist("protocol_certificate_number[]")
+
+    for i, pid_raw in enumerate(participant_ids):
+        pid_raw = pid_raw.strip()
+        if not pid_raw.isdigit():
+            continue
+        participant = SeminarApplicationParticipant.query.get(int(pid_raw))
+        if not participant:
+            continue
+        participant.theory_participant_hours = (participant_hours[i].strip() or None) if i < len(participant_hours) else None
+        participant.theory_lecturer_hours = (lecturer_hours[i].strip() or None) if i < len(lecturer_hours) else None
+        participant.exam_result = (exam_results[i].strip() or None) if i < len(exam_results) else None
+        participant.certificate_number = (certificate_numbers[i].strip() or None) if i < len(certificate_numbers) else None
+
+
+def _default_theory_hours(seminar, participant):
+    """Часы теоретических занятий участника — из карточки семинара (программа семинара, количество часов),
+    если присваиваемая (подтверждаемая) категория участника совпадает с категорией семинара."""
+    if not seminar.program_hours or not participant.assigned_category:
+        return None
+    if participant.assigned_category != seminar.category:
+        return None
+    digits = "".join(ch for ch in seminar.program_hours if ch.isdigit())
+    return digits or None
+
+
+def _protocol_participants(seminar_id, seminar):
+    participants = (
+        SeminarApplicationParticipant.query
+        .join(SeminarApplication, SeminarApplicationParticipant.application_id == SeminarApplication.id)
+        .filter(SeminarApplication.seminar_id == seminar_id)
+        .order_by(SeminarApplicationParticipant.full_name)
+        .all()
+    )
+    for p in participants:
+        p.default_hours = _default_theory_hours(seminar, p)
+    return participants
+
+
+@bp.route("/<int:seminar_id>/protocol", methods=["GET", "POST"])
+def protocol_edit(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        _fill_protocol_from_form(seminar, request.form)
+        _sync_protocol_participants(request.form)
+        db.session.commit()
+        flash("Данные протокола сохранены", "success")
+        return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
+    participants = _protocol_participants(seminar_id, seminar)
+    return render_template(
+        "seminars/protocol/edit.html", seminar=seminar, participants=participants,
+        references=references,
+    )
+
+
+@bp.route("/<int:seminar_id>/protocol/print")
+def protocol_print(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    participants = _protocol_participants(seminar_id, seminar)
+    return render_template("seminars/protocol/print.html", seminar=seminar, participants=participants)
