@@ -19,8 +19,8 @@
         <input type="text" name="protocol_number" class="form-control" placeholder="1/04-2025" value="{{ seminar.protocol_number or '' }}">
     </div>
     <div class="col-md-4">
-        <label class="form-label">Субъект Российской Федерации</label>
-        <input type="text" name="protocol_region" class="form-control" value="{{ seminar.protocol_region or '' }}">
+        <label class="form-label">Место проведения</label>
+        <input type="text" class="form-control" value="{{ seminar.location or '' }}" disabled>
     </div>
 
     <div class="col-12 mt-4">
