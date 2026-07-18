@@ -7,7 +7,7 @@
 <h1 class="h3 mb-2 text-uppercase text-center seminar-title">{{ seminar.name }}</h1>
 
 <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
-    {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}</span>{% endif %}
+    {% if seminar.category %}<span class="badge {{ seminar.category|seminar_category_badge }}">{{ seminar.category }}{% if seminar.program_hours %}, {{ seminar.program_hours }}{% endif %}</span>{% endif %}
     {% if seminar.qualification_exam == "Да" %}<span class="badge bg-dark">квалификационный зачет</span>{% endif %}
     {% if seminar.organizer %}<span class="badge bg-light text-dark border">{{ seminar.organizer }}</span>{% endif %}
 </div>
