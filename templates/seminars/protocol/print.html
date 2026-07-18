@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Протокол семинара — {{ seminar.name }}</title>
+    <style>
+        body { font-family: "Times New Roman", Georgia, serif; padding: 20px; font-size: 14pt; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; font-size: 10pt; }
+        .row-line { display: flex; justify-content: space-between; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 3px 5px; font-size: 10pt; vertical-align: middle; }
+        th { font-weight: bold; text-align: center; }
+        td.num { text-align: center; }
+        td.name { text-align: left; }
+        .signature { margin-top: 24px; font-size: 12pt; }
+        .no-print { margin-bottom: 16px; }
+        @media print { .no-print { display: none; } }
+        colgroup col:nth-child(1) { width: 3%; }
+        colgroup col:nth-child(2) { width: 20%; }
+        colgroup col:nth-child(3) { width: 15%; }
+        colgroup col:nth-child(4) { width: 11%; }
+        colgroup col:nth-child(5) { width: 11%; }
+        colgroup col:nth-child(6) { width: 11%; }
+        colgroup col:nth-child(7) { width: 10%; }
+        colgroup col:nth-child(8) { width: 12%; }
+        colgroup col:nth-child(9) { width: 7%; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button type="button" onclick="window.print()">Печать</button>
+        <a href="{{ url_for('seminars.protocol_edit', seminar_id=seminar.id) }}">Назад к протоколу</a>
+    </div>
+
+    <p class="center">{{ seminar.organizer or '' }}</p>
+    <p class="center bold">{{ seminar.name or '' }}</p>
+    <div class="row-line italic">
+        <span>{{ seminar.period or '' }}</span>
+        <span>{{ seminar.protocol_region or '' }}</span>
+    </div>
+    <p class="center bold">ПРОТОКОЛ №{{ seminar.protocol_number or '' }}</p>
+    <p class="center bold">учёта теоретической подготовки и сдачи квалификационного зачёта</p>
+    <p>Количество теоретических занятий для присвоения квалификационной категории СС1К – 16 часов, СС2К – 12 часов, СС3К - 10 часов</p>
+
+    <table>
+        <colgroup>
+            <col><col><col><col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+            <tr>
+                <th>№ п/п</th>
+                <th>Участник</th>
+                <th>Муниципальное образование, субъект Российской Федерации</th>
+                <th>Наименование квалификационной категории спортивного судьи</th>
+                <th>Наименование присваиваемой (подтверждаемой) квалификационной категории спортивного судьи</th>
+                <th>Количество теоретических занятий в качестве участника (семинар, практические занятия), академический час</th>
+                <th>Количество теоретических занятий в качестве лектора, академический час</th>
+                <th>Оценка сдачи квалификационного зачёта</th>
+                <th>№ справки</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in participants %}
+            <tr>
+                <td class="num">{{ loop.index }}</td>
+                <td class="name">{{ p.full_name }}</td>
+                <td>{{ p.application.region or '' }}</td>
+                <td class="num">{{ p.judge_qualification or '' }}</td>
+                <td class="num">{{ p.assigned_category|seminar_category_abbr }}</td>
+                <td class="num">{{ p.theory_participant_hours or '-' }}</td>
+                <td class="num">{{ p.theory_lecturer_hours or '-' }}</td>
+                <td class="num">{{ p.exam_result or '-' }}</td>
+                <td class="num">{{ p.certificate_number or '' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name|initials_surname or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
+    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name|initials_surname or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
+</body>
+</html>

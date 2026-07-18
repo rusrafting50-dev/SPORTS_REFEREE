@@ -163,6 +163,13 @@ class Seminar(db.Model):
 
     applications_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Заявки на участие»
 
+    # Данные протокола семинара
+    protocol_number = db.Column(db.String(50))       # № протокола, напр. «1/04-2025»
+    protocol_region = db.Column(db.String(150))      # регион в шапке протокола
+    deputy_full_name = db.Column(db.String(200))     # Завуч семинара
+    deputy_category = db.Column(db.String(100))
+    deputy_region = db.Column(db.String(150))
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -207,6 +214,12 @@ class SeminarApplicationParticipant(db.Model):
     judge_qualification = db.Column(db.String(100))   # Квалификация спортивного судьи
     assigned_category = db.Column(db.String(100))     # Присваиваемая (подтверждаемая) категория
     specialization = db.Column(db.String(300))        # Специализация
+
+    # Данные протокола семинара
+    theory_participant_hours = db.Column(db.String(20))  # Кол-во теор. занятий в качестве участника
+    theory_lecturer_hours = db.Column(db.String(20))     # Кол-во теор. занятий в качестве лектора
+    exam_result = db.Column(db.String(20))               # Оценка сдачи квалификационного зачёта
+    certificate_number = db.Column(db.String(50))        # № справки
 
     application = db.relationship("SeminarApplication", backref=db.backref(
         "participants", order_by="SeminarApplicationParticipant.id", cascade="all, delete-orphan",

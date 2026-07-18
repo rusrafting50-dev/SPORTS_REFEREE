@@ -41,6 +41,23 @@ def seminar_category_badge(value):
     return _SEMINAR_CATEGORY_BADGE.get(value, "bg-secondary")
 
 
+def seminar_category_abbr(value):
+    """Присваиваемая (подтверждаемая) категория семинара -> сокращение (ССВК/СС1К/...) для протокола."""
+    return references.SEMINAR_CATEGORY_ABBREVIATIONS.get(value, value)
+
+
+def initials_surname(full_name):
+    """«Фамилия Имя Отчество» -> «И. О. Фамилия» (для протокола семинара)."""
+    if not full_name:
+        return full_name
+    parts = full_name.split()
+    if len(parts) < 2:
+        return full_name
+    surname, rest = parts[0], parts[1:]
+    initials = " ".join(f"{p[0]}." for p in rest)
+    return f"{initials} {surname}"
+
+
 def ru_plural(n, one, few, many):
     """Склонение существительного по числу n (1 заявка / 2 заявки / 5 заявок)."""
     n = abs(int(n))
@@ -77,6 +94,8 @@ def create_app():
     app.jinja_env.filters["break_after_comma"] = break_after_comma
     app.jinja_env.filters["category_abbr"] = category_abbr
     app.jinja_env.filters["seminar_category_badge"] = seminar_category_badge
+    app.jinja_env.filters["seminar_category_abbr"] = seminar_category_abbr
+    app.jinja_env.filters["initials_surname"] = initials_surname
     app.jinja_env.filters["ru_plural"] = ru_plural
 
     db.init_app(app)

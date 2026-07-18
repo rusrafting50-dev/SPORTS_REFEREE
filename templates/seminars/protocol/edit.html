@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Протокол семинара — {{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_seminar = seminar.name %}
+{% set breadcrumb_current = "Протокол" %}
+{% include "seminars/_header.html" %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Протокол семинара</h1>
+    <a href="{{ url_for('seminars.protocol_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-outline-secondary">Печать</a>
+</div>
+
+<form method="post" class="row g-3">
+    <div class="col-12">
+        <h2 class="h6 mb-0">Данные протокола</h2>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">№ протокола</label>
+        <input type="text" name="protocol_number" class="form-control" placeholder="1/04-2025" value="{{ seminar.protocol_number or '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="protocol_region" class="form-control" value="{{ seminar.protocol_region or '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Завуч семинара</h2>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Фамилия Имя Отчество</label>
+        <input type="text" name="deputy_full_name" class="form-control" value="{{ seminar.deputy_full_name or '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Квалификация спортивного судьи</label>
+        <input type="text" name="deputy_category" class="form-control" value="{{ seminar.deputy_category or '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="deputy_region" class="form-control" value="{{ seminar.deputy_region or '' }}">
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Участники</h2>
+        {% if not participants %}
+        <p class="text-muted">Список участников пуст — добавьте участников в разделе «Заявки на участие».</p>
+        {% endif %}
+    </div>
+    {% if participants %}
+    <div class="col-12">
+        <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle text-center">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">№</th>
+                    <th>Участник</th>
+                    <th>Муниципальное образование, субъект РФ</th>
+                    <th>Текущая категория</th>
+                    <th>Присваиваемая категория</th>
+                    <th style="width: 110px;">Часы (участник)</th>
+                    <th style="width: 110px;">Часы (лектор)</th>
+                    <th style="width: 130px;">Оценка зачёта</th>
+                    <th style="width: 130px;">№ справки</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participants %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td class="text-start">{{ p.full_name }}</td>
+                    <td>{{ p.application.region }}</td>
+                    <td>{{ p.judge_qualification }}</td>
+                    <td>{{ p.assigned_category|seminar_category_abbr }}</td>
+                    <td>
+                        <input type="hidden" name="protocol_participant_id[]" value="{{ p.id }}">
+                        <input type="text" name="protocol_participant_hours[]" class="form-control form-control-sm" value="{{ p.theory_participant_hours or '' }}">
+                    </td>
+                    <td><input type="text" name="protocol_lecturer_hours[]" class="form-control form-control-sm" value="{{ p.theory_lecturer_hours or '' }}"></td>
+                    <td>
+                        <select name="protocol_exam_result[]" class="form-select form-select-sm">
+                            <option value=""></option>
+                            {% for r in references.SEMINAR_EXAM_RESULTS %}
+                            <option value="{{ r }}" {% if p.exam_result == r %}selected{% endif %}>{{ r }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="text" name="protocol_certificate_number[]" class="form-control form-control-sm" value="{{ p.certificate_number or '' }}"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
