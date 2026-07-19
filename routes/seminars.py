@@ -262,7 +262,12 @@ def protocol_edit(seminar_id):
 def protocol_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     participants = _protocol_participants(seminar_id, seminar)
-    return render_template("seminars/protocol/print.html", seminar=seminar, participants=participants)
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+    lecturer_hours_total = _lecturer_hours_total(lecturers)
+    return render_template(
+        "seminars/protocol/print.html", seminar=seminar, participants=participants,
+        lecturers=lecturers, lecturer_hours_total=lecturer_hours_total,
+    )
 
 
 # --- Преподавательский состав ---
