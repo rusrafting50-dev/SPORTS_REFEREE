@@ -2,7 +2,53 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     initParticipantsTable();
+    initLecturerSearch();
 });
+
+function initLecturerSearch() {
+    var searchInput = document.getElementById("lecturer-search-input");
+    var searchResults = document.getElementById("lecturer-search-results");
+    if (!searchInput || !searchResults) return;
+
+    var timer = null;
+    searchInput.addEventListener("input", function () {
+        clearTimeout(timer);
+        var q = searchInput.value.trim();
+        if (q.length < 2) {
+            searchResults.innerHTML = "";
+            return;
+        }
+        timer = setTimeout(function () {
+            fetch("/judges/search?q=" + encodeURIComponent(q))
+                .then(function (r) { return r.json(); })
+                .then(function (items) {
+                    searchResults.innerHTML = "";
+                    items.forEach(function (j) {
+                        var btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "list-group-item list-group-item-action";
+                        var label = j.full_name;
+                        if (j.birth_date) {
+                            label += " (" + j.birth_date.split("-").reverse().join(".") + ")";
+                        }
+                        btn.textContent = label;
+                        btn.addEventListener("click", function () {
+                            document.getElementById("judge_id").value = j.id;
+                            document.getElementById("full_name").value = j.full_name || "";
+                            document.getElementById("birth_date").value = j.birth_date || "";
+                            document.getElementById("region").value = j.region || "";
+                            document.querySelectorAll(".qualification-radio").forEach(function (radio) {
+                                radio.checked = j.qualification && radio.value === j.qualification;
+                            });
+                            searchInput.value = "";
+                            searchResults.innerHTML = "";
+                        });
+                        searchResults.appendChild(btn);
+                    });
+                });
+        }, 250);
+    });
+}
 
 function initParticipantsTable() {
     var tbody = document.getElementById("participants-tbody");

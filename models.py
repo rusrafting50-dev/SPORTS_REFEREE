@@ -180,16 +180,26 @@ class SeminarLecturer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     seminar_id = db.Column(db.Integer, db.ForeignKey("seminar.id"), nullable=False)
+    judge_id = db.Column(db.Integer, db.ForeignKey("judge.id"), nullable=True)
 
     full_name = db.Column(db.String(200))
-    position = db.Column(db.String(200))          # Должность на семинаре
-    qualification = db.Column(db.String(100))     # Квалификация спортивного судьи
+    birth_date = db.Column(db.Date)
     region = db.Column(db.String(150))             # Субъект Российской Федерации
+    gender = db.Column(db.String(10))
+
+    qualification = db.Column(db.String(100))      # Квалификация спортивного судьи
+    category_assigned_date = db.Column(db.Date)    # Дата присвоения
+    category_confirmed_date = db.Column(db.Date)   # Дата подтверждения
+    category_reattestation_date = db.Column(db.Date)  # Дата переаттестации
+    is_active_category = db.Column(db.Boolean, default=True)  # Статус категории: действующая
+
+    position = db.Column(db.String(100))           # Должность на семинаре
     lecture_hours = db.Column(db.String(20))       # Количество часов в качестве лектора
 
     seminar = db.relationship("Seminar", backref=db.backref(
         "lecturers", cascade="all, delete-orphan", order_by="SeminarLecturer.id",
     ))
+    judge = db.relationship("Judge")
 
 
 class SeminarApplication(db.Model):

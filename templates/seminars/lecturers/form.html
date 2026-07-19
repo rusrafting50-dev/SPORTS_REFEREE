@@ -7,28 +7,86 @@
 
 <h1 class="h3 mb-4">{{ 'Редактирование преподавателя' if lecturer else 'Добавление преподавателя' }}</h1>
 
+<div class="card mb-4" style="max-width: 700px;">
+    <div class="card-header bg-primary text-white">Поиск преподавателя в базе спортивных судей</div>
+    <div class="card-body">
+        <input type="text" id="lecturer-search-input" class="form-control" placeholder="Начните вводить фамилию...">
+        <div id="lecturer-search-results" class="list-group mt-2"></div>
+        <p class="text-muted small mt-2 mb-0">Если преподаватель уже есть в базе судей — выберите из списка, часть данных заполнится автоматически.</p>
+    </div>
+</div>
+
 <form method="post" class="row g-3" style="max-width: 700px;">
+    <input type="hidden" name="judge_id" id="judge_id" value="{{ lecturer.judge_id if lecturer and lecturer.judge_id else '' }}">
+
     <div class="col-12">
-        <label class="form-label">Фамилия, имя, отчество</label>
-        <input type="text" name="full_name" class="form-control" value="{{ lecturer.full_name if lecturer else '' }}">
+        <h2 class="h6 mb-0">Основные данные</h2>
     </div>
     <div class="col-md-6">
-        <label class="form-label">Должность на семинаре</label>
-        <input type="text" name="position" class="form-control" value="{{ lecturer.position if lecturer else '' }}">
+        <label class="form-label">ФИО полностью *</label>
+        <input type="text" name="full_name" id="full_name" class="form-control" required value="{{ lecturer.full_name if lecturer else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Квалификация спортивного судьи</label>
-        <select name="qualification" class="form-select">
-            <option value=""></option>
-            {% for q in judge_qualifications %}
-            <option value="{{ q }}" {% if lecturer and lecturer.qualification == q %}selected{% endif %}>{{ q }}</option>
-            {% endfor %}
-        </select>
+        <label class="form-label">Дата рождения</label>
+        <input type="date" name="birth_date" id="birth_date" class="form-control" value="{{ lecturer.birth_date.isoformat() if lecturer and lecturer.birth_date else '' }}">
     </div>
     <div class="col-md-6">
-        <label class="form-label">Субъект Российской Федерации</label>
-        <input type="text" name="region" class="form-control" value="{{ lecturer.region if lecturer else '' }}">
+        <label class="form-label">Субъект РФ</label>
+        <input type="text" name="region" id="region" class="form-control" value="{{ lecturer.region if lecturer else '' }}">
     </div>
+    <div class="col-md-6">
+        <label class="form-label d-block">Пол</label>
+        <div class="form-check form-check-inline">
+            <input type="radio" name="gender" value="муж" class="form-check-input" id="gender-m" {% if lecturer and lecturer.gender == "муж" %}checked{% endif %}>
+            <label class="form-check-label" for="gender-m">Муж.</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input type="radio" name="gender" value="жен" class="form-check-input" id="gender-f" {% if lecturer and lecturer.gender == "жен" %}checked{% endif %}>
+            <label class="form-check-label" for="gender-f">Жен.</label>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <label class="form-label d-block">Квалификация спортивного судьи *</label>
+        {% for q in lecturer_qualifications %}
+        <div class="form-check form-check-inline">
+            <input type="radio" name="qualification" value="{{ q }}" class="form-check-input qualification-radio" id="qualification-{{ q }}" {% if lecturer and lecturer.qualification == q %}checked{% endif %} required>
+            <label class="form-check-label" for="qualification-{{ q }}">{{ q }}</label>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Дата присвоения</label>
+        <input type="date" name="category_assigned_date" class="form-control" value="{{ lecturer.category_assigned_date.isoformat() if lecturer and lecturer.category_assigned_date else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата подтверждения</label>
+        <input type="date" name="category_confirmed_date" class="form-control" value="{{ lecturer.category_confirmed_date.isoformat() if lecturer and lecturer.category_confirmed_date else '' }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата переаттестации</label>
+        <input type="date" name="category_reattestation_date" class="form-control" value="{{ lecturer.category_reattestation_date.isoformat() if lecturer and lecturer.category_reattestation_date else '' }}">
+    </div>
+    <div class="col-12">
+        <div class="form-check form-switch">
+            <input type="checkbox" name="is_active_category" value="1" class="form-check-input" id="is_active_category" {% if not lecturer or lecturer.is_active_category %}checked{% endif %}>
+            <label class="form-check-label" for="is_active_category">Действующая категория</label>
+        </div>
+    </div>
+
+    <div class="col-12 mt-4">
+        <h2 class="h6 mb-0">Должность на семинаре</h2>
+    </div>
+    <div class="col-12">
+        {% for p in lecturer_positions %}
+        <div class="form-check form-check-inline">
+            <input type="radio" name="position" value="{{ p }}" class="form-check-input" id="position-{{ loop.index }}" {% if lecturer and lecturer.position == p %}checked{% endif %}>
+            <label class="form-check-label" for="position-{{ loop.index }}">{{ p }}</label>
+        </div>
+        {% endfor %}
+    </div>
+
     <div class="col-md-6">
         <label class="form-label">Количество часов в качестве лектора</label>
         <input type="text" name="lecture_hours" class="form-control" value="{{ lecturer.lecture_hours if lecturer else '' }}">

@@ -269,10 +269,18 @@ def protocol_print(seminar_id):
 
 def _fill_lecturer_from_form(lecturer, form):
     lecturer.full_name = form.get("full_name", "").strip() or None
-    lecturer.position = form.get("position", "").strip() or None
-    lecturer.qualification = form.get("qualification", "").strip() or None
+    lecturer.birth_date = _parse_date(form.get("birth_date"))
     lecturer.region = form.get("region", "").strip() or None
+    lecturer.gender = form.get("gender", "").strip() or None
+    lecturer.qualification = form.get("qualification", "").strip() or None
+    lecturer.category_assigned_date = _parse_date(form.get("category_assigned_date"))
+    lecturer.category_confirmed_date = _parse_date(form.get("category_confirmed_date"))
+    lecturer.category_reattestation_date = _parse_date(form.get("category_reattestation_date"))
+    lecturer.is_active_category = bool(form.get("is_active_category"))
+    lecturer.position = form.get("position", "").strip() or None
     lecturer.lecture_hours = form.get("lecture_hours", "").strip() or None
+    judge_id_raw = form.get("judge_id", "").strip()
+    lecturer.judge_id = int(judge_id_raw) if judge_id_raw.isdigit() else None
 
 
 def _lecturer_hours_total(lecturers):
@@ -306,7 +314,8 @@ def lecturers_new(seminar_id):
         return redirect(url_for("seminars.lecturers_list", seminar_id=seminar.id))
     return render_template(
         "seminars/lecturers/form.html", seminar=seminar, lecturer=None,
-        judge_qualifications=JUDGE_QUALIFICATIONS,
+        lecturer_qualifications=references.SEMINAR_LECTURER_QUALIFICATIONS,
+        lecturer_positions=references.SEMINAR_LECTURER_POSITIONS,
     )
 
 
@@ -321,7 +330,8 @@ def lecturers_edit(seminar_id, lecturer_id):
         return redirect(url_for("seminars.lecturers_list", seminar_id=seminar.id))
     return render_template(
         "seminars/lecturers/form.html", seminar=seminar, lecturer=lecturer,
-        judge_qualifications=JUDGE_QUALIFICATIONS,
+        lecturer_qualifications=references.SEMINAR_LECTURER_QUALIFICATIONS,
+        lecturer_positions=references.SEMINAR_LECTURER_POSITIONS,
     )
 
 
