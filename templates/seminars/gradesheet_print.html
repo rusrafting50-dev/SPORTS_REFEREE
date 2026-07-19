@@ -71,16 +71,16 @@
             </tr>
         </thead>
         <tbody>
-            {% for row in rows %}
+            {% for p in participants %}
             <tr>
                 <td class="num">{{ loop.index }}</td>
-                <td class="name">{{ row.full_name }}</td>
-                <td>{{ row.region }}</td>
-                <td class="num">{{ row.current_qualification }}</td>
-                <td class="num">{{ row.assigned_category }}</td>
-                <td class="num">{{ row.participant_hours }}</td>
-                <td class="num">{{ row.lecturer_hours }}</td>
-                <td class="num">{{ row.exam_result }}</td>
+                <td class="name">{{ p.full_name }}</td>
+                <td>{{ p.application.region or '' }}</td>
+                <td class="num">{{ p.judge_qualification or '' }}</td>
+                <td class="num">{{ p.assigned_category|seminar_category_abbr }}</td>
+                <td class="num">{{ p.test_questions_count or '-' }}</td>
+                <td class="num">{{ p.correct_answers_count or '-' }}</td>
+                <td class="num">{{ p.exam_result or '-' }}</td>
             </tr>
             {% endfor %}
         </tbody>
