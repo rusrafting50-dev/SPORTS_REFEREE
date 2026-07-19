@@ -63,4 +63,14 @@
     </div>
 </form>
 {% endif %}
+
+<div class="d-flex justify-content-end align-items-center mt-3">
+    <form method="post" action="{{ url_for('seminars.gradesheet_toggle_status', seminar_id=seminar.id) }}">
+        {% if seminar.gradesheet_done %}
+        <button type="submit" class="btn btn-success rounded-pill">✓ Готово</button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-secondary rounded-pill">В работе</button>
+        {% endif %}
+    </form>
+</div>
 {% endblock %}

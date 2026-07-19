@@ -94,6 +94,9 @@
     {% endif %}
     {% endfor %}
     <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn btn-outline-primary">Протокол</a>
+    {% if seminar.gradesheet_done %}
+    <span class="badge bg-success rounded-pill align-self-center">✓ Готово</span>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

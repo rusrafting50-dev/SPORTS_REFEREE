@@ -281,6 +281,14 @@ def gradesheet_edit(seminar_id):
     )
 
 
+@bp.route("/<int:seminar_id>/gradesheet/toggle-status", methods=["POST"])
+def gradesheet_toggle_status(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    seminar.gradesheet_done = not seminar.gradesheet_done
+    db.session.commit()
+    return redirect(url_for("seminars.gradesheet_edit", seminar_id=seminar.id))
+
+
 @bp.route("/<int:seminar_id>/gradesheet/print")
 def gradesheet_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
