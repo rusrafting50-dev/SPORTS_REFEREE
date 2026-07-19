@@ -174,6 +174,24 @@ class Seminar(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class SeminarLecturer(db.Model):
+    """Преподаватель (лектор) семинара по подготовке спортивных судей."""
+    __tablename__ = "seminar_lecturer"
+
+    id = db.Column(db.Integer, primary_key=True)
+    seminar_id = db.Column(db.Integer, db.ForeignKey("seminar.id"), nullable=False)
+
+    full_name = db.Column(db.String(200))
+    position = db.Column(db.String(200))          # Должность на семинаре
+    qualification = db.Column(db.String(100))     # Квалификация спортивного судьи
+    region = db.Column(db.String(150))             # Субъект Российской Федерации
+    lecture_hours = db.Column(db.String(20))       # Количество часов в качестве лектора
+
+    seminar = db.relationship("Seminar", backref=db.backref(
+        "lecturers", cascade="all, delete-orphan", order_by="SeminarLecturer.id",
+    ))
+
+
 class SeminarApplication(db.Model):
     """Заявка на участие в семинаре (от направляющей организации субъекта РФ)."""
     __tablename__ = "seminar_application"

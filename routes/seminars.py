@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 import references
-from models import Seminar, SeminarApplication, SeminarApplicationParticipant, db
+from models import Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer, db
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
@@ -263,3 +263,72 @@ def protocol_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     participants = _protocol_participants(seminar_id, seminar)
     return render_template("seminars/protocol/print.html", seminar=seminar, participants=participants)
+
+
+# --- Преподавательский состав ---
+
+def _fill_lecturer_from_form(lecturer, form):
+    lecturer.full_name = form.get("full_name", "").strip() or None
+    lecturer.position = form.get("position", "").strip() or None
+    lecturer.qualification = form.get("qualification", "").strip() or None
+    lecturer.region = form.get("region", "").strip() or None
+    lecturer.lecture_hours = form.get("lecture_hours", "").strip() or None
+
+
+def _lecturer_hours_total(lecturers):
+    total = 0
+    for lecturer in lecturers:
+        hours = (lecturer.lecture_hours or "").strip()
+        if hours.isdigit():
+            total += int(hours)
+    return total
+
+
+@bp.route("/<int:seminar_id>/lecturers")
+def lecturers_list(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+    total_hours = _lecturer_hours_total(lecturers)
+    return render_template(
+        "seminars/lecturers/list.html", seminar=seminar, lecturers=lecturers, total_hours=total_hours,
+    )
+
+
+@bp.route("/<int:seminar_id>/lecturers/new", methods=["GET", "POST"])
+def lecturers_new(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        lecturer = SeminarLecturer(seminar_id=seminar.id)
+        _fill_lecturer_from_form(lecturer, request.form)
+        db.session.add(lecturer)
+        db.session.commit()
+        flash("Преподаватель добавлен", "success")
+        return redirect(url_for("seminars.lecturers_list", seminar_id=seminar.id))
+    return render_template(
+        "seminars/lecturers/form.html", seminar=seminar, lecturer=None,
+        judge_qualifications=JUDGE_QUALIFICATIONS,
+    )
+
+
+@bp.route("/<int:seminar_id>/lecturers/<int:lecturer_id>/edit", methods=["GET", "POST"])
+def lecturers_edit(seminar_id, lecturer_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    lecturer = SeminarLecturer.query.get_or_404(lecturer_id)
+    if request.method == "POST":
+        _fill_lecturer_from_form(lecturer, request.form)
+        db.session.commit()
+        flash("Данные преподавателя обновлены", "success")
+        return redirect(url_for("seminars.lecturers_list", seminar_id=seminar.id))
+    return render_template(
+        "seminars/lecturers/form.html", seminar=seminar, lecturer=lecturer,
+        judge_qualifications=JUDGE_QUALIFICATIONS,
+    )
+
+
+@bp.route("/<int:seminar_id>/lecturers/<int:lecturer_id>/delete", methods=["POST"])
+def lecturers_delete(seminar_id, lecturer_id):
+    lecturer = SeminarLecturer.query.get_or_404(lecturer_id)
+    db.session.delete(lecturer)
+    db.session.commit()
+    flash("Преподаватель удалён", "success")
+    return redirect(url_for("seminars.lecturers_list", seminar_id=seminar_id))

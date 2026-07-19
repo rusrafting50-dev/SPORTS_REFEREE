@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактирование' if lecturer else 'Добавление' }} преподавателя — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_seminar = seminar.name %}
+{% set breadcrumb_current = "Редактировать преподавателя" if lecturer else "Добавить преподавателя" %}
+{% include "seminars/_header.html" %}
+
+<h1 class="h3 mb-4">{{ 'Редактирование преподавателя' if lecturer else 'Добавление преподавателя' }}</h1>
+
+<form method="post" class="row g-3" style="max-width: 700px;">
+    <div class="col-12">
+        <label class="form-label">Фамилия, имя, отчество</label>
+        <input type="text" name="full_name" class="form-control" value="{{ lecturer.full_name if lecturer else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Должность на семинаре</label>
+        <input type="text" name="position" class="form-control" value="{{ lecturer.position if lecturer else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Квалификация спортивного судьи</label>
+        <select name="qualification" class="form-select">
+            <option value=""></option>
+            {% for q in judge_qualifications %}
+            <option value="{{ q }}" {% if lecturer and lecturer.qualification == q %}selected{% endif %}>{{ q }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Субъект Российской Федерации</label>
+        <input type="text" name="region" class="form-control" value="{{ lecturer.region if lecturer else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Количество часов в качестве лектора</label>
+        <input type="text" name="lecture_hours" class="form-control" value="{{ lecturer.lecture_hours if lecturer else '' }}">
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">{{ 'Сохранить' if lecturer else 'Создать' }}</button>
+        <a href="{{ url_for('seminars.lecturers_list', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
