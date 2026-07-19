@@ -91,6 +91,19 @@
         <label class="form-label">Количество часов в качестве лектора</label>
         <input type="text" name="lecture_hours" class="form-control" value="{{ lecturer.lecture_hours if lecturer else '' }}">
     </div>
+    <div class="col-md-6">
+        <label class="form-label">Количество часов теоретической подготовки в качестве участника</label>
+        <input type="text" name="participant_hours" class="form-control" value="{{ lecturer.participant_hours if lecturer else '' }}">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Оценка сдачи квалификационного зачёта</label>
+        <select name="exam_result" class="form-select">
+            <option value=""></option>
+            {% for r in exam_results %}
+            <option value="{{ r }}" {% if lecturer and lecturer.exam_result == r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     <div class="col-12">
         <button type="submit" class="btn btn-primary">{{ 'Сохранить' if lecturer else 'Создать' }}</button>
