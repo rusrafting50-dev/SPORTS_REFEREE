@@ -201,11 +201,11 @@ def _fill_protocol_from_form(seminar, form):
     seminar.deputy_region = form.get("deputy_region", "").strip() or None
 
 
-def _sync_protocol_participants(form):
-    participant_ids = form.getlist("protocol_participant_id[]")
-    participant_hours = form.getlist("protocol_participant_hours[]")
-    lecturer_hours = form.getlist("protocol_lecturer_hours[]")
-    exam_results = form.getlist("protocol_exam_result[]")
+def _sync_gradesheet_participants(form):
+    participant_ids = form.getlist("gradesheet_participant_id[]")
+    test_questions = form.getlist("gradesheet_test_questions[]")
+    correct_answers = form.getlist("gradesheet_correct_answers[]")
+    exam_results = form.getlist("gradesheet_exam_result[]")
 
     for i, pid_raw in enumerate(participant_ids):
         pid_raw = pid_raw.strip()
@@ -214,8 +214,8 @@ def _sync_protocol_participants(form):
         participant = SeminarApplicationParticipant.query.get(int(pid_raw))
         if not participant:
             continue
-        participant.theory_participant_hours = (participant_hours[i].strip() or None) if i < len(participant_hours) else None
-        participant.theory_lecturer_hours = (lecturer_hours[i].strip() or None) if i < len(lecturer_hours) else None
+        participant.test_questions_count = (test_questions[i].strip() or None) if i < len(test_questions) else None
+        participant.correct_answers_count = (correct_answers[i].strip() or None) if i < len(correct_answers) else None
         participant.exam_result = (exam_results[i].strip() or None) if i < len(exam_results) else None
 
 
@@ -270,9 +270,9 @@ def protocol_toggle_status(seminar_id):
 def gradesheet_edit(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     if request.method == "POST":
-        _sync_protocol_participants(request.form)
+        _sync_gradesheet_participants(request.form)
         db.session.commit()
-        flash("Ведомость сохранена", "success")
+        flash("Данные сохранены", "success")
         return redirect(url_for("seminars.gradesheet_edit", seminar_id=seminar.id))
     participants = _protocol_participants(seminar_id, seminar)
     return render_template(
@@ -292,40 +292,63 @@ def gradesheet_toggle_status(seminar_id):
 @bp.route("/<int:seminar_id>/gradesheet/print")
 def gradesheet_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
-    rows = _protocol_rows(seminar_id, seminar)
-    return render_template("seminars/gradesheet_print.html", seminar=seminar, rows=rows)
+    participants = _protocol_participants(seminar_id, seminar)
+    return render_template("seminars/gradesheet_print.html", seminar=seminar, participants=participants)
 
 
 def _protocol_rows(seminar_id, seminar):
+    """Строки таблицы «Участники»: участники + преподаватели, один и тот же судья
+    (совпадение ФИО) объединяется в одну строку со всеми данными."""
     participants = _protocol_participants(seminar_id, seminar)
     lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
-
-    rows = []
-    for p in participants:
-        rows.append(SimpleNamespace(
-            full_name=p.full_name or "",
-            region=p.application.region if p.application else "",
-            current_qualification=p.judge_qualification or "",
-            assigned_category=references.SEMINAR_CATEGORY_ABBREVIATIONS.get(p.assigned_category, p.assigned_category) if p.assigned_category else "",
-            participant_hours=p.theory_participant_hours or p.default_hours or "-",
-            lecturer_hours=p.theory_lecturer_hours or "-",
-            exam_result=p.exam_result or "-",
-        ))
+    seminar_program_hours = "".join(ch for ch in (seminar.program_hours or "") if ch.isdigit()) or "-"
     seminar_assigned_category = (
         references.SEMINAR_CATEGORY_ABBREVIATIONS.get(seminar.category, seminar.category)
         if seminar.category else "-"
     )
+
+    rows_by_key = {}
+    order = []
+
+    def _key(full_name, fallback_prefix, fallback_id):
+        name = (full_name or "").strip().lower()
+        return ("name", name) if name else (fallback_prefix, fallback_id)
+
+    for p in participants:
+        key = _key(p.full_name, "participant", p.id)
+        row = rows_by_key[key] = SimpleNamespace(
+            full_name=p.full_name or "",
+            region=p.application.region if p.application else "",
+            current_qualification=p.judge_qualification or "",
+            assigned_category=references.SEMINAR_CATEGORY_ABBREVIATIONS.get(p.assigned_category, p.assigned_category) if p.assigned_category else "",
+            participant_hours=_default_theory_hours(seminar, p) or "-",
+            lecturer_hours="-",
+            exam_result=p.exam_result or "-",
+        )
+        order.append(key)
+
     for lecturer in lecturers:
-        rows.append(SimpleNamespace(
-            full_name=lecturer.full_name or "",
-            region=lecturer.region or "",
-            current_qualification=lecturer.qualification or "",
-            assigned_category=seminar_assigned_category,
-            participant_hours=lecturer.participant_hours or "-",
-            lecturer_hours=lecturer.lecture_hours or "-",
-            exam_result=lecturer.exam_result or "-",
-        ))
-    return rows
+        key = _key(lecturer.full_name, "lecturer", lecturer.id)
+        row = rows_by_key.get(key)
+        if row is None:
+            row = rows_by_key[key] = SimpleNamespace(
+                full_name=lecturer.full_name or "",
+                region=lecturer.region or "",
+                current_qualification=lecturer.qualification or "",
+                assigned_category=seminar_assigned_category,
+                participant_hours=seminar_program_hours,
+                lecturer_hours=lecturer.lecture_hours or "-",
+                exam_result=lecturer.exam_result or "-",
+            )
+            order.append(key)
+        else:
+            row.lecturer_hours = lecturer.lecture_hours or "-"
+            if not row.region:
+                row.region = lecturer.region or ""
+            if not row.current_qualification:
+                row.current_qualification = lecturer.qualification or ""
+
+    return [rows_by_key[key] for key in order]
 
 
 @bp.route("/<int:seminar_id>/protocol/print")

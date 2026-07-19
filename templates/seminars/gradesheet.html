@@ -38,12 +38,12 @@
                     <td>{{ p.judge_qualification }}</td>
                     <td>{{ p.assigned_category|seminar_category_abbr }}</td>
                     <td>
-                        <input type="hidden" name="protocol_participant_id[]" value="{{ p.id }}">
-                        <input type="text" name="protocol_participant_hours[]" class="form-control form-control-sm" value="{{ p.theory_participant_hours or p.default_hours or '' }}">
+                        <input type="hidden" name="gradesheet_participant_id[]" value="{{ p.id }}">
+                        <input type="text" name="gradesheet_test_questions[]" class="form-control form-control-sm" value="{{ p.test_questions_count or '' }}">
                     </td>
-                    <td><input type="text" name="protocol_lecturer_hours[]" class="form-control form-control-sm" value="{{ p.theory_lecturer_hours or '' }}"></td>
+                    <td><input type="text" name="gradesheet_correct_answers[]" class="form-control form-control-sm" value="{{ p.correct_answers_count or '' }}"></td>
                     <td>
-                        <select name="protocol_exam_result[]" class="form-select form-select-sm">
+                        <select name="gradesheet_exam_result[]" class="form-select form-select-sm">
                             <option value=""></option>
                             {% for r in references.SEMINAR_EXAM_RESULTS %}
                             <option value="{{ r }}" {% if p.exam_result == r %}selected{% endif %}>{{ r }}</option>

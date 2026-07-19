@@ -250,10 +250,14 @@ class SeminarApplicationParticipant(db.Model):
     specialization = db.Column(db.String(300))        # Специализация
 
     # Данные протокола семинара
-    theory_participant_hours = db.Column(db.String(20))  # Кол-во теор. занятий в качестве участника
-    theory_lecturer_hours = db.Column(db.String(20))     # Кол-во теор. занятий в качестве лектора
+    theory_participant_hours = db.Column(db.String(20))  # Кол-во теор. занятий в качестве участника (не используется, оставлено для совместимости)
+    theory_lecturer_hours = db.Column(db.String(20))     # Кол-во теор. занятий в качестве лектора (не используется, оставлено для совместимости)
     exam_result = db.Column(db.String(20))               # Оценка сдачи квалификационного зачёта
     certificate_number = db.Column(db.String(50))        # № справки
+
+    # Данные протокола сдачи квалификационного зачёта
+    test_questions_count = db.Column(db.String(20))      # Количество тестовых вопросов
+    correct_answers_count = db.Column(db.String(20))     # Количество правильных ответов
 
     application = db.relationship("SeminarApplication", backref=db.backref(
         "participants", order_by="SeminarApplicationParticipant.id", cascade="all, delete-orphan",
