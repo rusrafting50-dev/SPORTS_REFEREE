@@ -15,6 +15,7 @@
         td.num { text-align: center; }
         td.name { text-align: left; }
         .signature { margin-top: 24px; font-size: 12pt; }
+        .signature-label { display: inline-block; min-width: 220px; }
         .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
         @media print { .no-print { display: none; } }
         .btn-back {
@@ -82,7 +83,7 @@
         </tbody>
     </table>
 
-    <p class="signature">Руководитель семинара _______________________________ {{ seminar.leader_full_name|initials_first or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
-    <p class="signature">Завуч семинара  _____________________________________ {{ seminar.deputy_full_name|initials_first or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
+    <p class="signature"><span class="signature-label">Руководитель семинара</span>{{ seminar.leader_full_name|initials_first or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
+    <p class="signature"><span class="signature-label">Завуч семинара</span>{{ seminar.deputy_full_name|initials_first or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
 </body>
 </html>
