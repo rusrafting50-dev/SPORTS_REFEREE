@@ -197,6 +197,8 @@ class SeminarLecturer(db.Model):
 
     position = db.Column(db.String(100))           # Должность на семинаре
     lecture_hours = db.Column(db.String(20))       # Количество часов в качестве лектора
+    participant_hours = db.Column(db.String(20))   # Количество часов теоретической подготовки в качестве участника
+    exam_result = db.Column(db.String(20))         # Оценка сдачи квалификационного зачёта
 
     seminar = db.relationship("Seminar", backref=db.backref(
         "lecturers", cascade="all, delete-orphan", order_by="SeminarLecturer.id",

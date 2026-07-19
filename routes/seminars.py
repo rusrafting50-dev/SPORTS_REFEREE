@@ -1,5 +1,6 @@
 # routes/seminars.py — семинары по подготовке спортивных судей по рафтингу
 from datetime import datetime
+from types import SimpleNamespace
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
@@ -266,16 +267,39 @@ def protocol_toggle_status(seminar_id):
     return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
 
 
+def _protocol_rows(seminar_id, seminar):
+    participants = _protocol_participants(seminar_id, seminar)
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+
+    rows = []
+    for p in participants:
+        rows.append(SimpleNamespace(
+            full_name=p.full_name or "",
+            region=p.application.region if p.application else "",
+            current_qualification=p.judge_qualification or "",
+            assigned_category=references.SEMINAR_CATEGORY_ABBREVIATIONS.get(p.assigned_category, p.assigned_category) if p.assigned_category else "",
+            participant_hours=p.theory_participant_hours or p.default_hours or "-",
+            lecturer_hours=p.theory_lecturer_hours or "-",
+            exam_result=p.exam_result or "-",
+        ))
+    for lecturer in lecturers:
+        rows.append(SimpleNamespace(
+            full_name=lecturer.full_name or "",
+            region=lecturer.region or "",
+            current_qualification=lecturer.qualification or "",
+            assigned_category="-",
+            participant_hours=lecturer.participant_hours or "-",
+            lecturer_hours=lecturer.lecture_hours or "-",
+            exam_result=lecturer.exam_result or "-",
+        ))
+    return rows
+
+
 @bp.route("/<int:seminar_id>/protocol/print")
 def protocol_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
-    participants = _protocol_participants(seminar_id, seminar)
-    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
-    lecturer_hours_total = _lecturer_hours_total(lecturers)
-    return render_template(
-        "seminars/protocol/print.html", seminar=seminar, participants=participants,
-        lecturers=lecturers, lecturer_hours_total=lecturer_hours_total,
-    )
+    rows = _protocol_rows(seminar_id, seminar)
+    return render_template("seminars/protocol/print.html", seminar=seminar, rows=rows)
 
 
 # --- Преподавательский состав ---
@@ -292,6 +316,8 @@ def _fill_lecturer_from_form(lecturer, form):
     lecturer.is_active_category = bool(form.get("is_active_category"))
     lecturer.position = form.get("position", "").strip() or None
     lecturer.lecture_hours = form.get("lecture_hours", "").strip() or None
+    lecturer.participant_hours = form.get("participant_hours", "").strip() or None
+    lecturer.exam_result = form.get("exam_result", "").strip() or None
     judge_id_raw = form.get("judge_id", "").strip()
     lecturer.judge_id = int(judge_id_raw) if judge_id_raw.isdigit() else None
 
@@ -337,6 +363,7 @@ def lecturers_new(seminar_id):
         "seminars/lecturers/form.html", seminar=seminar, lecturer=None,
         lecturer_qualifications=references.SEMINAR_LECTURER_QUALIFICATIONS,
         lecturer_positions=references.SEMINAR_LECTURER_POSITIONS,
+        exam_results=references.SEMINAR_EXAM_RESULTS,
     )
 
 
@@ -353,6 +380,7 @@ def lecturers_edit(seminar_id, lecturer_id):
         "seminars/lecturers/form.html", seminar=seminar, lecturer=lecturer,
         lecturer_qualifications=references.SEMINAR_LECTURER_QUALIFICATIONS,
         lecturer_positions=references.SEMINAR_LECTURER_POSITIONS,
+        exam_results=references.SEMINAR_EXAM_RESULTS,
     )
 
 
