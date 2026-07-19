@@ -41,7 +41,7 @@
         <button type="button" onclick="window.print()" class="btn-print">Печать</button>
     </div>
 
-    <p class="center">{{ seminar.organizer or '' }}</p>
+    <p class="center">{{ seminar.federation_full_name or '' }}</p>
     <p class="center bold">{{ seminar.name or '' }}</p>
     <div class="row-line italic">
         <span>{{ seminar.period or '' }}</span>
@@ -49,7 +49,6 @@
     </div>
     <p class="center bold">ПРОТОКОЛ №{{ seminar.protocol_number or '' }}</p>
     <p class="center bold">учёта теоретической подготовки и сдачи квалификационного зачёта</p>
-    <p>Количество теоретических занятий для присвоения квалификационной категории СС1К – 16 часов, СС2К – 12 часов, СС3К - 10 часов</p>
 
     <table>
         <colgroup>
