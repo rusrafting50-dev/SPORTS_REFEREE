@@ -194,6 +194,7 @@ def applications_print(seminar_id, application_id):
 
 def _fill_protocol_from_form(seminar, form):
     seminar.protocol_number = form.get("protocol_number", "").strip() or None
+    seminar.federation_full_name = form.get("federation_full_name", "").strip() or None
     seminar.deputy_full_name = form.get("deputy_full_name", "").strip() or None
     seminar.deputy_category = form.get("deputy_category", "").strip() or None
     seminar.deputy_region = form.get("deputy_region", "").strip() or None

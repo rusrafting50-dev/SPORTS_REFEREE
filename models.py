@@ -166,6 +166,7 @@ class Seminar(db.Model):
     # Данные протокола семинара
     protocol_number = db.Column(db.String(50))       # № протокола, напр. «1/04-2025»
     protocol_region = db.Column(db.String(150))      # регион в шапке протокола
+    federation_full_name = db.Column(db.String(500))  # Полное наименование спортивной федерации
     deputy_full_name = db.Column(db.String(200))     # Завуч семинара
     deputy_category = db.Column(db.String(100))
     deputy_region = db.Column(db.String(150))
