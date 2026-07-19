@@ -281,6 +281,13 @@ def gradesheet_edit(seminar_id):
     )
 
 
+@bp.route("/<int:seminar_id>/gradesheet/print")
+def gradesheet_print(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    rows = _protocol_rows(seminar_id, seminar)
+    return render_template("seminars/gradesheet_print.html", seminar=seminar, rows=rows)
+
+
 def _protocol_rows(seminar_id, seminar):
     participants = _protocol_participants(seminar_id, seminar)
     lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()

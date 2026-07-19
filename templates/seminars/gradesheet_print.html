@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Протокол сдачи квалификационного зачёта — {{ seminar.name }}</title>
+    <style>
+        body { font-family: "Times New Roman", Georgia, serif; padding: 20px; font-size: 14pt; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; font-size: 10pt; }
+        .row-line { display: flex; justify-content: space-between; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td {
+            border: 1px solid #000; padding: 3px 4px; font-size: 10pt; vertical-align: middle;
+            overflow-wrap: normal; word-break: keep-all; hyphens: none;
+        }
+        th { font-weight: bold; text-align: center; font-size: 8pt; line-height: 1.2; }
+        td.num { text-align: center; }
+        td.name { text-align: left; }
+        .signature { margin-top: 24px; font-size: 12pt; }
+        .signature-label { display: inline-block; min-width: 340px; }
+        .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
+        @media print { .no-print { display: none; } }
+        .btn-back {
+            display: inline-block; padding: 6px 14px; border: 1px solid #ced4da; border-radius: 4px;
+            background: #f8f9fa; color: #333; text-decoration: none;
+        }
+        .btn-print {
+            display: inline-block; padding: 6px 18px; border: none; border-radius: 4px;
+            background: #0d6efd; color: #fff; cursor: pointer;
+        }
+        table.participants-table colgroup col:nth-child(1) { width: 3%; }
+        table.participants-table colgroup col:nth-child(2) { width: 22%; }
+        table.participants-table colgroup col:nth-child(3) { width: 16%; }
+        table.participants-table colgroup col:nth-child(4) { width: 12%; }
+        table.participants-table colgroup col:nth-child(5) { width: 12%; }
+        table.participants-table colgroup col:nth-child(6) { width: 12%; }
+        table.participants-table colgroup col:nth-child(7) { width: 11%; }
+        table.participants-table colgroup col:nth-child(8) { width: 12%; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn-back">← Протокол сдачи квалификационного зачёта</a>
+        <button type="button" onclick="window.print()" class="btn-print">Печать</button>
+    </div>
+
+    <p class="center">{{ seminar.federation_full_name or '' }}</p>
+    <p class="center bold">{{ seminar.name or '' }}</p>
+    <div class="row-line italic">
+        <span>{{ seminar.period or '' }}</span>
+        <span>{{ seminar.location or '' }}</span>
+    </div>
+    <p class="center bold">ПРОТОКОЛ №{{ seminar.protocol_number or '' }}</p>
+    <p class="center bold">сдачи квалификационного зачёта</p>
+
+    <table class="participants-table">
+        <colgroup>
+            <col><col><col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+            <tr>
+                <th>№ п/п</th>
+                <th>Участник</th>
+                <th>Муниципальное образование, субъект Российской Федерации</th>
+                <th>Наименование квалификационной категории спортивного судьи</th>
+                <th>Наименование присваиваемой (подтверждаемой) квалификационной категории спортивного судьи</th>
+                <th>Количество тестовых вопросов</th>
+                <th>Количество правильных ответов</th>
+                <th>Оценка сдачи квалификационного зачёта</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td class="num">{{ loop.index }}</td>
+                <td class="name">{{ row.full_name }}</td>
+                <td>{{ row.region }}</td>
+                <td class="num">{{ row.current_qualification }}</td>
+                <td class="num">{{ row.assigned_category }}</td>
+                <td class="num">{{ row.participant_hours }}</td>
+                <td class="num">{{ row.lecturer_hours }}</td>
+                <td class="num">{{ row.exam_result }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="signature"><span class="signature-label">Руководитель семинара</span>{{ seminar.leader_full_name|initials_first or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
+    <p class="signature"><span class="signature-label">Завуч семинара</span>{{ seminar.deputy_full_name|initials_first or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
+</body>
+</html>
