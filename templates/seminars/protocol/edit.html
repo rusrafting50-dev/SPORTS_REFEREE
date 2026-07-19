@@ -22,6 +22,10 @@
         <label class="form-label">Место проведения</label>
         <input type="text" class="form-control" value="{{ seminar.location or '' }}" disabled>
     </div>
+    <div class="col-12">
+        <label class="form-label">Полное наименование спортивной федерации</label>
+        <input type="text" name="federation_full_name" class="form-control" value="{{ seminar.federation_full_name or '' }}">
+    </div>
 
     <div class="col-12 mt-4">
         <h2 class="h6 mb-0">Завуч семинара</h2>
@@ -59,7 +63,6 @@
                     <th style="width: 110px;">Часы (участник)</th>
                     <th style="width: 110px;">Часы (лектор)</th>
                     <th style="width: 130px;">Оценка зачёта</th>
-                    <th style="width: 130px;">№ справки</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,7 +86,6 @@
                             {% endfor %}
                         </select>
                     </td>
-                    <td><input type="text" name="protocol_certificate_number[]" class="form-control form-control-sm" value="{{ p.certificate_number or '' }}"></td>
                 </tr>
                 {% endfor %}
             </tbody>

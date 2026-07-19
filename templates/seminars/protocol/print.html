@@ -18,14 +18,13 @@
         .no-print { margin-bottom: 16px; }
         @media print { .no-print { display: none; } }
         colgroup col:nth-child(1) { width: 3%; }
-        colgroup col:nth-child(2) { width: 20%; }
-        colgroup col:nth-child(3) { width: 15%; }
-        colgroup col:nth-child(4) { width: 11%; }
-        colgroup col:nth-child(5) { width: 11%; }
-        colgroup col:nth-child(6) { width: 11%; }
-        colgroup col:nth-child(7) { width: 10%; }
+        colgroup col:nth-child(2) { width: 22%; }
+        colgroup col:nth-child(3) { width: 16%; }
+        colgroup col:nth-child(4) { width: 12%; }
+        colgroup col:nth-child(5) { width: 12%; }
+        colgroup col:nth-child(6) { width: 12%; }
+        colgroup col:nth-child(7) { width: 11%; }
         colgroup col:nth-child(8) { width: 12%; }
-        colgroup col:nth-child(9) { width: 7%; }
     </style>
 </head>
 <body>
@@ -46,7 +45,7 @@
 
     <table>
         <colgroup>
-            <col><col><col><col><col><col><col><col><col>
+            <col><col><col><col><col><col><col><col>
         </colgroup>
         <thead>
             <tr>
@@ -58,7 +57,6 @@
                 <th>Количество теоретических занятий в качестве участника (семинар, практические занятия), академический час</th>
                 <th>Количество теоретических занятий в качестве лектора, академический час</th>
                 <th>Оценка сдачи квалификационного зачёта</th>
-                <th>№ справки</th>
             </tr>
         </thead>
         <tbody>
@@ -72,7 +70,6 @@
                 <td class="num">{{ p.theory_participant_hours or p.default_hours or '-' }}</td>
                 <td class="num">{{ p.theory_lecturer_hours or '-' }}</td>
                 <td class="num">{{ p.exam_result or '-' }}</td>
-                <td class="num">{{ p.certificate_number or '' }}</td>
             </tr>
             {% endfor %}
         </tbody>

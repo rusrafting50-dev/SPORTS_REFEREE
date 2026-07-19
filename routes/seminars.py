@@ -194,6 +194,7 @@ def applications_print(seminar_id, application_id):
 
 def _fill_protocol_from_form(seminar, form):
     seminar.protocol_number = form.get("protocol_number", "").strip() or None
+    seminar.federation_full_name = form.get("federation_full_name", "").strip() or None
     seminar.deputy_full_name = form.get("deputy_full_name", "").strip() or None
     seminar.deputy_category = form.get("deputy_category", "").strip() or None
     seminar.deputy_region = form.get("deputy_region", "").strip() or None
@@ -204,7 +205,6 @@ def _sync_protocol_participants(form):
     participant_hours = form.getlist("protocol_participant_hours[]")
     lecturer_hours = form.getlist("protocol_lecturer_hours[]")
     exam_results = form.getlist("protocol_exam_result[]")
-    certificate_numbers = form.getlist("protocol_certificate_number[]")
 
     for i, pid_raw in enumerate(participant_ids):
         pid_raw = pid_raw.strip()
@@ -216,7 +216,6 @@ def _sync_protocol_participants(form):
         participant.theory_participant_hours = (participant_hours[i].strip() or None) if i < len(participant_hours) else None
         participant.theory_lecturer_hours = (lecturer_hours[i].strip() or None) if i < len(lecturer_hours) else None
         participant.exam_result = (exam_results[i].strip() or None) if i < len(exam_results) else None
-        participant.certificate_number = (certificate_numbers[i].strip() or None) if i < len(certificate_numbers) else None
 
 
 def _default_theory_hours(seminar, participant):
