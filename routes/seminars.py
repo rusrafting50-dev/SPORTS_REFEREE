@@ -258,6 +258,14 @@ def protocol_edit(seminar_id):
     )
 
 
+@bp.route("/<int:seminar_id>/protocol/toggle-status", methods=["POST"])
+def protocol_toggle_status(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    seminar.protocol_done = not seminar.protocol_done
+    db.session.commit()
+    return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
+
+
 @bp.route("/<int:seminar_id>/protocol/print")
 def protocol_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
@@ -295,6 +303,14 @@ def _lecturer_hours_total(lecturers):
         if hours.isdigit():
             total += int(hours)
     return total
+
+
+@bp.route("/<int:seminar_id>/lecturers/toggle-status", methods=["POST"])
+def lecturers_toggle_status(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    seminar.lecturers_done = not seminar.lecturers_done
+    db.session.commit()
+    return redirect(url_for("seminars.lecturers_list", seminar_id=seminar.id))
 
 
 @bp.route("/<int:seminar_id>/lecturers")

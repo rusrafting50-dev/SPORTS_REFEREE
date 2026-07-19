@@ -162,6 +162,8 @@ class Seminar(db.Model):
     leader_phone = db.Column(db.String(100))
 
     applications_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Заявки на участие»
+    lecturers_done = db.Column(db.Boolean, default=False, nullable=False)     # статус блока «Преподавательский состав»
+    protocol_done = db.Column(db.Boolean, default=False, nullable=False)      # статус блока «Протокол»
 
     # Данные протокола семинара
     protocol_number = db.Column(db.String(50))       # № протокола, напр. «1/04-2025»
