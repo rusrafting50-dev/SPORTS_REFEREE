@@ -282,12 +282,16 @@ def _protocol_rows(seminar_id, seminar):
             lecturer_hours=p.theory_lecturer_hours or "-",
             exam_result=p.exam_result or "-",
         ))
+    seminar_assigned_category = (
+        references.SEMINAR_CATEGORY_ABBREVIATIONS.get(seminar.category, seminar.category)
+        if seminar.category else "-"
+    )
     for lecturer in lecturers:
         rows.append(SimpleNamespace(
             full_name=lecturer.full_name or "",
             region=lecturer.region or "",
             current_qualification=lecturer.qualification or "",
-            assigned_category="-",
+            assigned_category=seminar_assigned_category,
             participant_hours=lecturer.participant_hours or "-",
             lecturer_hours=lecturer.lecture_hours or "-",
             exam_result=lecturer.exam_result or "-",
