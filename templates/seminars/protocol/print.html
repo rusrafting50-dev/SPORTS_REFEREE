@@ -29,14 +29,21 @@
             display: inline-block; padding: 6px 18px; border: none; border-radius: 4px;
             background: #0d6efd; color: #fff; cursor: pointer;
         }
-        colgroup col:nth-child(1) { width: 3%; }
-        colgroup col:nth-child(2) { width: 22%; }
-        colgroup col:nth-child(3) { width: 16%; }
-        colgroup col:nth-child(4) { width: 12%; }
-        colgroup col:nth-child(5) { width: 12%; }
-        colgroup col:nth-child(6) { width: 12%; }
-        colgroup col:nth-child(7) { width: 11%; }
-        colgroup col:nth-child(8) { width: 12%; }
+        table.participants-table colgroup col:nth-child(1) { width: 3%; }
+        table.participants-table colgroup col:nth-child(2) { width: 22%; }
+        table.participants-table colgroup col:nth-child(3) { width: 16%; }
+        table.participants-table colgroup col:nth-child(4) { width: 12%; }
+        table.participants-table colgroup col:nth-child(5) { width: 12%; }
+        table.participants-table colgroup col:nth-child(6) { width: 12%; }
+        table.participants-table colgroup col:nth-child(7) { width: 11%; }
+        table.participants-table colgroup col:nth-child(8) { width: 12%; }
+        table.lecturers-table colgroup col:nth-child(1) { width: 5%; }
+        table.lecturers-table colgroup col:nth-child(2) { width: 25%; }
+        table.lecturers-table colgroup col:nth-child(3) { width: 20%; }
+        table.lecturers-table colgroup col:nth-child(4) { width: 15%; }
+        table.lecturers-table colgroup col:nth-child(5) { width: 20%; }
+        table.lecturers-table colgroup col:nth-child(6) { width: 15%; }
+        .section-title { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -54,7 +61,7 @@
     <p class="center bold">ПРОТОКОЛ №{{ seminar.protocol_number or '' }}</p>
     <p class="center bold">учёта теоретической подготовки и сдачи квалификационного зачёта</p>
 
-    <table>
+    <table class="participants-table">
         <colgroup>
             <col><col><col><col><col><col><col><col>
         </colgroup>
@@ -85,6 +92,38 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if lecturers %}
+    <p class="center bold section-title">ПРЕПОДАВАТЕЛЬСКИЙ СОСТАВ</p>
+    <table class="lecturers-table">
+        <colgroup>
+            <col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+            <tr>
+                <th>№ п/п</th>
+                <th>Фамилия, имя, отчество</th>
+                <th>Должность на семинаре</th>
+                <th>Квалификация спортивного судьи</th>
+                <th>Субъект Российской Федерации</th>
+                <th>Количество часов в качестве лектора</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in lecturers %}
+            <tr>
+                <td class="num">{{ loop.index }}</td>
+                <td class="name">{{ l.full_name or '' }}</td>
+                <td class="num">{{ l.position or '' }}</td>
+                <td class="num">{{ l.qualification or '' }}</td>
+                <td>{{ l.region or '' }}</td>
+                <td class="num">{{ l.lecture_hours or '' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>Количество часов теоретической подготовки: {{ lecturer_hours_total }}</p>
+    {% endif %}
 
     <p class="signature"><span class="signature-label">Руководитель семинара</span>{{ seminar.leader_full_name|initials_first or '' }}{% if seminar.leader_category %}, {{ seminar.leader_category }}{% endif %}{% if seminar.leader_region %}, {{ seminar.leader_region }}{% endif %}</p>
     <p class="signature"><span class="signature-label">Завуч семинара</span>{{ seminar.deputy_full_name|initials_first or '' }}{% if seminar.deputy_category %}, {{ seminar.deputy_category }}{% endif %}{% if seminar.deputy_region %}, {{ seminar.deputy_region }}{% endif %}</p>
