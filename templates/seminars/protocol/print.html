@@ -15,8 +15,16 @@
         td.num { text-align: center; }
         td.name { text-align: left; }
         .signature { margin-top: 24px; font-size: 12pt; }
-        .no-print { margin-bottom: 16px; }
+        .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
         @media print { .no-print { display: none; } }
+        .btn-back {
+            display: inline-block; padding: 6px 14px; border: 1px solid #ced4da; border-radius: 4px;
+            background: #f8f9fa; color: #333; text-decoration: none;
+        }
+        .btn-print {
+            display: inline-block; padding: 6px 18px; border: none; border-radius: 4px;
+            background: #0d6efd; color: #fff; cursor: pointer;
+        }
         colgroup col:nth-child(1) { width: 3%; }
         colgroup col:nth-child(2) { width: 22%; }
         colgroup col:nth-child(3) { width: 16%; }
@@ -29,8 +37,8 @@
 </head>
 <body>
     <div class="no-print">
-        <button type="button" onclick="window.print()">Печать</button>
-        <a href="{{ url_for('seminars.protocol_edit', seminar_id=seminar.id) }}">Назад к протоколу</a>
+        <a href="{{ url_for('seminars.protocol_edit', seminar_id=seminar.id) }}" class="btn-back">← Протокол семинара</a>
+        <button type="button" onclick="window.print()" class="btn-print">Печать</button>
     </div>
 
     <p class="center">{{ seminar.organizer or '' }}</p>
