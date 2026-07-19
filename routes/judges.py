@@ -233,6 +233,7 @@ def judges_search():
             "id": j.id,
             "full_name": j.full_name,
             "birth_date": j.birth_date.isoformat() if j.birth_date else "",
+            "region": j.region or "",
             "qualification": _CATEGORY_TO_ABBR.get(j.current_category, ""),
         }
         for j in judges
