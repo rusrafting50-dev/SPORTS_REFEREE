@@ -18,10 +18,6 @@
         <label class="form-label">№ протокола</label>
         <input type="text" name="protocol_number" class="form-control" placeholder="1/04-2025" value="{{ seminar.protocol_number or '' }}">
     </div>
-    <div class="col-md-4">
-        <label class="form-label">Место проведения</label>
-        <input type="text" class="form-control" value="{{ seminar.location or '' }}" disabled>
-    </div>
     <div class="col-12">
         <label class="form-label">Полное наименование спортивной федерации</label>
         <input type="text" name="federation_full_name" class="form-control" value="{{ seminar.federation_full_name or '' }}">
