@@ -61,7 +61,7 @@
 
 <div class="d-flex align-items-center bg-light rounded p-2 mb-2">
     <span class="badge bg-secondary rounded-circle me-2">2</span>
-    <strong>ПРОГРАММА СЕМИНАРА</strong>
+    <strong>ПРОГРАММА СЕМИНАРА, КВАЛИФИКАЦИОННЫЙ ЗАЧЕТ</strong>
 </div>
 <div class="row g-3 mb-4">
     {% for label, color in [("Судейство соревнований", "primary"), ("Дистанции", "info"), ("Документооборот соревнований", "warning"), ("Информационное обеспечение", "secondary")] %}
@@ -81,10 +81,7 @@
 </div>
 
 {% if seminar.qualification_exam == "Да" %}
-<div class="d-flex align-items-center bg-light rounded p-2 mb-2">
-    <span class="badge bg-secondary rounded-circle me-2">3</span>
-    <strong>КВАЛИФИКАЦИОННЫЙ ЗАЧЁТ</strong>
-</div>
+<h3 class="h6 mb-2">Квалификационный зачет</h3>
 <div class="d-flex flex-wrap gap-2 mb-4">
     {% for label in ["Всероссийская", "Первая", "Вторая", "Третья"] %}
     {% if label == seminar.category %}
