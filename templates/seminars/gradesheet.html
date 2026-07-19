@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Ведомость — {{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block title %}Протокол сдачи квалификационного зачёта — {{ seminar.name }} — Спортивные судьи{% endblock %}
 {% block content %}
 {% set breadcrumb_seminar = seminar.name %}
 {% set breadcrumb_current = "Ведомость" %}
 {% include "seminars/_header.html" %}
 
-<h1 class="h3 mb-4">Ведомость</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Протокол сдачи квалификационного зачёта</h1>
+    <a href="{{ url_for('seminars.gradesheet_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-outline-secondary">🖨 Протокол сдачи квалификационного зачёта</a>
+</div>
 
 {% if not participants %}
 <p class="text-muted">Список участников пуст — добавьте участников в разделе «Заявки на участие».</p>
