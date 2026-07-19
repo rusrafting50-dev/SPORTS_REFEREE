@@ -43,62 +43,50 @@
         <input type="text" name="deputy_region" class="form-control" value="{{ seminar.deputy_region or '' }}">
     </div>
 
-    <div class="col-12 mt-4">
-        <h2 class="h6 mb-0">Участники</h2>
-        {% if not participants %}
-        <p class="text-muted">Список участников пуст — добавьте участников в разделе «Заявки на участие».</p>
-        {% endif %}
-    </div>
-    {% if participants %}
-    <div class="col-12">
-        <div class="table-responsive">
-        <table class="table table-sm table-bordered align-middle text-center">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">№</th>
-                    <th>Участник</th>
-                    <th>Муниципальное образование, субъект РФ</th>
-                    <th>Текущая категория</th>
-                    <th>Присваиваемая категория</th>
-                    <th style="width: 110px;">Часы (участник)</th>
-                    <th style="width: 110px;">Часы (лектор)</th>
-                    <th style="width: 130px;">Оценка зачёта</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in participants %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td class="text-start">{{ p.full_name }}</td>
-                    <td>{{ p.application.region }}</td>
-                    <td>{{ p.judge_qualification }}</td>
-                    <td>{{ p.assigned_category|seminar_category_abbr }}</td>
-                    <td>
-                        <input type="hidden" name="protocol_participant_id[]" value="{{ p.id }}">
-                        <input type="text" name="protocol_participant_hours[]" class="form-control form-control-sm" value="{{ p.theory_participant_hours or p.default_hours or '' }}">
-                    </td>
-                    <td><input type="text" name="protocol_lecturer_hours[]" class="form-control form-control-sm" value="{{ p.theory_lecturer_hours or '' }}"></td>
-                    <td>
-                        <select name="protocol_exam_result[]" class="form-select form-select-sm">
-                            <option value=""></option>
-                            {% for r in references.SEMINAR_EXAM_RESULTS %}
-                            <option value="{{ r }}" {% if p.exam_result == r %}selected{% endif %}>{{ r }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </div>
-    {% endif %}
-
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Сохранить</button>
         <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
     </div>
 </form>
+
+<h2 class="h6 mb-3 mt-4">Участники</h2>
+{% if not rows %}
+<p class="text-muted">Список пуст — добавьте участников в разделе «Заявки на участие» или преподавателей в разделе «Преподавательский состав».</p>
+{% else %}
+<div class="table-responsive">
+<table class="table table-sm table-bordered align-middle text-center">
+    <thead>
+        <tr>
+            <th style="width: 40px;">№</th>
+            <th>Участник</th>
+            <th>Муниципальное образование, субъект РФ</th>
+            <th>Текущая категория</th>
+            <th>Присваиваемая категория</th>
+            <th>Часы (участник)</th>
+            <th>Часы (лектор)</th>
+            <th>Оценка зачёта</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="text-start">{{ row.full_name }}</td>
+            <td>{{ row.region }}</td>
+            <td>{{ row.current_qualification }}</td>
+            <td>{{ row.assigned_category }}</td>
+            <td>{{ row.participant_hours }}</td>
+            <td>{{ row.lecturer_hours }}</td>
+            <td>{{ row.exam_result }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<p class="text-muted small">
+    Данные только для чтения. Чтобы изменить их, перейдите в разделы «Преподавательский состав», «Заявки на участие» или «Ведомость» (раздел «Квалификационный зачёт» на странице семинара).
+</p>
+{% endif %}
 
 <div class="d-flex justify-content-between align-items-center mt-3">
     <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Назад к семинару</a>

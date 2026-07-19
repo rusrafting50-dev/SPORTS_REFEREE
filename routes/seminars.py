@@ -248,13 +248,12 @@ def protocol_edit(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     if request.method == "POST":
         _fill_protocol_from_form(seminar, request.form)
-        _sync_protocol_participants(request.form)
         db.session.commit()
         flash("Данные протокола сохранены", "success")
         return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
-    participants = _protocol_participants(seminar_id, seminar)
+    rows = _protocol_rows(seminar_id, seminar)
     return render_template(
-        "seminars/protocol/edit.html", seminar=seminar, participants=participants,
+        "seminars/protocol/edit.html", seminar=seminar, rows=rows,
         references=references,
     )
 
@@ -265,6 +264,21 @@ def protocol_toggle_status(seminar_id):
     seminar.protocol_done = not seminar.protocol_done
     db.session.commit()
     return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
+
+
+@bp.route("/<int:seminar_id>/gradesheet", methods=["GET", "POST"])
+def gradesheet_edit(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        _sync_protocol_participants(request.form)
+        db.session.commit()
+        flash("Ведомость сохранена", "success")
+        return redirect(url_for("seminars.gradesheet_edit", seminar_id=seminar.id))
+    participants = _protocol_participants(seminar_id, seminar)
+    return render_template(
+        "seminars/gradesheet.html", seminar=seminar, participants=participants,
+        references=references,
+    )
 
 
 def _protocol_rows(seminar_id, seminar):
