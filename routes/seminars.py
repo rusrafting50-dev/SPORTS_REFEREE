@@ -297,37 +297,58 @@ def gradesheet_print(seminar_id):
 
 
 def _protocol_rows(seminar_id, seminar):
+    """Строки таблицы «Участники»: участники + преподаватели, один и тот же судья
+    (совпадение ФИО) объединяется в одну строку со всеми данными."""
     participants = _protocol_participants(seminar_id, seminar)
     lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
-    lecturer_hours_by_name = {l.full_name: (l.lecture_hours or "-") for l in lecturers if l.full_name}
     seminar_program_hours = "".join(ch for ch in (seminar.program_hours or "") if ch.isdigit()) or "-"
+    seminar_assigned_category = (
+        references.SEMINAR_CATEGORY_ABBREVIATIONS.get(seminar.category, seminar.category)
+        if seminar.category else "-"
+    )
 
-    rows = []
+    rows_by_key = {}
+    order = []
+
+    def _key(full_name, fallback_prefix, fallback_id):
+        name = (full_name or "").strip().lower()
+        return ("name", name) if name else (fallback_prefix, fallback_id)
+
     for p in participants:
-        rows.append(SimpleNamespace(
+        key = _key(p.full_name, "participant", p.id)
+        row = rows_by_key[key] = SimpleNamespace(
             full_name=p.full_name or "",
             region=p.application.region if p.application else "",
             current_qualification=p.judge_qualification or "",
             assigned_category=references.SEMINAR_CATEGORY_ABBREVIATIONS.get(p.assigned_category, p.assigned_category) if p.assigned_category else "",
             participant_hours=_default_theory_hours(seminar, p) or "-",
-            lecturer_hours=lecturer_hours_by_name.get(p.full_name, "-"),
+            lecturer_hours="-",
             exam_result=p.exam_result or "-",
-        ))
-    seminar_assigned_category = (
-        references.SEMINAR_CATEGORY_ABBREVIATIONS.get(seminar.category, seminar.category)
-        if seminar.category else "-"
-    )
+        )
+        order.append(key)
+
     for lecturer in lecturers:
-        rows.append(SimpleNamespace(
-            full_name=lecturer.full_name or "",
-            region=lecturer.region or "",
-            current_qualification=lecturer.qualification or "",
-            assigned_category=seminar_assigned_category,
-            participant_hours=seminar_program_hours,
-            lecturer_hours=lecturer.lecture_hours or "-",
-            exam_result=lecturer.exam_result or "-",
-        ))
-    return rows
+        key = _key(lecturer.full_name, "lecturer", lecturer.id)
+        row = rows_by_key.get(key)
+        if row is None:
+            row = rows_by_key[key] = SimpleNamespace(
+                full_name=lecturer.full_name or "",
+                region=lecturer.region or "",
+                current_qualification=lecturer.qualification or "",
+                assigned_category=seminar_assigned_category,
+                participant_hours=seminar_program_hours,
+                lecturer_hours=lecturer.lecture_hours or "-",
+                exam_result=lecturer.exam_result or "-",
+            )
+            order.append(key)
+        else:
+            row.lecturer_hours = lecturer.lecture_hours or "-"
+            if not row.region:
+                row.region = lecturer.region or ""
+            if not row.current_qualification:
+                row.current_qualification = lecturer.qualification or ""
+
+    return [rows_by_key[key] for key in order]
 
 
 @bp.route("/<int:seminar_id>/protocol/print")
