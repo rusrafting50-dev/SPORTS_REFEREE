@@ -174,6 +174,22 @@ class Seminar(db.Model):
     deputy_category = db.Column(db.String(100))
     deputy_region = db.Column(db.String(150))
 
+    # Данные положения о семинаре
+    polozhenie_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Положение»
+    polozhenie_approver_position = db.Column(db.String(500))  # Должность утверждающего лица
+    polozhenie_approver_name = db.Column(db.String(200))      # ФИО утверждающего лица
+    polozhenie_approval_date = db.Column(db.Date)              # Дата утверждения
+    polozhenie_title = db.Column(db.Text)          # Наименование положения
+    polozhenie_goals = db.Column(db.Text)          # 1. Цели и задачи
+    polozhenie_time_place = db.Column(db.Text)     # 2. Время и место проведения
+    polozhenie_organizers = db.Column(db.Text)     # 3. Организаторы
+    polozhenie_requirements = db.Column(db.Text)   # 4. Требования к участникам семинара
+    polozhenie_program = db.Column(db.Text)        # 5. Программа семинара
+    polozhenie_results = db.Column(db.Text)        # 6. Подведение итогов семинара
+    polozhenie_admission = db.Column(db.Text)      # 7. Условия приёма участников
+    polozhenie_financing = db.Column(db.Text)      # 8. Финансирование
+    polozhenie_applications = db.Column(db.Text)   # 9. Заявки на участие
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 

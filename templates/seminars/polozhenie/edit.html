@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Положение — {{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_seminar = seminar.name %}
+{% set breadcrumb_current = "Положение" %}
+{% include "seminars/_header.html" %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Положение о семинаре</h1>
+    <a href="{{ url_for('seminars.polozhenie_export', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">🖨 Положение</a>
+</div>
+
+<form method="post" class="row g-3">
+    <div class="col-12">
+        <div class="bg-primary text-white rounded px-3 py-2 fw-bold">Данные для положения</div>
+    </div>
+
+    <div class="col-12">
+        <div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+            <span class="badge bg-secondary rounded-circle me-2">У</span>
+            <strong>Утверждение</strong>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Должность утверждающего лица</label>
+        <input type="text" name="polozhenie_approver_position" class="form-control"
+               value="{{ seminar.polozhenie_approver_position or defaults.approver_position }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата утверждения</label>
+        <input type="date" name="polozhenie_approval_date" class="form-control"
+               value="{{ seminar.polozhenie_approval_date.isoformat() if seminar.polozhenie_approval_date else '' }}">
+    </div>
+    <div class="col-12">
+        <label class="form-label">ФИО утверждающего лица</label>
+        <input type="text" name="polozhenie_approver_name" class="form-control"
+               value="{{ seminar.polozhenie_approver_name or '' }}">
+    </div>
+
+    <div class="col-12 mt-2">
+        <label class="form-label">Наименование положения</label>
+        <textarea name="polozhenie_title" class="form-control" rows="2">{{ seminar.polozhenie_title or defaults.title }}</textarea>
+    </div>
+
+    {% set sections = [
+        ("1", "Цели и задачи", "polozhenie_goals", "goals"),
+        ("2", "Время и место проведения", "polozhenie_time_place", "time_place"),
+        ("3", "Организаторы", "polozhenie_organizers", "organizers"),
+        ("4", "Требования к участникам семинара", "polozhenie_requirements", "requirements"),
+        ("5", "Программа семинара", "polozhenie_program", "program"),
+        ("6", "Подведение итогов семинара", "polozhenie_results", "results"),
+        ("7", "Условия приёма участников", "polozhenie_admission", "admission"),
+        ("8", "Финансирование", "polozhenie_financing", "financing"),
+        ("9", "Заявки на участие", "polozhenie_applications", "applications"),
+    ] %}
+    {% for num, label, field, default_key in sections %}
+    <div class="col-12 mt-2">
+        <div class="d-flex align-items-center bg-light rounded p-2 mb-2">
+            <span class="badge bg-secondary rounded-circle me-2">{{ num }}</span>
+            <strong>{{ label }}</strong>
+        </div>
+        <textarea name="{{ field }}" class="form-control" rows="4">{{ seminar[field] or defaults[default_key] }}</textarea>
+    </div>
+    {% endfor %}
+
+    <div class="col-12 mt-3">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+
+<div class="d-flex justify-content-end align-items-center mt-3">
+    <form method="post" action="{{ url_for('seminars.polozhenie_toggle_status', seminar_id=seminar.id) }}">
+        {% if seminar.polozhenie_done %}
+        <button type="submit" class="btn btn-success rounded-pill">✓ Готово</button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-secondary rounded-pill">В работе</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

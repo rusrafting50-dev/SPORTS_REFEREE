@@ -2,10 +2,11 @@
 from datetime import datetime
 from types import SimpleNamespace
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
 
 import references
-from models import Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer, db
+from models import Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer, Settings, db
+from seminar_polozhenie_generator import generate_polozhenie, polozhenie_filename
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
@@ -35,6 +36,128 @@ def _fill_seminar_from_form(seminar, form):
     seminar.leader_category = form.get("leader_category", "").strip() or None
     seminar.leader_region = form.get("leader_region", "").strip() or None
     seminar.leader_phone = form.get("leader_phone", "").strip() or None
+
+
+SEMINAR_CATEGORY_GENITIVE = {
+    "Всероссийская": "всероссийской",
+    "Первая": "первой",
+    "Вторая": "второй",
+    "Третья": "третьей",
+    "Юный судья": "«Юный судья»",
+}
+
+
+def _polozhenie_defaults(seminar):
+    category_genitive = SEMINAR_CATEGORY_GENITIVE.get(seminar.category, "")
+    settings = Settings.query.first()
+    sport_name = (settings.sport_name if settings and settings.sport_name else "рафтинг")
+
+    time_place_parts = []
+    if seminar.period:
+        time_place_parts.append(f"Семинар проводится {seminar.period}.")
+    if seminar.location:
+        time_place_parts.append(f"Место проведения — {seminar.location}.")
+
+    organizers_parts = []
+    if seminar.organizer:
+        organizers_parts.append(f"Организатором семинара является {seminar.organizer}.")
+    if seminar.leader_full_name:
+        leader_line = f"Руководитель семинара — {seminar.leader_full_name}"
+        if seminar.leader_phone:
+            leader_line += f", тел. {seminar.leader_phone}"
+        organizers_parts.append(leader_line + ".")
+
+    program_parts = []
+    if seminar.program_hours:
+        program_parts.append(
+            f"Теоретические и практические занятия проводятся в форме семинара в объёме {seminar.program_hours}."
+        )
+    if seminar.qualification_exam == "Да":
+        program_parts.append(
+            "Квалификационный зачёт для присвоения (подтверждения) квалификационной категории спортивного "
+            "судьи проводится в форме экзамена по тестовым вопросам."
+        )
+
+    return {
+        "approver_position": (
+            "Президент региональной общественной организации "
+            "«Федерация спортивного туризма Московской области»"
+        ),
+        "title": (
+            f"о региональном семинаре по подготовке и повышению квалификации спортивных судей "
+            f"{category_genitive} категории по виду спорта «{sport_name}»".replace("  ", " ")
+        ),
+        "goals": (
+            f"Семинар по подготовке и повышению квалификации спортивных судей {category_genitive} категории "
+            f"по виду спорта «{sport_name}» (далее по тексту — семинар) проводится с целью подготовки и "
+            f"повышения квалификации спортивных судей {category_genitive} категории, а также повышения "
+            f"качества проведения официальных спортивных соревнований по виду спорта «{sport_name}»."
+            .replace("  ", " ")
+        ),
+        "time_place": " ".join(time_place_parts),
+        "organizers": " ".join(organizers_parts),
+        "requirements": (
+            "К участию в семинаре допускаются спортивные судьи, учёт судейской деятельности которых "
+            "осуществляется в соответствующих региональных спортивных федерациях."
+        ),
+        "program": " ".join(program_parts),
+        "results": (
+            "По результатам оценки прохождения семинара составляется протокол. На основании протокола "
+            "вносятся соответствующие записи в карточки учёта судейской деятельности спортивного судьи."
+        ),
+        "admission": "",
+        "financing": "Расходы, связанные с организацией и проведением семинара, несёт организатор семинара.",
+        "applications": "",
+    }
+
+
+def _fill_polozhenie_from_form(seminar, form):
+    seminar.polozhenie_approver_position = form.get("polozhenie_approver_position", "").strip() or None
+    seminar.polozhenie_approver_name = form.get("polozhenie_approver_name", "").strip() or None
+    seminar.polozhenie_approval_date = _parse_date(form.get("polozhenie_approval_date"))
+    seminar.polozhenie_title = form.get("polozhenie_title", "").strip() or None
+    seminar.polozhenie_goals = form.get("polozhenie_goals", "").strip() or None
+    seminar.polozhenie_time_place = form.get("polozhenie_time_place", "").strip() or None
+    seminar.polozhenie_organizers = form.get("polozhenie_organizers", "").strip() or None
+    seminar.polozhenie_requirements = form.get("polozhenie_requirements", "").strip() or None
+    seminar.polozhenie_program = form.get("polozhenie_program", "").strip() or None
+    seminar.polozhenie_results = form.get("polozhenie_results", "").strip() or None
+    seminar.polozhenie_admission = form.get("polozhenie_admission", "").strip() or None
+    seminar.polozhenie_financing = form.get("polozhenie_financing", "").strip() or None
+    seminar.polozhenie_applications = form.get("polozhenie_applications", "").strip() or None
+
+
+@bp.route("/<int:seminar_id>/polozhenie", methods=["GET", "POST"])
+def polozhenie_edit(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        _fill_polozhenie_from_form(seminar, request.form)
+        db.session.commit()
+        flash("Положение сохранено", "success")
+        return redirect(url_for("seminars.polozhenie_edit", seminar_id=seminar.id))
+    defaults = _polozhenie_defaults(seminar)
+    return render_template(
+        "seminars/polozhenie/edit.html", seminar=seminar, defaults=defaults, references=references,
+    )
+
+
+@bp.route("/<int:seminar_id>/polozhenie/toggle-status", methods=["POST"])
+def polozhenie_toggle_status(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    seminar.polozhenie_done = not seminar.polozhenie_done
+    db.session.commit()
+    return redirect(url_for("seminars.polozhenie_edit", seminar_id=seminar.id))
+
+
+@bp.route("/<int:seminar_id>/polozhenie/export")
+def polozhenie_export(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+    buffer = generate_polozhenie(seminar, lecturers)
+    return send_file(
+        buffer, as_attachment=True, download_name=polozhenie_filename(seminar),
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
 
 
 @bp.route("/")
