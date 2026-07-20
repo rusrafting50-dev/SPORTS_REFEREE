@@ -81,7 +81,11 @@
                 <span>−</span>
             </div>
             <div class="p-2 d-flex flex-wrap gap-2 align-items-center">
+                {% if label == "Спортивные судьи всероссийской категории" %}
+                <a href="{{ url_for('seminars.program_vsk_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-{{ color }}">Программа</a>
+                {% else %}
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Программа</button>
+                {% endif %}
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Презентации</button>
                 {% if seminar.qualification_exam == "Да" %}
                 {% if label != "Спортивные судьи первой категории" %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Программа ССВК — {{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block content %}
+{% set breadcrumb_seminar = seminar.name %}
+{% set breadcrumb_current = "Программа" %}
+{% include "seminars/_header.html" %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Программа подготовки спортивных судей всероссийской категории</h1>
+    <a href="{{ url_for('seminars.program_vsk_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-outline-secondary">🖨 Печать</a>
+</div>
+
+<p class="fst-italic">{{ program.goal }}</p>
+<h2 class="h6 mt-3">{{ program.section_title }}</h2>
+<p><strong>Категория слушателей семинара:</strong> {{ program.audience }}</p>
+
+<h2 class="h6 mt-4">Учебный план</h2>
+<form method="post">
+<div class="table-responsive">
+<table class="table table-sm table-bordered align-middle text-center">
+    <thead>
+        <tr>
+            <th style="width: 40px;">№ п/п</th>
+            <th class="text-start">Тема</th>
+            <th style="width: 70px;">Всего часов</th>
+            <th style="width: 70px;">Лекции</th>
+            <th style="width: 90px;">Практические занятия</th>
+            <th style="width: 220px;">Преподаватель</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.number }}</td>
+            <td class="text-start">{{ row.topic }}</td>
+            <td>{{ row.hours_total }}</td>
+            <td>{{ row.hours_lecture or "-" }}</td>
+            <td>{{ row.hours_practice or "-" }}</td>
+            <td>
+                <input type="hidden" name="item_number[]" value="{{ row.number }}">
+                <input type="text" name="lecturer_name[]" class="form-control form-control-sm" value="{{ row.lecturer_name }}">
+            </td>
+        </tr>
+        {% endfor %}
+        <tr class="fw-bold">
+            <td></td>
+            <td class="text-start">Итого:</td>
+            <td>{{ program.plan_total[0] }}</td>
+            <td>{{ program.plan_total[1] }}</td>
+            <td>{{ program.plan_total[2] }}</td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<button type="submit" class="btn btn-primary">Сохранить</button>
+<a href="{{ url_for('seminars.seminars_detail', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Отмена</a>
+</form>
+{% endblock %}

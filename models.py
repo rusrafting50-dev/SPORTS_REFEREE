@@ -299,3 +299,19 @@ class SeminarApplicationParticipant(db.Model):
         "participants", order_by="SeminarApplicationParticipant.id", cascade="all, delete-orphan",
     ))
     judge = db.relationship("Judge")
+
+
+class SeminarProgramLecturer(db.Model):
+    """Преподаватель, назначенный на тему учебного плана программы подготовки
+    спортивных судей (раздел «Программа» на карточке семинара)."""
+    __tablename__ = "seminar_program_lecturer"
+
+    id = db.Column(db.Integer, primary_key=True)
+    seminar_id = db.Column(db.Integer, db.ForeignKey("seminar.id"), nullable=False)
+    category_code = db.Column(db.String(20), nullable=False)  # ССВК / СС1К / СС2К / СС3К
+    item_number = db.Column(db.Integer, nullable=False)       # № п/п темы учебного плана
+    lecturer_name = db.Column(db.String(200))
+
+    seminar = db.relationship("Seminar", backref=db.backref(
+        "program_lecturers", cascade="all, delete-orphan",
+    ))

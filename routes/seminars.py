@@ -5,8 +5,12 @@ from types import SimpleNamespace
 from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
 
 import references
-from models import Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer, db
+from models import (
+    Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer,
+    SeminarProgramLecturer, db,
+)
 from seminar_polozhenie_generator import build_polozhenie_data, generate_polozhenie, polozhenie_filename
+from seminar_program_data import VSK_PROGRAM
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
@@ -523,3 +527,65 @@ def lecturers_delete(seminar_id, lecturer_id):
     db.session.commit()
     flash("Преподаватель удалён", "success")
     return redirect(url_for("seminars.lecturers_list", seminar_id=seminar_id))
+
+
+# --- Программа подготовки спортивных судей всероссийской категории ---
+
+def _program_rows(seminar_id, category_code, program):
+    lecturers = {
+        row.item_number: row.lecturer_name
+        for row in SeminarProgramLecturer.query.filter_by(
+            seminar_id=seminar_id, category_code=category_code,
+        ).all()
+    }
+    return [
+        SimpleNamespace(
+            number=number, topic=topic, hours_total=hours_total,
+            hours_lecture=hours_lecture, hours_practice=hours_practice,
+            lecturer_name=lecturers.get(number, ""),
+        )
+        for number, topic, hours_total, hours_lecture, hours_practice in program["plan"]
+    ]
+
+
+def _sync_program_lecturers(seminar_id, category_code, form):
+    numbers = form.getlist("item_number[]")
+    names = form.getlist("lecturer_name[]")
+    for i, number_raw in enumerate(numbers):
+        number_raw = number_raw.strip()
+        if not number_raw.isdigit():
+            continue
+        number = int(number_raw)
+        name = (names[i].strip() if i < len(names) else "") or None
+        row = SeminarProgramLecturer.query.filter_by(
+            seminar_id=seminar_id, category_code=category_code, item_number=number,
+        ).first()
+        if row is None:
+            row = SeminarProgramLecturer(
+                seminar_id=seminar_id, category_code=category_code, item_number=number,
+            )
+            db.session.add(row)
+        row.lecturer_name = name
+
+
+@bp.route("/<int:seminar_id>/program/vsk", methods=["GET", "POST"])
+def program_vsk_edit(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    if request.method == "POST":
+        _sync_program_lecturers(seminar_id, VSK_PROGRAM["category_code"], request.form)
+        db.session.commit()
+        flash("Данные сохранены", "success")
+        return redirect(url_for("seminars.program_vsk_edit", seminar_id=seminar.id))
+    rows = _program_rows(seminar_id, VSK_PROGRAM["category_code"], VSK_PROGRAM)
+    return render_template(
+        "seminars/program/vsk_edit.html", seminar=seminar, program=VSK_PROGRAM, rows=rows,
+    )
+
+
+@bp.route("/<int:seminar_id>/program/vsk/print")
+def program_vsk_print(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    rows = _program_rows(seminar_id, VSK_PROGRAM["category_code"], VSK_PROGRAM)
+    return render_template(
+        "seminars/program/vsk_print.html", seminar=seminar, program=VSK_PROGRAM, rows=rows,
+    )
