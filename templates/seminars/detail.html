@@ -90,7 +90,7 @@
                 {% else %}
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Программа</button>
                 {% endif %}
-                <button type="button" class="btn btn-sm btn-outline-{{ color }}">Презентации</button>
+                <button type="button" class="btn btn-sm btn-outline-{{ color }}">Лекции и практические занятия</button>
                 {% if seminar.qualification_exam == "Да" %}
                 <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-{{ color }}">Квалификационный зачет</a>
                 <a href="{{ url_for('seminars.gradesheet_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-sm btn-outline-{{ color }}">🖨 Протокол Квалификационного зачета</a>
