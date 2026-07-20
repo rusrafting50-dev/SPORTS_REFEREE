@@ -99,6 +99,33 @@ def _org_name_dative(nominative):
     return " ".join(words + ([quoted] if quoted else []))
 
 
+def _seminar_name_prepositional(name):
+    """«Московский областной региональный семинар по подготовке...» -> «Московском
+    областном региональном семинаре по подготовке...» — предложный падеж для
+    заголовка «ПОЛОЖЕНИЕ о ...». Склоняются только слово «семинар» и определения
+    перед ним (обычно название субъекта РФ и уровня семинара); всё, что идёт после
+    «семинар» (обороты со своими предлогами — «по подготовке», «по виду спорта» и
+    т.п.), не меняется, так как их падеж не зависит от внешнего предлога «о»."""
+    name = (name or "").strip()
+    if not name:
+        return ""
+    words = name.split()
+    try:
+        idx = next(i for i, w in enumerate(words) if w.casefold() == "семинар")
+    except StopIteration:
+        return name
+
+    declined = []
+    for word in words[:idx]:
+        if word.endswith(("ий", "ый", "ой")):
+            declined.append(word[:-2] + "ом")
+        else:
+            declined.append(word)
+    declined.append(words[idx] + "е")
+    declined.extend(words[idx + 1:])
+    return " ".join(declined)
+
+
 def build_polozhenie_data(seminar, lecturers):
     """Собирает содержимое положения о семинаре — единый источник данных и для
     страницы печати в браузере, и для генерации .docx. Текст воспроизводит
@@ -118,7 +145,7 @@ def build_polozhenie_data(seminar, lecturers):
     hours_num = PROGRAM_HOURS_NUMERAL.get(hours_value, hours_value)
 
     seminar_name = seminar.name or ""
-    title_sub = f"о {seminar_name}" if seminar_name else ""
+    title_sub = f"о {_seminar_name_prepositional(seminar_name)}" if seminar_name else ""
 
     # 1. Цели и задачи
     section1 = [
