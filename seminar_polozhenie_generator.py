@@ -7,7 +7,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 
-SECTIONS = [
+POLOZHENIE_SECTIONS = [
     ("1. Цели и задачи", "polozhenie_goals"),
     ("2. Время и место проведения", "polozhenie_time_place"),
     ("3. Организаторы", "polozhenie_organizers"),
@@ -57,7 +57,7 @@ def generate_polozhenie(seminar, lecturers):
         align=WD_ALIGN_PARAGRAPH.CENTER, space_after=18,
     )
 
-    for title, field in SECTIONS:
+    for title, field in POLOZHENIE_SECTIONS:
         _add_paragraph(document, title, bold=True, space_after=4)
         text = getattr(seminar, field) or ""
         for line in text.split("\n"):

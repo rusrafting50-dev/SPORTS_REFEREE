@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Положение — {{ seminar.name }}</title>
+    <style>
+        body { font-family: "Times New Roman", Georgia, serif; padding: 20px; font-size: 14pt; }
+        .center { text-align: center; }
+        .right { text-align: right; }
+        .bold { font-weight: bold; }
+        .justify { text-align: justify; }
+        .approval { text-align: right; margin: 0 0 4px; }
+        .title { margin: 24px 0; }
+        .section-title { font-weight: bold; margin: 16px 0 4px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #000; padding: 4px 6px; font-size: 11pt; vertical-align: middle; }
+        th { font-weight: bold; text-align: center; }
+        td.num { text-align: center; }
+        .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
+        @media print { .no-print { display: none; } }
+        .btn-back {
+            display: inline-block; padding: 6px 14px; border: 1px solid #ced4da; border-radius: 4px;
+            background: #f8f9fa; color: #333; text-decoration: none;
+        }
+        .btn-print {
+            display: inline-block; padding: 6px 18px; border: none; border-radius: 4px;
+            background: #0d6efd; color: #fff; cursor: pointer;
+        }
+        .appendix { margin-top: 48px; page-break-before: always; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <a href="{{ url_for('seminars.polozhenie_edit', seminar_id=seminar.id) }}" class="btn-back">← Положение о семинаре</a>
+        <button type="button" onclick="window.print()" class="btn-print">Печать</button>
+    </div>
+
+    <p class="approval bold">УТВЕРЖДАЮ</p>
+    {% if seminar.polozhenie_approver_position %}<p class="approval">{{ seminar.polozhenie_approver_position }}</p>{% endif %}
+    <p class="approval">_________________ {{ seminar.polozhenie_approver_name or '' }}</p>
+    <p class="approval">{{ seminar.polozhenie_approval_date.strftime('%d.%m.%Y') if seminar.polozhenie_approval_date else '' }}</p>
+
+    <div class="title center">
+        <p class="bold">ПОЛОЖЕНИЕ</p>
+        <p class="bold">{{ seminar.polozhenie_title or seminar.name or '' }}</p>
+    </div>
+
+    {% for title, text in sections %}
+    <p class="section-title">{{ title }}</p>
+    {% for line in text.split('\n') %}
+    {% if line.strip() %}<p class="justify">{{ line }}</p>{% endif %}
+    {% endfor %}
+    {% endfor %}
+
+    <div class="appendix">
+        <p class="right">Приложение 1</p>
+        <p class="right">к положению {{ seminar.polozhenie_title or seminar.name or '' }}</p>
+        <p class="center bold">ЛЕКТОРСКИЙ СОСТАВ</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>№ п/п</th>
+                    <th>Фамилия, имя, отчество</th>
+                    <th>Городской округ</th>
+                    <th>Квалификационная категория спортивного судьи</th>
+                    <th>Количество часов</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in lecturers %}
+                <tr>
+                    <td class="num">{{ loop.index }}</td>
+                    <td>{{ l.full_name }}</td>
+                    <td>{{ l.region }}</td>
+                    <td class="num">{{ l.qualification }}</td>
+                    <td class="num">{{ l.lecture_hours }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

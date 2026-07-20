@@ -7,7 +7,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Положение о семинаре</h1>
-    <a href="{{ url_for('seminars.polozhenie_export', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">🖨 Положение</a>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('seminars.polozhenie_export', seminar_id=seminar.id) }}" class="btn btn-outline-secondary">Word</a>
+        <a href="{{ url_for('seminars.polozhenie_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-outline-secondary">🖨 Положение о семинаре</a>
+    </div>
 </div>
 
 <form method="post" class="row g-3">

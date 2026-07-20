@@ -6,7 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, send_fil
 
 import references
 from models import Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer, Settings, db
-from seminar_polozhenie_generator import generate_polozhenie, polozhenie_filename
+from seminar_polozhenie_generator import POLOZHENIE_SECTIONS, generate_polozhenie, polozhenie_filename
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
@@ -157,6 +157,16 @@ def polozhenie_export(seminar_id):
     return send_file(
         buffer, as_attachment=True, download_name=polozhenie_filename(seminar),
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+
+
+@bp.route("/<int:seminar_id>/polozhenie/print")
+def polozhenie_print(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+    sections = [(title, getattr(seminar, field) or "") for title, field in POLOZHENIE_SECTIONS]
+    return render_template(
+        "seminars/polozhenie/print.html", seminar=seminar, lecturers=lecturers, sections=sections,
     )
 
 
