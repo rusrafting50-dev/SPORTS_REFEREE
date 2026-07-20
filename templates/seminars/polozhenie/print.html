@@ -4,14 +4,15 @@
     <meta charset="utf-8">
     <title>Положение — {{ seminar.name }}</title>
     <style>
-        body { font-family: "Times New Roman", Georgia, serif; padding: 20px; font-size: 14pt; }
-        .center { text-align: center; }
+        @page { size: A4; margin: 2cm 1.25cm 2cm 2.5cm; }
+        body { font-family: "Times New Roman", "Liberation Serif", serif; font-size: 12pt; line-height: 1.15; padding: 20px; max-width: 800px; margin: 0 auto; }
+        p { margin: 0; }
         .right { text-align: right; }
+        .center { text-align: center; }
         .bold { font-weight: bold; }
-        .justify { text-align: justify; }
-        .approval { text-align: right; margin: 0 0 4px; }
-        .title { margin: 24px 0; }
-        .section-title { font-weight: bold; margin: 16px 0 4px; }
+        .justify { text-align: justify; text-indent: 1.25cm; }
+        .title-main { font-size: 14pt; }
+        .spacer { height: 1em; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #000; padding: 4px 6px; font-size: 11pt; vertical-align: middle; }
         th { font-weight: bold; text-align: center; }
@@ -26,7 +27,7 @@
             display: inline-block; padding: 6px 18px; border: none; border-radius: 4px;
             background: #0d6efd; color: #fff; cursor: pointer;
         }
-        .appendix { margin-top: 48px; page-break-before: always; }
+        .appendix { margin-top: 24px; page-break-before: always; }
     </style>
 </head>
 <body>
@@ -35,27 +36,32 @@
         <button type="button" onclick="window.print()" class="btn-print">Печать</button>
     </div>
 
-    <p class="approval bold">УТВЕРЖДАЮ</p>
-    {% if seminar.polozhenie_approver_position %}<p class="approval">{{ seminar.polozhenie_approver_position }}</p>{% endif %}
-    <p class="approval">_________________ {{ seminar.polozhenie_approver_name or '' }}</p>
-    <p class="approval">{{ seminar.polozhenie_approval_date.strftime('%d.%m.%Y') if seminar.polozhenie_approval_date else '' }}</p>
+    <p class="right">УТВЕРЖДАЮ</p>
+    {% if data.approver_position %}<p class="right">{{ data.approver_position }}</p>{% endif %}
+    <div class="spacer"></div>
+    <p class="right">_______________ {{ data.approver_name }}</p>
+    <div class="spacer"></div>
 
-    <div class="title center">
-        <p class="bold">ПОЛОЖЕНИЕ</p>
-        <p class="bold">{{ seminar.polozhenie_title or seminar.name or '' }}</p>
-    </div>
+    <p class="center bold title-main">ПОЛОЖЕНИЕ</p>
+    <p class="center bold">{{ data.title_sub }}</p>
+    <div class="spacer"></div>
 
-    {% for title, text in sections %}
-    <p class="section-title">{{ title }}</p>
-    {% for line in text.split('\n') %}
-    {% if line.strip() %}<p class="justify">{{ line }}</p>{% endif %}
+    {% for number, heading, paragraphs in data.sections %}
+    <p class="center bold">{{ number }}. {{ heading }}</p>
+    {% for line in paragraphs %}
+    <p class="justify">{{ line }}</p>
     {% endfor %}
+    <div class="spacer"></div>
     {% endfor %}
 
+    <p class="center bold">{{ data.closing }}</p>
+
+    {% if data.lecturers %}
     <div class="appendix">
         <p class="right">Приложение 1</p>
-        <p class="right">к положению {{ seminar.polozhenie_title or seminar.name or '' }}</p>
-        <p class="center bold">ЛЕКТОРСКИЙ СОСТАВ</p>
+        <p class="right">к положению {{ data.title_sub }}</p>
+        <div class="spacer"></div>
+        <p class="center bold">ПРЕПОДАВАТЕЛЬСКИЙ СОСТАВ</p>
         <table>
             <thead>
                 <tr>
@@ -67,7 +73,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for l in lecturers %}
+                {% for l in data.lecturers %}
                 <tr>
                     <td class="num">{{ loop.index }}</td>
                     <td>{{ l.full_name }}</td>
@@ -79,5 +85,6 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 </body>
 </html>

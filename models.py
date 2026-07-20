@@ -176,19 +176,38 @@ class Seminar(db.Model):
 
     # Данные положения о семинаре
     polozhenie_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Положение»
-    polozhenie_approver_position = db.Column(db.String(500))  # Должность утверждающего лица
-    polozhenie_approver_name = db.Column(db.String(200))      # ФИО утверждающего лица
-    polozhenie_approval_date = db.Column(db.Date)              # Дата утверждения
-    polozhenie_title = db.Column(db.Text)          # Наименование положения
-    polozhenie_goals = db.Column(db.Text)          # 1. Цели и задачи
-    polozhenie_time_place = db.Column(db.Text)     # 2. Время и место проведения
-    polozhenie_organizers = db.Column(db.Text)     # 3. Организаторы
-    polozhenie_requirements = db.Column(db.Text)   # 4. Требования к участникам семинара
-    polozhenie_program = db.Column(db.Text)        # 5. Программа семинара
-    polozhenie_results = db.Column(db.Text)        # 6. Подведение итогов семинара
-    polozhenie_admission = db.Column(db.Text)      # 7. Условия приёма участников
-    polozhenie_financing = db.Column(db.Text)      # 8. Финансирование
-    polozhenie_applications = db.Column(db.Text)   # 9. Заявки на участие
+
+    # 1. Спортивная федерация по рафтингу
+    polozhenie_federation_full_name = db.Column(db.String(500))
+    polozhenie_federation_short_name = db.Column(db.String(100))
+    polozhenie_federation_region = db.Column(db.String(150))       # Субъект Российской Федерации
+    polozhenie_federation_leader_position = db.Column(db.String(200))  # Должность руководителя
+    polozhenie_federation_leader_name = db.Column(db.String(200))      # ФИО руководителя
+    polozhenie_federation_phone = db.Column(db.String(100))
+    polozhenie_federation_email = db.Column(db.String(150))
+
+    # 2. Сроки и место проведения семинара
+    polozhenie_period = db.Column(db.String(200))       # Сроки проведения
+    polozhenie_location = db.Column(db.String(300))     # Место проведения
+
+    # 3. Программа
+    polozhenie_program_hours = db.Column(db.String(20))  # Количество часов
+
+    # 4. Размер заявочного взноса за участие
+    polozhenie_fee_amount = db.Column(db.String(200))
+    polozhenie_fee_requisites = db.Column(db.Text)
+    polozhenie_fee_purpose = db.Column(db.String(300))
+
+    # 5. Варианты проживания и питания участников
+    polozhenie_accommodation = db.Column(db.Text)
+
+    # 6. Проезд до места проведения
+    polozhenie_travel = db.Column(db.Text)
+
+    # 7. Заявки на участие
+    polozhenie_applications_deadline = db.Column(db.Date)   # До даты
+    polozhenie_applications_email = db.Column(db.String(150))  # По электронной почте
+    polozhenie_applications_contacts = db.Column(db.Text)   # Контакты организаторов
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
