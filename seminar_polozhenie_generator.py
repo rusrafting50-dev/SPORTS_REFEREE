@@ -443,6 +443,62 @@ def _add_bordered_table(document, headers, rows_values, header_size=11, body_siz
     return table
 
 
+def _style_cell(cell, bold=False, size=11):
+    for p in cell.paragraphs:
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        if not p.runs:
+            p.add_run("")
+        for run in p.runs:
+            run.bold = bold
+            run.font.name = "Times New Roman"
+            run.font.size = Pt(size)
+
+
+def _add_study_plan_table(document, rows, plan_total):
+    """Учебный план: № п/п, Тема, Количество часов (Всего / В том числе: Лекции,
+    Практические занятия) — без столбца «Преподаватель», как в образце."""
+    total_rows = 3 + len(rows) + 1
+    table = document.add_table(rows=total_rows, cols=5)
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    number_cell = table.cell(0, 0).merge(table.cell(2, 0))
+    number_cell.text = "№ п/п"
+    topic_cell = table.cell(0, 1).merge(table.cell(2, 1))
+    topic_cell.text = "Тема"
+    hours_cell = table.cell(0, 2).merge(table.cell(0, 4))
+    hours_cell.text = "Количество часов"
+    total_cell = table.cell(1, 2).merge(table.cell(2, 2))
+    total_cell.text = "Всего"
+    vtc_cell = table.cell(1, 3).merge(table.cell(1, 4))
+    vtc_cell.text = "В том числе"
+    table.cell(2, 3).text = "Лекции"
+    table.cell(2, 4).text = "Практические занятия"
+
+    for r in range(3):
+        for c in range(5):
+            _style_cell(table.cell(r, c), bold=True, size=11)
+
+    for i, row in enumerate(rows):
+        r = 3 + i
+        values = [row.number, row.topic, row.hours_total, row.hours_lecture, row.hours_practice]
+        for c, value in enumerate(values):
+            cell = table.cell(r, c)
+            cell.text = str(value) if value is not None else ""
+            _style_cell(cell)
+        table.cell(r, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+    totals_row = 3 + len(rows)
+    values = ["", "Итого:", plan_total[0], plan_total[1], plan_total[2]]
+    for c, value in enumerate(values):
+        cell = table.cell(totals_row, c)
+        cell.text = str(value) if value is not None else ""
+        _style_cell(cell, bold=True)
+    table.cell(totals_row, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+    return table
+
+
 def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
     data = build_polozhenie_data(seminar, lecturers)
     document = docx.Document()
@@ -519,14 +575,7 @@ def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
         _add_paragraph(document, "")
         _add_paragraph(document, "Учебный план", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
-        _add_bordered_table(
-            document,
-            headers=["№ п/п", "Тема", "Всего часов", "Лекции", "Практические занятия", "Преподаватель"],
-            rows_values=[
-                [r.number, r.topic, r.hours_total, r.hours_lecture, r.hours_practice, r.lecturer_name]
-                for r in (program_rows or [])
-            ] + [["", "Итого:", program["plan_total"][0], program["plan_total"][1], program["plan_total"][2], ""]],
-        )
+        _add_study_plan_table(document, program_rows or [], program["plan_total"])
 
         _add_paragraph(document, "")
         _add_paragraph(document, program["content_heading"], bold=True)
