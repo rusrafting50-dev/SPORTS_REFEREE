@@ -143,6 +143,45 @@ def _seminar_name_prepositional(name):
     return " ".join(declined)
 
 
+def _seminar_name_genitive(name):
+    """«Московский областной региональный семинар...» -> «Московского областного
+    регионального семинара...» — родительный падеж для обращения «Руководителю ...»
+    в приложении 3 (заявка на участие). Правило склонения то же, что и в
+    _seminar_name_prepositional, но с окончаниями родительного падежа."""
+    name = (name or "").strip()
+    if not name:
+        return ""
+    words = name.split()
+    try:
+        idx = next(i for i, w in enumerate(words) if w.casefold() == "семинар")
+    except StopIteration:
+        return name
+
+    declined = []
+    for word in words[:idx]:
+        if word.endswith(("ий", "ый", "ой")):
+            declined.append(word[:-2] + "ого")
+        else:
+            declined.append(word)
+    declined.append(words[idx] + "а")
+    declined.extend(words[idx + 1:])
+    return " ".join(declined)
+
+
+APPLICATION_FORM_FIELDS = [
+    "Ф.И.О.",
+    "Дата рождения",
+    "Субъект Российской Федерации",
+    "Муниципальное образование",
+    "Электронная почта (личная)",
+    "Мобильный телефон",
+    "Стаж судейства (с какого года)",
+    "Квалификационная категория спортивного судьи",
+    "Квалификационная категория тренера",
+    "Спортивная квалификация",
+]
+
+
 def build_polozhenie_data(seminar, lecturers):
     """Собирает содержимое положения о семинаре — единый источник данных и для
     страницы печати в браузере, и для генерации .docx. Текст воспроизводит
@@ -349,6 +388,7 @@ def build_polozhenie_data(seminar, lecturers):
         "approver_signature": _initials_from_full_name(seminar.polozhenie_federation_leader_name),
         "signing_date": _fmt_date_ru(seminar.polozhenie_signing_date),
         "title_sub": title_sub,
+        "applicant_addressee": _seminar_name_genitive(seminar_name),
         "sections": sections,
         "closing": "Данное положение является приглашением на семинар",
         "lecturers": lecturers,
@@ -602,6 +642,42 @@ def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
         _add_paragraph(document, "Литература:", bold=True)
         for item in program["literature"]:
             _add_paragraph(document, item)
+
+    document.add_page_break()
+    _add_paragraph(document, "Приложение 3", align=WD_ALIGN_PARAGRAPH.RIGHT)
+    _add_paragraph(document, f"к положению {data['title_sub']}", align=WD_ALIGN_PARAGRAPH.RIGHT)
+    _add_paragraph(document, "")
+    _add_paragraph(
+        document, f"Руководителю {data['applicant_addressee']}".rstrip(),
+        align=WD_ALIGN_PARAGRAPH.RIGHT,
+    )
+    _add_paragraph(document, "")
+    _add_paragraph(document, "ЗАЯВКА", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    _add_paragraph(document, "на участие в семинаре", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    _add_paragraph(document, "")
+
+    app_table = document.add_table(rows=len(APPLICATION_FORM_FIELDS), cols=2)
+    app_table.style = "Table Grid"
+    app_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    app_table.autofit = False
+    content_width_cm = 21.0 - 2.5 - 1.25
+    app_col_widths = [Cm(content_width_cm * 0.5), Cm(content_width_cm * 0.5)]
+    for i, width in enumerate(app_col_widths):
+        app_table.columns[i].width = width
+    for row in app_table.rows:
+        for cell, width in zip(row.cells, app_col_widths):
+            cell.width = width
+    for i, label in enumerate(APPLICATION_FORM_FIELDS):
+        label_cell = app_table.cell(i, 0)
+        label_cell.text = label
+        for p in label_cell.paragraphs:
+            for run in p.runs:
+                run.font.name = "Times New Roman"
+                run.font.size = Pt(12)
+        app_table.cell(i, 1).text = ""
+
+    _add_paragraph(document, "")
+    _add_paragraph(document, "«_____» ______________ 202__ г.               Подпись ____________________________")
 
     buffer = BytesIO()
     document.save(buffer)

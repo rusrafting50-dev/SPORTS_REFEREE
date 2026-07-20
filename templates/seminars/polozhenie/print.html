@@ -178,5 +178,27 @@
         </ol>
     </div>
     {% endif %}
+
+    <div class="appendix">
+        <p class="right">Приложение 3</p>
+        <p class="right">к положению {{ data.title_sub }}</p>
+        <div class="spacer"></div>
+        <p class="right">Руководителю {{ data.applicant_addressee }}</p>
+        <div class="spacer"></div>
+        <p class="center bold">ЗАЯВКА</p>
+        <p class="center bold">на участие в семинаре</p>
+        <table>
+            <tbody>
+                {% for label in application_form_fields %}
+                <tr>
+                    <td style="width: 50%;">{{ label }}</td>
+                    <td style="width: 50%;"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="spacer"></div>
+        <p>«_____» ______________ 202__ г. &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Подпись ____________________________</p>
+    </div>
 </body>
 </html>

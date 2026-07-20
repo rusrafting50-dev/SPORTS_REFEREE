@@ -9,7 +9,9 @@ from models import (
     Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer,
     SeminarProgramLecturer, db,
 )
-from seminar_polozhenie_generator import build_polozhenie_data, generate_polozhenie, polozhenie_filename
+from seminar_polozhenie_generator import (
+    APPLICATION_FORM_FIELDS, build_polozhenie_data, generate_polozhenie, polozhenie_filename,
+)
 from seminar_program_data import SS1K_PROGRAM, SS2K_PROGRAM, SS3K_PROGRAM, VSK_PROGRAM
 
 SEMINAR_PROGRAMS = {
@@ -134,6 +136,7 @@ def polozhenie_print(seminar_id):
     return render_template(
         "seminars/polozhenie/print.html", seminar=seminar, data=data,
         program=program, program_rows=program_rows,
+        application_form_fields=APPLICATION_FORM_FIELDS,
     )
 
 
