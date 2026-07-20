@@ -73,7 +73,7 @@
     <strong>ПРОГРАММА СЕМИНАРА, КВАЛИФИКАЦИОННЫЙ ЗАЧЕТ</strong>
 </div>
 <div class="row g-3 mb-4">
-    {% for label, color, program_slug in [("Спортивные судьи всероссийской категории", "primary", "vsk"), ("Спортивные судьи первой категории", "info", "ss1k"), ("Спортивные судьи второй категории", "warning", none), ("Спортивные судьи третьей категории", "secondary", none)] %}
+    {% for label, color, program_slug in [("Спортивные судьи всероссийской категории", "primary", "vsk"), ("Спортивные судьи первой категории", "info", "ss1k"), ("Спортивные судьи второй категории", "warning", "ss2k"), ("Спортивные судьи третьей категории", "secondary", "ss3k")] %}
     <div class="col-md-6">
         <div class="border border-{{ color }} rounded overflow-hidden h-100">
             <div class="bg-{{ color }} {{ 'text-dark' if color in ('info', 'warning') else 'text-white' }} px-3 py-2 d-flex justify-content-between align-items-center">

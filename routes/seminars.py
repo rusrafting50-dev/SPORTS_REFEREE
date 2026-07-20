@@ -10,11 +10,13 @@ from models import (
     SeminarProgramLecturer, db,
 )
 from seminar_polozhenie_generator import build_polozhenie_data, generate_polozhenie, polozhenie_filename
-from seminar_program_data import SS1K_PROGRAM, VSK_PROGRAM
+from seminar_program_data import SS1K_PROGRAM, SS2K_PROGRAM, SS3K_PROGRAM, VSK_PROGRAM
 
 SEMINAR_PROGRAMS = {
     "vsk": VSK_PROGRAM,
     "ss1k": SS1K_PROGRAM,
+    "ss2k": SS2K_PROGRAM,
+    "ss3k": SS3K_PROGRAM,
 }
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
