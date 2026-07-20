@@ -11,6 +11,7 @@
         .center { text-align: center; }
         .bold { font-weight: bold; }
         .justify { text-align: justify; text-indent: 1.25cm; }
+        .bullet { text-align: justify; text-indent: 0; }
         .title-main { font-size: 14pt; }
         .spacer { height: 1em; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -39,7 +40,7 @@
     <p class="right">УТВЕРЖДАЮ</p>
     {% if data.approver_position %}<p class="right">{{ data.approver_position }}</p>{% endif %}
     <div class="spacer"></div>
-    <p class="right">_______________ {{ data.approver_name }}</p>
+    <p class="right">_______________ {{ data.approver_signature }}</p>
     <div class="spacer"></div>
 
     <p class="center bold title-main">ПОЛОЖЕНИЕ</p>
@@ -49,7 +50,7 @@
     {% for number, heading, paragraphs in data.sections %}
     <p class="center bold">{{ number }}. {{ heading }}</p>
     {% for line in paragraphs %}
-    <p class="justify">{{ line }}</p>
+    <p class="{{ 'bullet' if line.startswith('-') else 'justify' }}">{{ line }}</p>
     {% endfor %}
     <div class="spacer"></div>
     {% endfor %}

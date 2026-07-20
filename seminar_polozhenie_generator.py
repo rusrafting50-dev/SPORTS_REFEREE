@@ -1,7 +1,7 @@
 # seminar_polozhenie_generator.py — генерация документа «Положение о семинаре»
-# в точном соответствии оформлению образца data/Положение семинар СС1К.doc
-# (шрифт Times New Roman 12пт, поля страницы, выравнивание, отступ первой строки,
-# центрированные полужирные заголовки разделов, порядок разделов).
+# Текст положения воспроизводит образец data/Положение семинар СС1К.doc дословно;
+# меняются (подставляются из формы «Положение о семинаре») только фрагменты,
+# выделенные в образце полужирным шрифтом — даты, наименования, ФИО, суммы и т.п.
 from io import BytesIO
 
 import docx
@@ -19,6 +19,15 @@ SEMINAR_CATEGORY_GENITIVE = {
     "Юный судья": "«Юный судья»",
 }
 
+# Категория на ступень ниже присваиваемой — для раздела 4 (кто допускается к семинару)
+CATEGORY_PREV_TIER = {
+    "Всероссийская": "Первая",
+    "Первая": "Вторая",
+    "Вторая": "Третья",
+    "Третья": None,
+    "Юный судья": None,
+}
+
 # Значение поля «Количество часов» -> согласованная форма перед словом «программе»
 PROGRAM_HOURS_ADJECTIVE = {
     "16-ти часовая": "16-ти часовой",
@@ -26,114 +35,251 @@ PROGRAM_HOURS_ADJECTIVE = {
     "10-тичасовая": "10-ти часовой",
 }
 
+# Значение поля «Количество часов» -> форма числительного перед «академических часов»
+PROGRAM_HOURS_NUMERAL = {
+    "16-ти часовая": "16-ти",
+    "12-ти часовая": "12-ти",
+    "10-тичасовая": "10-ти",
+}
 
-def _fmt_date(value):
-    return value.strftime("%d.%m.%Y") if value else ""
+RU_MONTHS_GENITIVE = [
+    "января", "февраля", "марта", "апреля", "мая", "июня",
+    "июля", "августа", "сентября", "октября", "ноября", "декабря",
+]
+
+# Дательный падеж вида спорта для оборотов «по рафтингу» — известен только для рафтинга,
+# для прочих видов спорта используется именительный падеж (без склонения).
+SPORT_DATIVE = {"рафтинг": "рафтингу"}
+
+
+def _sport_dative(sport_name):
+    return SPORT_DATIVE.get(sport_name, sport_name)
+
+
+def _fmt_date_ru(value):
+    if not value:
+        return ""
+    return f"{value.day} {RU_MONTHS_GENITIVE[value.month - 1]} {value.year} года"
+
+
+def _clean(text):
+    """Убирает конечную точку из значения поля, чтобы не задваивалась с точкой шаблона."""
+    return (text or "").strip().rstrip(".")
+
+
+def _initials_from_full_name(full_name):
+    """«Милевский Евгений Вадимович» -> «Е. В. Милевский» (для подписи в грифе утверждения)."""
+    parts = (full_name or "").split()
+    if len(parts) < 2:
+        return full_name or ""
+    last_name, rest = parts[0], parts[1:]
+    initials = " ".join(f"{p[0]}." for p in rest if p)
+    return f"{initials} {last_name}".strip()
 
 
 def build_polozhenie_data(seminar, lecturers):
-    """Собирает содержимое положения о семинаре из полей формы — единый источник
-    данных и для страницы печати в браузере, и для генерации .docx."""
+    """Собирает содержимое положения о семинаре — единый источник данных и для
+    страницы печати в браузере, и для генерации .docx. Текст воспроизводит
+    образец data/Положение семинар СС1К.doc дословно; переменные фрагменты
+    (в образце — полужирные) подставляются из полей формы «Положение о семинаре»."""
     settings = Settings.query.first()
-    sport_name = settings.sport_name if settings and settings.sport_name else "рафтинг"
-    category_genitive = SEMINAR_CATEGORY_GENITIVE.get(seminar.category, "")
+    sport = settings.sport_name if settings and settings.sport_name else "рафтинг"
+    sport_dat = _sport_dative(sport)
+    cat = SEMINAR_CATEGORY_GENITIVE.get(seminar.category, "")
 
-    title_sub = (
-        f"о региональном семинаре по подготовке и повышению квалификации "
-        f"спортивных судей {category_genitive} категории по виду спорта «{sport_name}»"
-    ).replace("  ", " ").strip()
-
-    # 1. Спортивная федерация по рафтингу
-    section1 = []
-    full_name = seminar.polozhenie_federation_full_name or ""
-    short_name = seminar.polozhenie_federation_short_name or ""
-    if full_name:
-        line = f"Организатором семинара является {full_name}"
-        if short_name:
-            line += f" (далее по тексту — {short_name})"
-        section1.append(line + ".")
-    if seminar.polozhenie_federation_region:
-        section1.append(f"Субъект Российской Федерации: {seminar.polozhenie_federation_region}.")
-    if seminar.polozhenie_federation_leader_position or seminar.polozhenie_federation_leader_name:
-        line = "Руководитель"
-        if short_name:
-            line += f" {short_name}"
-        line += " —"
-        if seminar.polozhenie_federation_leader_position:
-            line += f" {seminar.polozhenie_federation_leader_position},"
-        if seminar.polozhenie_federation_leader_name:
-            line += f" {seminar.polozhenie_federation_leader_name}"
-        section1.append(line.rstrip(",") + ".")
-    if seminar.polozhenie_federation_phone or seminar.polozhenie_federation_email:
-        parts = []
-        if seminar.polozhenie_federation_phone:
-            parts.append(f"тел. {seminar.polozhenie_federation_phone}")
-        if seminar.polozhenie_federation_email:
-            parts.append(f"эл. почта: {seminar.polozhenie_federation_email}")
-        section1.append(", ".join(parts).capitalize() + ".")
-
-    # 2. Сроки и место проведения семинара
-    section2 = []
-    if seminar.polozhenie_period:
-        section2.append(f"2.1. Сроки проведения семинара: {seminar.polozhenie_period}.")
-    if seminar.polozhenie_location:
-        section2.append(f"2.2. Место проведения семинара: {seminar.polozhenie_location}.")
-
-    # 3. Программа
-    section3 = []
+    fed_full = seminar.polozhenie_federation_full_name or ""
+    fed_short = seminar.polozhenie_federation_short_name or ""
+    fed_region = seminar.polozhenie_federation_region or ""
+    period = seminar.polozhenie_period or ""
+    location = seminar.polozhenie_location or ""
     hours_value = seminar.polozhenie_program_hours or ""
     hours_adj = PROGRAM_HOURS_ADJECTIVE.get(hours_value, hours_value)
+    hours_num = PROGRAM_HOURS_NUMERAL.get(hours_value, hours_value)
+
+    title_nom = f"Региональный семинар по подготовке и повышению квалификации спортивных судей {cat} категории по виду спорта «{sport}»"
+    title_sub = f"о региональном семинаре по подготовке и повышению квалификации спортивных судей {cat} категории по виду спорта «{sport}»"
+
+    # 1. Цели и задачи
+    section1 = [
+        (
+            f"1.1. {title_nom} (далее по тексту - семинар) "
+            f"проводится с целью подготовки и повышения квалификации спортивных судей {cat} категории по {sport_dat}"
+            + (f", а также повышения качества проведения официальных спортивных соревнований по {sport_dat}"
+               f" в {fed_region}." if fed_region else f", а также повышения качества проведения официальных "
+               f"спортивных соревнований по {sport_dat}.")
+        ),
+        "1.2. Основными задачами семинара являются:",
+        (
+            f"- выполнение требований по прохождению теоретической подготовки для присвоения (подтверждения) "
+            f"квалификационных категорий «спортивный судья {cat} категории» в соответствии с квалификационными "
+            f"требованиями к спортивным судьям по виду спорта «{sport}»;"
+        ),
+        (
+            f"- выполнение требований по сдаче квалификационного зачета для присвоения (подтверждения) "
+            f"квалификационных категорий «спортивный судья {cat} категории» в соответствии с квалификационными "
+            f"требованиями к спортивным судьям по виду спорта «{sport}»;"
+        ),
+        (
+            f"- обобщение и трансляция передового опыта организации и проведения муниципальных и региональных "
+            f"официальных спортивных соревнований по виду спорта «{sport}» для повышения качества организации "
+            f"и проведения официальных спортивных соревнований;"
+        ),
+        (
+            f"- совершенствование требований к обеспечению безопасности, постановке дистанций, организации "
+            f"судейства и работы секретариата на соревнованиях по виду спорта «{sport}»."
+        ),
+    ]
+
+    # 2. Время и место проведения
+    section2 = []
+    if period:
+        section2.append(f"2.1. Сроки проведения семинара: {period}.")
+    if location:
+        section2.append(f"2.2. Место проведения семинара: {location}.")
+
+    # 3. Организаторы
+    section3 = []
+    if fed_full:
+        line = f"3.1. Организатором семинара является {fed_full}"
+        if fed_short:
+            line += f" (далее по тексту {fed_short})"
+        section3.append(line + ".")
+    section3.append(
+        f"3.2. Непосредственное проведение семинара возлагается на руководителя семинара, утвержденного "
+        f"президиумом {fed_short}, и на преподавательский состав семинара, утвержденный руководителем "
+        f"семинара. Список лекторского состава приведен в приложении 1 к настоящему положению."
+    )
+    section3.append(
+        f"3.3. Непосредственное проведение во время Семинара сдачи квалификационного зачета осуществляет "
+        f"аттестационная комиссия семинара, утвержденная региональной коллегией судей {fed_short}. Список "
+        f"аттестационной комиссии семинара приведен в приложении 1 к настоящему Положению."
+    )
+    leader_bits = ", ".join(
+        p for p in (seminar.leader_full_name, seminar.leader_category, seminar.leader_region) if p
+    )
+    if leader_bits:
+        line = f"3.4. Руководитель семинара – {leader_bits}"
+        if seminar.leader_phone:
+            line += f", тел. {seminar.leader_phone}"
+        section3.append(line + ".")
+
+    # 4. Требования к участникам семинара
+    section4 = [
+        f"4.1. К участию в семинаре допускаются спортивные судьи, учет судейской работы которых "
+        f"осуществляется в {fed_short}, в местных спортивных федерациях {fed_region} и в местных "
+        f"отделениях {fed_short}, а также других субъектов Российской Федерации.",
+        "4.2. К участию в семинаре допускаются:",
+    ]
+    prev_category = CATEGORY_PREV_TIER.get(seminar.category)
+    if prev_category:
+        prev_cat = SEMINAR_CATEGORY_GENITIVE.get(prev_category, "")
+        section4.append(
+            f"- спортивные судьи по виду спорта «{sport}», имеющие квалификационную категорию спортивного "
+            f"судьи «спортивный судья {prev_cat} категории», претендующие на подтверждение квалификационной "
+            f"категории «спортивный судья {prev_cat} категории» или присвоение квалификационной категории "
+            f"«спортивный судья {cat} категории»;"
+        )
+    else:
+        section4.append(
+            f"- спортсмены, специалисты, тренеры, учителя общеобразовательных школ и прочие лица, "
+            f"пожелавшие принять участие в проведении соревнований по {sport_dat}, без опыта судейства, "
+            f"претендующие на присвоение квалификационной категории «спортивный судья {cat} категории»;"
+        )
+    section4.append(
+        f"- спортивные судьи по виду спорта «{sport}», имеющие квалификационную категорию спортивного "
+        f"судьи «спортивный судья {cat} категории», претендующие на подтверждение квалификационной "
+        f"категории «спортивный судья {cat} категории»."
+    )
+    section4.append(
+        f"4.3. Все участники семинара для прохождения теоретической подготовки и прохождения "
+        f"квалификационного зачета должны иметь возможность подключения к информационному ресурсу "
+        f"{fed_short} через сеть Интернет посредством аудио и видео связи и через компьютер для участия "
+        f"в практических занятиях."
+    )
+    section4.append(
+        "4.4. Ссылка на информационный ресурс и порядок подключения к нему участников будет выслан "
+        "слушателям после подачи заявки на участие в семинаре."
+    )
+
+    # 5. Программа семинара
+    section5 = []
     if hours_value:
-        section3.append(
-            f"3.1. Теоретические занятия по подготовке спортивных судей {category_genitive} категории "
-            f"проводятся в форме семинара и практических занятий по {hours_adj} программе."
+        section5.append(
+            f"5.1. Теоретические занятия по подготовке спортивных судей {cat} категории проводится в форме "
+            f"семинара и практических занятий по {hours_adj} программе."
         )
     if seminar.qualification_exam == "Да":
-        section3.append(
-            "3.2. Квалификационный зачёт для присвоения (подтверждения) квалификационной категории "
+        section5.append(
+            "5.2. Квалификационный зачет для присвоения или подтверждения квалификационной категории "
             "спортивного судьи проводится в форме экзамена по тестовым вопросам."
         )
+    section5.append(
+        "5.4. По результатам оценки прохождения семинара участниками, руководителем будет составлен "
+        "протокол учета теоретической подготовки и сдачи квалификационного зачета. На основании данного "
+        "протокола будут внесены соответствующие записи в карточки учета судейской деятельности спортивного "
+        "судьи и в квалификационные книжки спортивных судей."
+    )
 
-    # 4. Размер заявочного взноса за участие
-    section4 = []
-    if seminar.polozhenie_fee_amount:
-        section4.append(f"Размер: {seminar.polozhenie_fee_amount}.")
-    if seminar.polozhenie_fee_requisites:
-        section4.append(f"Реквизиты для оплаты: {seminar.polozhenie_fee_requisites}.")
-    if seminar.polozhenie_fee_purpose:
-        section4.append(f"Назначение платежа: {seminar.polozhenie_fee_purpose}.")
-
-    # 5. Варианты проживания и питания участников
-    section5 = [line for line in (seminar.polozhenie_accommodation or "").split("\n") if line.strip()]
-
-    # 6. Проезд до места проведения
-    section6 = [line for line in (seminar.polozhenie_travel or "").split("\n") if line.strip()]
-
-    # 7. Заявки на участие
-    section7 = []
-    if seminar.polozhenie_applications_deadline:
-        section7.append(
-            f"Для участия в семинаре необходимо подать заявку до {_fmt_date(seminar.polozhenie_applications_deadline)} "
-            f"включительно."
+    # 6. Подведение итогов семинара
+    section6 = []
+    if hours_value:
+        section6.append(
+            f"6.1. В программе семинара аттестационная комиссия проводит квалификационный зачёт. Информация "
+            f"о теоретической подготовке (лекций и практических занятий в объеме {hours_num} академических "
+            f"часов) и о сдаче квалификационного зачета для присвоения (подтверждения) квалификационной "
+            f"категории «спортивный судья {cat} категории» в соответствии с квалификационными требованиями "
+            f"к спортивным судьям по виду спорта «{sport}»."
         )
+
+    # 7. Условия приёма участников
+    section7 = []
+    if seminar.polozhenie_fee_amount:
+        section7.append(
+            f"7.1. Все участники семинара обязаны оплатить целевой взнос за участие в семинаре в размере: "
+            f"{_clean(seminar.polozhenie_fee_amount)} рублей."
+        )
+    if seminar.polozhenie_fee_requisites:
+        section7.append(f"Реквизиты для оплаты: {_clean(seminar.polozhenie_fee_requisites)}.")
+    if seminar.polozhenie_fee_purpose:
+        section7.append(f"Назначение платежа: {_clean(seminar.polozhenie_fee_purpose)}.")
+    if seminar.polozhenie_accommodation:
+        section7.append(f"7.2. Варианты проживания участников: {_clean(seminar.polozhenie_accommodation)}.")
+    if seminar.polozhenie_travel:
+        section7.append(f"7.3. Проезд до места проведения семинара: {_clean(seminar.polozhenie_travel)}.")
+
+    # 8. Финансирование
+    section8 = [
+        f"8.1. Расходы, связанные с организацией и проведением семинара, несёт {fed_short}.",
+        "8.2. Расходы участников, связанные с участием в семинаре, несут командирующие организации.",
+    ]
+
+    # 9. Заявки на участие
+    section9 = []
+    deadline = _fmt_date_ru(seminar.polozhenie_applications_deadline)
+    if deadline:
+        section9.append(f"9.1. Для участия в семинаре необходимо до {deadline} включительно:")
     if seminar.polozhenie_applications_email:
-        section7.append(f"По электронной почте: {seminar.polozhenie_applications_email}.")
+        section9.append(f"- отправить заявку на семинар на электронный адрес: {_clean(seminar.polozhenie_applications_email)}.")
+    if deadline:
+        section9.append("- оплатить целевой взнос за участие в семинаре.")
     if seminar.polozhenie_applications_contacts:
-        section7.append(f"Контакты организаторов: {seminar.polozhenie_applications_contacts}.")
+        section9.append(f"9.2. Контакты организаторов: {_clean(seminar.polozhenie_applications_contacts)}.")
 
     sections = [
-        (1, "Спортивная федерация по рафтингу", section1),
-        (2, "Сроки и место проведения семинара", section2),
-        (3, "Программа", section3),
-        (4, "Размер заявочного взноса за участие", section4),
-        (5, "Варианты проживания и питания участников", section5),
-        (6, "Проезд до места проведения", section6),
-        (7, "Заявки на участие", section7),
+        (1, "Цели и задачи", section1),
+        (2, "Время и место проведения", section2),
+        (3, "Организаторы", section3),
+        (4, "Требования к участникам семинара", section4),
+        (5, "Программа семинара", section5),
+        (6, "Подведение итогов семинара", section6),
+        (7, "Условия приёма участников", section7),
+        (8, "Финансирование", section8),
+        (9, "Заявки на участие", section9),
     ]
 
     return {
         "approver_position": seminar.polozhenie_federation_leader_position or "",
-        "approver_name": seminar.polozhenie_federation_leader_name or "",
+        "approver_signature": _initials_from_full_name(seminar.polozhenie_federation_leader_name),
         "title_sub": title_sub,
         "sections": sections,
         "closing": "Данное положение является приглашением на семинар",
@@ -177,7 +323,7 @@ def generate_polozhenie(seminar, lecturers):
     if data["approver_position"]:
         _add_paragraph(document, data["approver_position"], align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, "")
-    _add_paragraph(document, f"_______________ {data['approver_name']}".rstrip(), align=WD_ALIGN_PARAGRAPH.RIGHT)
+    _add_paragraph(document, f"_______________ {data['approver_signature']}".rstrip(), align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, "")
 
     _add_paragraph(document, "ПОЛОЖЕНИЕ", bold=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -187,7 +333,8 @@ def generate_polozhenie(seminar, lecturers):
     for number, heading, paragraphs in data["sections"]:
         _add_paragraph(document, f"{number}. {heading}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
         for line in paragraphs:
-            _add_paragraph(document, line, first_line_indent=1.25)
+            indent = None if line.startswith("-") else 1.25
+            _add_paragraph(document, line, first_line_indent=indent)
         if not paragraphs:
             _add_paragraph(document, "")
         _add_paragraph(document, "")
