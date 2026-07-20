@@ -7,7 +7,7 @@ from io import BytesIO
 import docx
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Cm, Pt
+from docx.shared import Cm, Emu, Pt
 
 SEMINAR_CATEGORY_GENITIVE = {
     "Всероссийская": "всероссийской",
@@ -454,6 +454,12 @@ def _style_cell(cell, bold=False, size=11):
             run.font.size = Pt(size)
 
 
+# Ширина столбцов таблицы «Учебный план» в твипах (1/20 пт) — как в образцах
+# data/Программа подготовки спортивных судей СС1К/СС2К/СС3К/ССВК рафтинг.docx
+# (№ п/п, Тема, Всего, Лекции, Практические занятия).
+STUDY_PLAN_COLUMN_WIDTHS_TWIPS = [614, 5386, 851, 992, 1701]
+
+
 def _add_study_plan_table(document, rows, plan_total):
     """Учебный план: № п/п, Тема, Количество часов (Всего / В том числе: Лекции,
     Практические занятия) — без столбца «Преподаватель», как в образце."""
@@ -461,6 +467,14 @@ def _add_study_plan_table(document, rows, plan_total):
     table = document.add_table(rows=total_rows, cols=5)
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+
+    col_widths = [Emu(twips * 635) for twips in STUDY_PLAN_COLUMN_WIDTHS_TWIPS]
+    for i, width in enumerate(col_widths):
+        table.columns[i].width = width
+    for row in table.rows:
+        for cell, width in zip(row.cells, col_widths):
+            cell.width = width
 
     number_cell = table.cell(0, 0).merge(table.cell(2, 0))
     number_cell.text = "№ п/п"
