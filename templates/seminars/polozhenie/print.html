@@ -46,9 +46,13 @@
             <td style="width: 2.8%;"></td>
             <td style="width: 50%;" class="approval-cell">
                 <p>УТВЕРЖДАЮ</p>
-                {% if data.approver_position %}<p>{{ data.approver_position }}</p>{% endif %}
+                {% if data.approver_line %}<p>{{ data.approver_line }}</p>{% endif %}
                 <div class="spacer"></div>
                 <p>_______________ {{ data.approver_signature }}</p>
+                {% if data.signing_date %}
+                <div class="spacer"></div>
+                <p>{{ data.signing_date }}</p>
+                {% endif %}
             </td>
         </tr>
     </table>

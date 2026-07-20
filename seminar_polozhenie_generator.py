@@ -9,8 +9,6 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt
 
-from models import Settings
-
 SEMINAR_CATEGORY_GENITIVE = {
     "Всероссийская": "всероссийской",
     "Первая": "первой",
@@ -77,13 +75,36 @@ def _initials_from_full_name(full_name):
     return f"{initials} {last_name}".strip()
 
 
+def _org_name_dative(nominative):
+    """«Региональная общественная организация «Федерация...»» -> «региональной
+    общественной организации «Федерация...»» (родительный/дательный падеж — для
+    грифа «УТВЕРЖДАЮ»; само наименование в кавычках не склоняется). Полное
+    наименование федерации (раздел 1) при этом остаётся в именительном падеже —
+    в этой форме оно используется в разделе «Организаторы»."""
+    nominative = (nominative or "").strip()
+    if not nominative:
+        return ""
+    quote_pos = nominative.find("«")
+    prefix, quoted = (nominative, "") if quote_pos == -1 else (nominative[:quote_pos], nominative[quote_pos:])
+    words = []
+    for word in prefix.split():
+        if word.endswith("ая"):
+            words.append(word[:-2] + "ой")
+        elif word.endswith("ия") or word.endswith("ция"):
+            words.append(word[:-1] + "и")
+        else:
+            words.append(word)
+    if words:
+        words[0] = words[0][0].lower() + words[0][1:]
+    return " ".join(words + ([quoted] if quoted else []))
+
+
 def build_polozhenie_data(seminar, lecturers):
     """Собирает содержимое положения о семинаре — единый источник данных и для
     страницы печати в браузере, и для генерации .docx. Текст воспроизводит
     образец data/Положение семинар СС1К.doc дословно; переменные фрагменты
     (в образце — полужирные) подставляются из полей формы «Положение о семинаре»."""
-    settings = Settings.query.first()
-    sport = settings.sport_name if settings and settings.sport_name else "рафтинг"
+    sport = "рафтинг"
     sport_dat = _sport_dative(sport)
     cat = SEMINAR_CATEGORY_GENITIVE.get(seminar.category, "")
 
@@ -277,9 +298,14 @@ def build_polozhenie_data(seminar, lecturers):
         (9, "Заявки на участие", section9),
     ]
 
+    approver_line = " ".join(
+        p for p in (seminar.polozhenie_federation_leader_position, _org_name_dative(fed_full)) if p
+    )
+
     return {
-        "approver_position": seminar.polozhenie_federation_leader_position or "",
+        "approver_line": approver_line,
         "approver_signature": _initials_from_full_name(seminar.polozhenie_federation_leader_name),
+        "signing_date": _fmt_date_ru(seminar.polozhenie_signing_date),
         "title_sub": title_sub,
         "sections": sections,
         "closing": "Данное положение является приглашением на семинар",
@@ -320,7 +346,7 @@ def _add_table_cell_text(cell, lines):
         run.font.size = Pt(12)
 
 
-def _add_approval_table(document, position, signature):
+def _add_approval_table(document, approver_line, signature, signing_date):
     """Безрамочная таблица 1×3 (47% / 3% / 50%) — гриф «УТВЕРЖДАЮ» в правой ячейке,
     как в образце data/Положение семинар СС1К.doc."""
     table = document.add_table(rows=1, cols=3)
@@ -334,10 +360,13 @@ def _add_approval_table(document, position, signature):
             cell.width = width
 
     lines = ["УТВЕРЖДАЮ"]
-    if position:
-        lines.append(position)
+    if approver_line:
+        lines.append(approver_line)
     lines.append("")
     lines.append(f"_______________ {signature}".rstrip())
+    if signing_date:
+        lines.append("")
+        lines.append(signing_date)
 
     _add_table_cell_text(table.rows[0].cells[0], [""])
     _add_table_cell_text(table.rows[0].cells[1], [""])
@@ -360,7 +389,7 @@ def generate_polozhenie(seminar, lecturers):
     section.top_margin = Cm(2.0)
     section.bottom_margin = Cm(2.0)
 
-    _add_approval_table(document, data["approver_position"], data["approver_signature"])
+    _add_approval_table(document, data["approver_line"], data["approver_signature"], data["signing_date"])
     _add_paragraph(document, "")
 
     _add_paragraph(document, "ПОЛОЖЕНИЕ", bold=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER)

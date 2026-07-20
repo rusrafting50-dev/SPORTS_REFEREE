@@ -53,6 +53,7 @@ def _fill_polozhenie_from_form(seminar, form):
     seminar.polozhenie_federation_leader_name = form.get("polozhenie_federation_leader_name", "").strip() or None
     seminar.polozhenie_federation_phone = form.get("polozhenie_federation_phone", "").strip() or None
     seminar.polozhenie_federation_email = form.get("polozhenie_federation_email", "").strip() or None
+    seminar.polozhenie_signing_date = _parse_date(form.get("polozhenie_signing_date"))
 
     seminar.polozhenie_period = form.get("polozhenie_period", "").strip() or None
     seminar.polozhenie_location = form.get("polozhenie_location", "").strip() or None

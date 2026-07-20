@@ -55,6 +55,11 @@
         <input type="email" name="polozhenie_federation_email" class="form-control"
                value="{{ seminar.polozhenie_federation_email or '' }}">
     </div>
+    <div class="col-md-4">
+        <label class="form-label">Дата подписи положения</label>
+        <input type="date" name="polozhenie_signing_date" class="form-control"
+               value="{{ seminar.polozhenie_signing_date.isoformat() if seminar.polozhenie_signing_date else '' }}">
+    </div>
 
     <div class="col-12 mt-2">
         <div class="d-flex align-items-center bg-light rounded p-2 mb-2">

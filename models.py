@@ -185,6 +185,7 @@ class Seminar(db.Model):
     polozhenie_federation_leader_name = db.Column(db.String(200))      # ФИО руководителя
     polozhenie_federation_phone = db.Column(db.String(100))
     polozhenie_federation_email = db.Column(db.String(150))
+    polozhenie_signing_date = db.Column(db.Date)    # Дата подписи положения
 
     # 2. Сроки и место проведения семинара
     polozhenie_period = db.Column(db.String(200))       # Сроки проведения
