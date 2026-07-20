@@ -19,6 +19,14 @@ SEMINAR_PROGRAMS = {
     "ss3k": SS3K_PROGRAM,
 }
 
+# Категория семинара (поле «Наименование присваиваемой категории») -> программа подготовки
+CATEGORY_TO_PROGRAM_SLUG = {
+    "Всероссийская": "vsk",
+    "Первая": "ss1k",
+    "Вторая": "ss2k",
+    "Третья": "ss3k",
+}
+
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
 bp = Blueprint("seminars", __name__, url_prefix="/seminars")
@@ -109,7 +117,8 @@ def polozhenie_toggle_status(seminar_id):
 def polozhenie_export(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
-    buffer = generate_polozhenie(seminar, lecturers)
+    program, program_rows = _seminar_program(seminar)
+    buffer = generate_polozhenie(seminar, lecturers, program, program_rows)
     return send_file(
         buffer, as_attachment=True, download_name=polozhenie_filename(seminar),
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -121,7 +130,11 @@ def polozhenie_print(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)
     lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
     data = build_polozhenie_data(seminar, lecturers)
-    return render_template("seminars/polozhenie/print.html", seminar=seminar, data=data)
+    program, program_rows = _seminar_program(seminar)
+    return render_template(
+        "seminars/polozhenie/print.html", seminar=seminar, data=data,
+        program=program, program_rows=program_rows,
+    )
 
 
 @bp.route("/")
@@ -561,6 +574,17 @@ def _program_rows(seminar_id, category_code, program):
         )
         for number, topic, hours_total, hours_lecture, hours_practice in program["plan"]
     ]
+
+
+def _seminar_program(seminar):
+    """Программа подготовки, соответствующая присваиваемой категории семинара —
+    для приложения 2 к положению о семинаре."""
+    slug = CATEGORY_TO_PROGRAM_SLUG.get(seminar.category)
+    program = SEMINAR_PROGRAMS.get(slug)
+    if not program:
+        return None, None
+    rows = _program_rows(seminar.id, program["category_code"], program)
+    return program, rows
 
 
 def _sync_program_lecturers(seminar_id, category_code, form):

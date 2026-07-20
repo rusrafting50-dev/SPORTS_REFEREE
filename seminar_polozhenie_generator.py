@@ -418,7 +418,32 @@ def _add_approval_table(document, approver_line, signature, signing_date):
     _add_table_cell_text(table.rows[0].cells[2], lines)
 
 
-def generate_polozhenie(seminar, lecturers):
+def _add_bordered_table(document, headers, rows_values, header_size=11, body_size=11):
+    table = document.add_table(rows=1, cols=len(headers))
+    table.style = "Table Grid"
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    for cell, header in zip(table.rows[0].cells, headers):
+        cell.text = header
+        for p in cell.paragraphs:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in p.runs:
+                run.bold = True
+                run.font.name = "Times New Roman"
+                run.font.size = Pt(header_size)
+
+    for values in rows_values:
+        row = table.add_row().cells
+        for cell, value in zip(row, values):
+            cell.text = str(value) if value is not None else ""
+            for p in cell.paragraphs:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                for run in p.runs:
+                    run.font.name = "Times New Roman"
+                    run.font.size = Pt(body_size)
+    return table
+
+
+def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
     data = build_polozhenie_data(seminar, lecturers)
     document = docx.Document()
 
@@ -469,35 +494,51 @@ def generate_polozhenie(seminar, lecturers):
         _add_paragraph(document, "")
         _add_paragraph(document, "ПРЕПОДАВАТЕЛЬСКИЙ СОСТАВ", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
-        table = document.add_table(rows=1, cols=5)
-        table.style = "Table Grid"
-        table.alignment = WD_TABLE_ALIGNMENT.CENTER
-        headers = [
-            "№ п/п", "Фамилия, имя, отчество", "Городской округ",
-            "Квалификационная категория спортивного судьи", "Количество часов",
-        ]
-        for cell, header in zip(table.rows[0].cells, headers):
-            cell.text = header
-            for p in cell.paragraphs:
-                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                for run in p.runs:
-                    run.bold = True
-                    run.font.name = "Times New Roman"
-                    run.font.size = Pt(11)
+        _add_bordered_table(
+            document,
+            headers=[
+                "№ п/п", "Фамилия, имя, отчество", "Городской округ",
+                "Квалификационная категория спортивного судьи", "Количество часов",
+            ],
+            rows_values=[
+                [i, l.full_name or "", l.region or "", l.qualification or "", l.lecture_hours or ""]
+                for i, l in enumerate(lecturers, start=1)
+            ],
+        )
 
-        for i, lecturer in enumerate(lecturers, start=1):
-            row = table.add_row().cells
-            values = [
-                str(i), lecturer.full_name or "", lecturer.region or "",
-                lecturer.qualification or "", lecturer.lecture_hours or "",
-            ]
-            for cell, value in zip(row, values):
-                cell.text = value
-                for p in cell.paragraphs:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    for run in p.runs:
-                        run.font.name = "Times New Roman"
-                        run.font.size = Pt(11)
+    if program:
+        document.add_page_break()
+        _add_paragraph(document, "Приложение 2", align=WD_ALIGN_PARAGRAPH.RIGHT)
+        _add_paragraph(document, f"к положению {data['title_sub']}", align=WD_ALIGN_PARAGRAPH.RIGHT)
+        _add_paragraph(document, "")
+        _add_paragraph(document, "ПРОГРАММА СЕМИНАРА", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+        _add_paragraph(document, program["goal"], align=WD_ALIGN_PARAGRAPH.CENTER)
+        _add_paragraph(document, "")
+        _add_paragraph(document, program["section_title"], bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+        _add_paragraph(document, f"Категория слушателей семинара: {program['audience']}")
+        _add_paragraph(document, "")
+        _add_paragraph(document, "Учебный план", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+
+        _add_bordered_table(
+            document,
+            headers=["№ п/п", "Тема", "Всего часов", "Лекции", "Практические занятия", "Преподаватель"],
+            rows_values=[
+                [r.number, r.topic, r.hours_total, r.hours_lecture, r.hours_practice, r.lecturer_name]
+                for r in (program_rows or [])
+            ] + [["", "Итого:", program["plan_total"][0], program["plan_total"][1], program["plan_total"][2], ""]],
+        )
+
+        _add_paragraph(document, "")
+        _add_paragraph(document, program["content_heading"], bold=True)
+        for number, subtitle, body in program["content"]:
+            _add_paragraph(document, subtitle, bold=True)
+            for para in body.split("\n\n"):
+                _add_paragraph(document, para)
+
+        _add_paragraph(document, "")
+        _add_paragraph(document, "Литература:", bold=True)
+        for item in program["literature"]:
+            _add_paragraph(document, item)
 
     buffer = BytesIO()
     document.save(buffer)
