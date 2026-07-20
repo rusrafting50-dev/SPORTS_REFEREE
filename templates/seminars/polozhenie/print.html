@@ -10,7 +10,8 @@
         .right { text-align: right; }
         .center { text-align: center; }
         .bold { font-weight: bold; }
-        .justify { text-align: justify; text-indent: 1.25cm; }
+        .justify { text-align: justify; text-indent: 1.25cm; break-inside: avoid; page-break-inside: avoid; }
+        .section-keep { break-inside: avoid; page-break-inside: avoid; }
         .title-main { font-size: 14pt; }
         .spacer { height: 1em; }
         .appendix table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -62,8 +63,13 @@
     <div class="spacer"></div>
 
     {% for number, heading, paragraphs in data.sections %}
-    <p class="center bold">{{ number }}. {{ heading }}</p>
-    {% for line in paragraphs %}
+    <div class="section-keep">
+        <p class="center bold">{{ number }}. {{ heading }}</p>
+        {% for line in paragraphs[:3] %}
+        <p class="justify">{{ line }}</p>
+        {% endfor %}
+    </div>
+    {% for line in paragraphs[3:] %}
     <p class="justify">{{ line }}</p>
     {% endfor %}
     <div class="spacer"></div>

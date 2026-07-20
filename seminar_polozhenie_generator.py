@@ -356,12 +356,15 @@ def build_polozhenie_data(seminar, lecturers):
 
 
 def _add_paragraph(document, text="", bold=False, size=12, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
-                    first_line_indent=None, space_after=0):
+                    first_line_indent=None, space_after=0, keep_with_next=False, keep_together=False):
     p = document.add_paragraph()
     p.alignment = align
     p.paragraph_format.space_after = Pt(space_after)
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.line_spacing = 1.0
+    p.paragraph_format.keep_with_next = keep_with_next
+    p.paragraph_format.keep_together = keep_together
+    p.paragraph_format.widow_control = True
     if first_line_indent is not None:
         p.paragraph_format.first_line_indent = Cm(first_line_indent)
     run = p.add_run(text)
@@ -438,10 +441,21 @@ def generate_polozhenie(seminar, lecturers):
     _add_paragraph(document, data["title_sub"], bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     _add_paragraph(document, "")
 
+    # Заголовок раздела «держится» вместе с первыми строками текста после него
+    # (минимум 3), чтобы при попадании на конец страницы заголовок целиком
+    # переносился на следующую страницу вместе со своим текстом.
+    HEADING_KEEP_LINES = 3
+
     for number, heading, paragraphs in data["sections"]:
-        _add_paragraph(document, f"{number}. {heading}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-        for line in paragraphs:
-            _add_paragraph(document, line, first_line_indent=1.25)
+        _add_paragraph(
+            document, f"{number}. {heading}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER,
+            keep_with_next=True, keep_together=True,
+        )
+        for i, line in enumerate(paragraphs):
+            _add_paragraph(
+                document, line, first_line_indent=1.25,
+                keep_together=True, keep_with_next=(i < HEADING_KEEP_LINES - 1),
+            )
         if not paragraphs:
             _add_paragraph(document, "")
         _add_paragraph(document, "")
