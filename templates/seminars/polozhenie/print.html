@@ -183,7 +183,9 @@
         <p class="right">Приложение 3</p>
         <p class="right">к положению {{ data.title_sub }}</p>
         <div class="spacer"></div>
-        <p class="right">Руководителю {{ data.applicant_addressee }}</p>
+        {% for line in data.applicant_addressee_lines %}
+        <p class="right">{{ line }}</p>
+        {% endfor %}
         <div class="spacer"></div>
         <p class="center bold">ЗАЯВКА</p>
         <p class="center bold">на участие в семинаре</p>

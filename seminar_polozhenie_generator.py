@@ -168,6 +168,31 @@ def _seminar_name_genitive(name):
     return " ".join(declined)
 
 
+def _wrap_into_lines(text, lines_count=4):
+    """Разбивает строку по границам слов на заданное число строк примерно равной
+    длины — адресный блок «Руководителю ...» в приложении 3 длинный и в одну
+    строку не помещается, в образце он занимает несколько строк."""
+    words = text.split()
+    if not words:
+        return []
+    target = max(1, round(len(text) / lines_count))
+    lines = []
+    current = []
+    current_len = 0
+    for word in words:
+        extra = len(word) + (1 if current else 0)
+        if current and current_len + extra > target and len(lines) < lines_count - 1:
+            lines.append(" ".join(current))
+            current = [word]
+            current_len = len(word)
+        else:
+            current.append(word)
+            current_len += extra
+    if current:
+        lines.append(" ".join(current))
+    return lines
+
+
 APPLICATION_FORM_FIELDS = [
     "Ф.И.О.",
     "Дата рождения",
@@ -383,12 +408,16 @@ def build_polozhenie_data(seminar, lecturers):
         p for p in (seminar.polozhenie_federation_leader_position, _org_name_dative(fed_full)) if p
     )
 
+    addressee_text = f"Руководителю {_seminar_name_genitive(seminar_name)}".rstrip()
+    if period:
+        addressee_text += f" {period}"
+
     return {
         "approver_line": approver_line,
         "approver_signature": _initials_from_full_name(seminar.polozhenie_federation_leader_name),
         "signing_date": _fmt_date_ru(seminar.polozhenie_signing_date),
         "title_sub": title_sub,
-        "applicant_addressee": _seminar_name_genitive(seminar_name),
+        "applicant_addressee_lines": _wrap_into_lines(addressee_text, 4),
         "sections": sections,
         "closing": "Данное положение является приглашением на семинар",
         "lecturers": lecturers,
@@ -647,10 +676,8 @@ def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
     _add_paragraph(document, "Приложение 3", align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, f"к положению {data['title_sub']}", align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, "")
-    _add_paragraph(
-        document, f"Руководителю {data['applicant_addressee']}".rstrip(),
-        align=WD_ALIGN_PARAGRAPH.RIGHT,
-    )
+    for line in data["applicant_addressee_lines"]:
+        _add_paragraph(document, line, align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, "")
     _add_paragraph(document, "ЗАЯВКА", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     _add_paragraph(document, "на участие в семинаре", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
