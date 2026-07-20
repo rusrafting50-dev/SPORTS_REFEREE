@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Программа ССВК — {{ seminar.name }} — Спортивные судьи{% endblock %}
+{% block title %}{{ program.page_title }} — {{ seminar.name }} — Спортивные судьи{% endblock %}
 {% block content %}
 {% set breadcrumb_seminar = seminar.name %}
 {% set breadcrumb_current = "Программа" %}
 {% include "seminars/_header.html" %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Программа подготовки спортивных судей всероссийской категории</h1>
-    <a href="{{ url_for('seminars.program_vsk_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-outline-secondary">🖨 Печать</a>
+    <h1 class="h4 mb-0">{{ program.page_title }}</h1>
+    <a href="{{ url_for('seminars.program_print', seminar_id=seminar.id, slug=slug) }}" target="_blank" class="btn btn-outline-secondary">🖨 Печать</a>
 </div>
 
 <p class="fst-italic">{{ program.goal }}</p>
@@ -34,8 +34,8 @@
             <td>{{ row.number }}</td>
             <td class="text-start">{{ row.topic }}</td>
             <td>{{ row.hours_total }}</td>
-            <td>{{ row.hours_lecture or "-" }}</td>
-            <td>{{ row.hours_practice or "-" }}</td>
+            <td>{{ row.hours_lecture }}</td>
+            <td>{{ row.hours_practice }}</td>
             <td>
                 <input type="hidden" name="item_number[]" value="{{ row.number }}">
                 <input type="text" name="lecturer_name[]" class="form-control form-control-sm" value="{{ row.lecturer_name }}">

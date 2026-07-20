@@ -73,7 +73,7 @@
     <strong>ПРОГРАММА СЕМИНАРА, КВАЛИФИКАЦИОННЫЙ ЗАЧЕТ</strong>
 </div>
 <div class="row g-3 mb-4">
-    {% for label, color in [("Спортивные судьи всероссийской категории", "primary"), ("Спортивные судьи первой категории", "info"), ("Спортивные судьи второй категории", "warning"), ("Спортивные судьи третьей категории", "secondary")] %}
+    {% for label, color, program_slug in [("Спортивные судьи всероссийской категории", "primary", "vsk"), ("Спортивные судьи первой категории", "info", "ss1k"), ("Спортивные судьи второй категории", "warning", none), ("Спортивные судьи третьей категории", "secondary", none)] %}
     <div class="col-md-6">
         <div class="border border-{{ color }} rounded overflow-hidden h-100">
             <div class="bg-{{ color }} {{ 'text-dark' if color in ('info', 'warning') else 'text-white' }} px-3 py-2 d-flex justify-content-between align-items-center">
@@ -91,8 +91,8 @@
                 {% endif %}
             </div>
             <div class="p-2 d-flex flex-wrap gap-2 align-items-center">
-                {% if label == "Спортивные судьи всероссийской категории" %}
-                <a href="{{ url_for('seminars.program_vsk_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-{{ color }}">Программа</a>
+                {% if program_slug %}
+                <a href="{{ url_for('seminars.program_edit', seminar_id=seminar.id, slug=program_slug) }}" class="btn btn-sm btn-outline-{{ color }}">Программа</a>
                 {% else %}
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Программа</button>
                 {% endif %}

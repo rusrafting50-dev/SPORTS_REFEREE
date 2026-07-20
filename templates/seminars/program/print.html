@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>Программа ССВК — {{ seminar.name }}</title>
+    <title>{{ program.page_title }} — {{ seminar.name }}</title>
     <style>
         body { font-family: "Times New Roman", "Liberation Serif", serif; font-size: 12pt; line-height: 1.3; padding: 20px; max-width: 900px; margin: 0 auto; }
         p { margin: 0 0 8px; }
@@ -30,7 +30,7 @@
 </head>
 <body>
     <div class="no-print">
-        <a href="{{ url_for('seminars.program_vsk_edit', seminar_id=seminar.id) }}" class="btn-back">← Программа</a>
+        <a href="{{ url_for('seminars.program_edit', seminar_id=seminar.id, slug=slug) }}" class="btn-back">← Программа</a>
         <button type="button" onclick="window.print()" class="btn-print">Печать</button>
     </div>
 
@@ -64,8 +64,8 @@
                 <td class="num">{{ row.number }}</td>
                 <td class="name">{{ row.topic }}</td>
                 <td class="num">{{ row.hours_total }}</td>
-                <td class="num">{{ row.hours_lecture or "-" }}</td>
-                <td class="num">{{ row.hours_practice or "-" }}</td>
+                <td class="num">{{ row.hours_lecture }}</td>
+                <td class="num">{{ row.hours_practice }}</td>
                 <td class="name">{{ row.lecturer_name }}</td>
             </tr>
             {% endfor %}
@@ -80,7 +80,7 @@
         </tbody>
     </table>
 
-    <p class="bold">Содержание программы подготовки спортивных судей всероссийской категории по виду спорта рафтинг</p>
+    <p class="bold">{{ program.content_heading }}</p>
     <ol class="content-list">
         {% for number, subtitle, body in program.content %}
         <li>

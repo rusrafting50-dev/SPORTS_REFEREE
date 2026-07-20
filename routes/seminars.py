@@ -2,7 +2,7 @@
 from datetime import datetime
 from types import SimpleNamespace
 
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
 
 import references
 from models import (
@@ -10,7 +10,12 @@ from models import (
     SeminarProgramLecturer, db,
 )
 from seminar_polozhenie_generator import build_polozhenie_data, generate_polozhenie, polozhenie_filename
-from seminar_program_data import VSK_PROGRAM
+from seminar_program_data import SS1K_PROGRAM, VSK_PROGRAM
+
+SEMINAR_PROGRAMS = {
+    "vsk": VSK_PROGRAM,
+    "ss1k": SS1K_PROGRAM,
+}
 
 JUDGE_QUALIFICATIONS = ["ССВК", "СС1К", "СС2К", "СС3К"]
 
@@ -529,7 +534,14 @@ def lecturers_delete(seminar_id, lecturer_id):
     return redirect(url_for("seminars.lecturers_list", seminar_id=seminar_id))
 
 
-# --- Программа подготовки спортивных судей всероссийской категории ---
+# --- Программа подготовки спортивных судей по категориям ---
+
+def _fmt_hours(value):
+    """1 -> '1', 0.5 -> '0,5' (русская запись дробных часов)."""
+    if value == int(value):
+        return str(int(value))
+    return str(value).replace(".", ",")
+
 
 def _program_rows(seminar_id, category_code, program):
     lecturers = {
@@ -540,8 +552,9 @@ def _program_rows(seminar_id, category_code, program):
     }
     return [
         SimpleNamespace(
-            number=number, topic=topic, hours_total=hours_total,
-            hours_lecture=hours_lecture, hours_practice=hours_practice,
+            number=number, topic=topic, hours_total=_fmt_hours(hours_total),
+            hours_lecture=_fmt_hours(hours_lecture) if hours_lecture else "-",
+            hours_practice=_fmt_hours(hours_practice) if hours_practice else "-",
             lecturer_name=lecturers.get(number, ""),
         )
         for number, topic, hours_total, hours_lecture, hours_practice in program["plan"]
@@ -568,24 +581,26 @@ def _sync_program_lecturers(seminar_id, category_code, form):
         row.lecturer_name = name
 
 
-@bp.route("/<int:seminar_id>/program/vsk", methods=["GET", "POST"])
-def program_vsk_edit(seminar_id):
+@bp.route("/<int:seminar_id>/program/<slug>", methods=["GET", "POST"])
+def program_edit(seminar_id, slug):
+    program = SEMINAR_PROGRAMS.get(slug) or abort(404)
     seminar = Seminar.query.get_or_404(seminar_id)
     if request.method == "POST":
-        _sync_program_lecturers(seminar_id, VSK_PROGRAM["category_code"], request.form)
+        _sync_program_lecturers(seminar_id, program["category_code"], request.form)
         db.session.commit()
         flash("Данные сохранены", "success")
-        return redirect(url_for("seminars.program_vsk_edit", seminar_id=seminar.id))
-    rows = _program_rows(seminar_id, VSK_PROGRAM["category_code"], VSK_PROGRAM)
+        return redirect(url_for("seminars.program_edit", seminar_id=seminar.id, slug=slug))
+    rows = _program_rows(seminar_id, program["category_code"], program)
     return render_template(
-        "seminars/program/vsk_edit.html", seminar=seminar, program=VSK_PROGRAM, rows=rows,
+        "seminars/program/edit.html", seminar=seminar, program=program, rows=rows, slug=slug,
     )
 
 
-@bp.route("/<int:seminar_id>/program/vsk/print")
-def program_vsk_print(seminar_id):
+@bp.route("/<int:seminar_id>/program/<slug>/print")
+def program_print(seminar_id, slug):
+    program = SEMINAR_PROGRAMS.get(slug) or abort(404)
     seminar = Seminar.query.get_or_404(seminar_id)
-    rows = _program_rows(seminar_id, VSK_PROGRAM["category_code"], VSK_PROGRAM)
+    rows = _program_rows(seminar_id, program["category_code"], program)
     return render_template(
-        "seminars/program/vsk_print.html", seminar=seminar, program=VSK_PROGRAM, rows=rows,
+        "seminars/program/print.html", seminar=seminar, program=program, rows=rows, slug=slug,
     )
