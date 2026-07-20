@@ -73,36 +73,28 @@
     <strong>ПРОГРАММА СЕМИНАРА, КВАЛИФИКАЦИОННЫЙ ЗАЧЕТ</strong>
 </div>
 <div class="row g-3 mb-4">
-    {% for label, color in [("Судейство соревнований", "primary"), ("Дистанции", "info"), ("Документооборот соревнований", "warning"), ("Информационное обеспечение", "secondary")] %}
+    {% for label, color in [("Спортивные судьи всероссийской категории", "primary"), ("Спортивные судьи первой категории", "info"), ("Спортивные судьи второй категории", "warning"), ("Спортивные судьи третьей категории", "secondary")] %}
     <div class="col-md-6">
         <div class="border border-{{ color }} rounded overflow-hidden h-100">
             <div class="bg-{{ color }} {{ 'text-dark' if color in ('info', 'warning') else 'text-white' }} px-3 py-2 d-flex justify-content-between align-items-center">
                 <strong>{{ label }}</strong>
                 <span>−</span>
             </div>
-            <div class="p-2 d-flex flex-wrap gap-2">
+            <div class="p-2 d-flex flex-wrap gap-2 align-items-center">
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Программа</button>
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Презентации</button>
+                {% if seminar.qualification_exam == "Да" %}
+                {% if label != "Спортивные судьи первой категории" %}
+                <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-{{ color }}">Квалификационный зачет</a>
+                {% endif %}
+                <a href="{{ url_for('seminars.gradesheet_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-sm btn-outline-{{ color }}">🖨 Протокол Квалификационного зачета</a>
+                {% if seminar.gradesheet_done %}
+                <span class="badge bg-success rounded-pill">✓ Готово</span>
+                {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
-
-{% if seminar.qualification_exam == "Да" %}
-<h3 class="h6 mb-2">Квалификационный зачет</h3>
-<div class="d-flex flex-wrap gap-2 mb-4">
-    {% for label in ["Всероссийская", "Первая", "Вторая", "Третья"] %}
-    {% if label == seminar.category %}
-    <button type="button" class="btn btn-primary">{{ label }}</button>
-    {% else %}
-    <button type="button" class="btn btn-outline-secondary" disabled>{{ label }}</button>
-    {% endif %}
-    {% endfor %}
-    <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn btn-outline-primary">Протокол</a>
-    {% if seminar.gradesheet_done %}
-    <span class="badge bg-success rounded-pill align-self-center">✓ Готово</span>
-    {% endif %}
-</div>
-{% endif %}
 {% endblock %}
