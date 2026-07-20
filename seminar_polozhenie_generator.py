@@ -426,8 +426,7 @@ def generate_polozhenie(seminar, lecturers):
     for number, heading, paragraphs in data["sections"]:
         _add_paragraph(document, f"{number}. {heading}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
         for line in paragraphs:
-            indent = None if line.startswith("-") else 1.25
-            _add_paragraph(document, line, first_line_indent=indent)
+            _add_paragraph(document, line, first_line_indent=1.25)
         if not paragraphs:
             _add_paragraph(document, "")
         _add_paragraph(document, "")

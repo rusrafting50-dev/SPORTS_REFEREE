@@ -11,7 +11,6 @@
         .center { text-align: center; }
         .bold { font-weight: bold; }
         .justify { text-align: justify; text-indent: 1.25cm; }
-        .bullet { text-align: justify; text-indent: 0; }
         .title-main { font-size: 14pt; }
         .spacer { height: 1em; }
         .appendix table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -65,7 +64,7 @@
     {% for number, heading, paragraphs in data.sections %}
     <p class="center bold">{{ number }}. {{ heading }}</p>
     {% for line in paragraphs %}
-    <p class="{{ 'bullet' if line.startswith('-') else 'justify' }}">{{ line }}</p>
+    <p class="justify">{{ line }}</p>
     {% endfor %}
     <div class="spacer"></div>
     {% endfor %}
