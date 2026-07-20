@@ -24,6 +24,7 @@
         .approval-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .approval-table td { border: none; padding: 0; vertical-align: top; font-size: 12pt; }
         .approval-table .approval-cell p { text-align: center; }
+        .addressee { margin-left: 7cm; }
         .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
         @media print { .no-print { display: none; } }
         .btn-back {
@@ -184,7 +185,7 @@
         <p class="right">к положению {{ data.title_sub }}</p>
         <div class="spacer"></div>
         {% for line in data.applicant_addressee_lines %}
-        <p class="right">{{ line }}</p>
+        <p class="right addressee">{{ line }}</p>
         {% endfor %}
         <div class="spacer"></div>
         <p class="center bold">ЗАЯВКА</p>

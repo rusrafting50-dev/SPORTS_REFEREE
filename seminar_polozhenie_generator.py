@@ -2,6 +2,7 @@
 # Текст положения воспроизводит образец data/Положение семинар СС1К.doc дословно;
 # меняются (подставляются из формы «Положение о семинаре») только фрагменты,
 # выделенные в образце полужирным шрифтом — даты, наименования, ФИО, суммы и т.п.
+import textwrap
 from io import BytesIO
 
 import docx
@@ -168,30 +169,15 @@ def _seminar_name_genitive(name):
     return " ".join(declined)
 
 
-def _wrap_into_lines(text, lines_count=4):
-    """Разбивает строку по границам слов на заданное число строк примерно равной
-    длины — адресный блок «Руководителю ...» в приложении 3 длинный и в одну
-    строку не помещается, в образце он занимает несколько строк."""
-    words = text.split()
-    if not words:
-        return []
-    target = max(1, round(len(text) / lines_count))
-    lines = []
-    current = []
-    current_len = 0
-    for word in words:
-        extra = len(word) + (1 if current else 0)
-        if current and current_len + extra > target and len(lines) < lines_count - 1:
-            lines.append(" ".join(current))
-            current = [word]
-            current_len = len(word)
-        else:
-            current.append(word)
-            current_len += extra
-    if current:
-        lines.append(" ".join(current))
-    return lines
+def _wrap_into_lines(text, width):
+    """Разбивает строку по границам слов на строки не длиннее `width` символов —
+    адресный блок «Руководителю ...» в приложении 3 длинный и размещается в
+    узкой колонке у правого края листа, как в образце."""
+    return textwrap.wrap(text.strip(), width=width) if text.strip() else []
 
+
+ADDRESSEE_LEFT_INDENT_CM = 7
+ADDRESSEE_LINE_WIDTH_CHARS = 36
 
 APPLICATION_FORM_FIELDS = [
     "Ф.И.О.",
@@ -417,7 +403,7 @@ def build_polozhenie_data(seminar, lecturers):
         "approver_signature": _initials_from_full_name(seminar.polozhenie_federation_leader_name),
         "signing_date": _fmt_date_ru(seminar.polozhenie_signing_date),
         "title_sub": title_sub,
-        "applicant_addressee_lines": _wrap_into_lines(addressee_text, 4),
+        "applicant_addressee_lines": _wrap_into_lines(addressee_text, ADDRESSEE_LINE_WIDTH_CHARS),
         "sections": sections,
         "closing": "Данное положение является приглашением на семинар",
         "lecturers": lecturers,
@@ -425,7 +411,8 @@ def build_polozhenie_data(seminar, lecturers):
 
 
 def _add_paragraph(document, text="", bold=False, size=12, align=WD_ALIGN_PARAGRAPH.JUSTIFY,
-                    first_line_indent=None, space_after=0, keep_with_next=False, keep_together=False):
+                    first_line_indent=None, left_indent=None, space_after=0,
+                    keep_with_next=False, keep_together=False):
     p = document.add_paragraph()
     p.alignment = align
     p.paragraph_format.space_after = Pt(space_after)
@@ -436,6 +423,8 @@ def _add_paragraph(document, text="", bold=False, size=12, align=WD_ALIGN_PARAGR
     p.paragraph_format.widow_control = True
     if first_line_indent is not None:
         p.paragraph_format.first_line_indent = Cm(first_line_indent)
+    if left_indent is not None:
+        p.paragraph_format.left_indent = Cm(left_indent)
     run = p.add_run(text)
     run.bold = bold
     run.font.name = "Times New Roman"
@@ -677,7 +666,7 @@ def generate_polozhenie(seminar, lecturers, program=None, program_rows=None):
     _add_paragraph(document, f"к положению {data['title_sub']}", align=WD_ALIGN_PARAGRAPH.RIGHT)
     _add_paragraph(document, "")
     for line in data["applicant_addressee_lines"]:
-        _add_paragraph(document, line, align=WD_ALIGN_PARAGRAPH.RIGHT)
+        _add_paragraph(document, line, align=WD_ALIGN_PARAGRAPH.RIGHT, left_indent=ADDRESSEE_LEFT_INDENT_CM)
     _add_paragraph(document, "")
     _add_paragraph(document, "ЗАЯВКА", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     _add_paragraph(document, "на участие в семинаре", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
