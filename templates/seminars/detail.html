@@ -78,14 +78,8 @@
         <div class="border border-{{ color }} rounded overflow-hidden h-100">
             <div class="bg-{{ color }} {{ 'text-dark' if color in ('info', 'warning') else 'text-white' }} px-3 py-2 d-flex justify-content-between align-items-center">
                 <strong>{{ label }}</strong>
-                {% if seminar.qualification_exam == "Да" %}
-                <form method="post" action="{{ url_for('seminars.gradesheet_toggle_status', seminar_id=seminar.id) }}" class="m-0">
-                    {% if seminar.gradesheet_done %}
-                    <button type="submit" class="btn btn-success btn-sm rounded-pill">✓ Готово</button>
-                    {% else %}
-                    <button type="submit" class="btn btn-light btn-sm rounded-pill">В работе</button>
-                    {% endif %}
-                </form>
+                {% if seminar.qualification_exam == "Да" and seminar.gradesheet_done %}
+                <span class="badge bg-success rounded-pill">✓ Готово</span>
                 {% else %}
                 <span>−</span>
                 {% endif %}
@@ -98,9 +92,7 @@
                 {% endif %}
                 <button type="button" class="btn btn-sm btn-outline-{{ color }}">Презентации</button>
                 {% if seminar.qualification_exam == "Да" %}
-                {% if label != "Спортивные судьи первой категории" %}
                 <a href="{{ url_for('seminars.gradesheet_edit', seminar_id=seminar.id) }}" class="btn btn-sm btn-outline-{{ color }}">Квалификационный зачет</a>
-                {% endif %}
                 <a href="{{ url_for('seminars.gradesheet_print', seminar_id=seminar.id) }}" target="_blank" class="btn btn-sm btn-outline-{{ color }}">🖨 Протокол Квалификационного зачета</a>
                 {% endif %}
             </div>
