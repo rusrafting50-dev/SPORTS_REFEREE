@@ -14,10 +14,13 @@
         .bullet { text-align: justify; text-indent: 0; }
         .title-main { font-size: 14pt; }
         .spacer { height: 1em; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #000; padding: 4px 6px; font-size: 11pt; vertical-align: middle; }
-        th { font-weight: bold; text-align: center; }
-        td.num { text-align: center; }
+        .appendix table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .appendix th, .appendix td { border: 1px solid #000; padding: 4px 6px; font-size: 11pt; vertical-align: middle; }
+        .appendix th { font-weight: bold; text-align: center; }
+        .appendix td.num { text-align: center; }
+        .approval-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .approval-table td { border: none; padding: 0; vertical-align: top; font-size: 12pt; }
+        .approval-table .approval-cell p { text-align: center; }
         .no-print { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: Arial, sans-serif; font-size: 14px; }
         @media print { .no-print { display: none; } }
         .btn-back {
@@ -37,10 +40,18 @@
         <button type="button" onclick="window.print()" class="btn-print">Печать</button>
     </div>
 
-    <p class="right">УТВЕРЖДАЮ</p>
-    {% if data.approver_position %}<p class="right">{{ data.approver_position }}</p>{% endif %}
-    <div class="spacer"></div>
-    <p class="right">_______________ {{ data.approver_signature }}</p>
+    <table class="approval-table">
+        <tr>
+            <td style="width: 47.2%;"></td>
+            <td style="width: 2.8%;"></td>
+            <td style="width: 50%;" class="approval-cell">
+                <p>УТВЕРЖДАЮ</p>
+                {% if data.approver_position %}<p>{{ data.approver_position }}</p>{% endif %}
+                <div class="spacer"></div>
+                <p>_______________ {{ data.approver_signature }}</p>
+            </td>
+        </tr>
+    </table>
     <div class="spacer"></div>
 
     <p class="center bold title-main">ПОЛОЖЕНИЕ</p>

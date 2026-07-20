@@ -96,13 +96,13 @@ def build_polozhenie_data(seminar, lecturers):
     hours_adj = PROGRAM_HOURS_ADJECTIVE.get(hours_value, hours_value)
     hours_num = PROGRAM_HOURS_NUMERAL.get(hours_value, hours_value)
 
-    title_nom = f"Региональный семинар по подготовке и повышению квалификации спортивных судей {cat} категории по виду спорта «{sport}»"
-    title_sub = f"о региональном семинаре по подготовке и повышению квалификации спортивных судей {cat} категории по виду спорта «{sport}»"
+    seminar_name = seminar.name or ""
+    title_sub = f"о {seminar_name}" if seminar_name else ""
 
     # 1. Цели и задачи
     section1 = [
         (
-            f"1.1. {title_nom} (далее по тексту - семинар) "
+            f"1.1. {seminar_name} (далее по тексту - семинар) "
             f"проводится с целью подготовки и повышения квалификации спортивных судей {cat} категории по {sport_dat}"
             + (f", а также повышения качества проведения официальных спортивных соревнований по {sport_dat}"
                f" в {fed_region}." if fed_region else f", а также повышения качества проведения официальных "
@@ -303,6 +303,47 @@ def _add_paragraph(document, text="", bold=False, size=12, align=WD_ALIGN_PARAGR
     return p
 
 
+def _add_table_cell_text(cell, lines):
+    cell.paragraphs[0].text = ""
+    for extra_p in cell.paragraphs[1:]:
+        extra_p._element.getparent().remove(extra_p._element)
+    paragraph = cell.paragraphs[0]
+    first = True
+    for line in lines:
+        p = paragraph if first else cell.add_paragraph()
+        first = False
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(0)
+        p.paragraph_format.space_before = Pt(0)
+        run = p.add_run(line)
+        run.font.name = "Times New Roman"
+        run.font.size = Pt(12)
+
+
+def _add_approval_table(document, position, signature):
+    """Безрамочная таблица 1×3 (47% / 3% / 50%) — гриф «УТВЕРЖДАЮ» в правой ячейке,
+    как в образце data/Положение семинар СС1К.doc."""
+    table = document.add_table(rows=1, cols=3)
+    table.autofit = False
+    content_width_cm = 21.0 - 2.5 - 1.25
+    widths = [Cm(content_width_cm * 0.472), Cm(content_width_cm * 0.028), Cm(content_width_cm * 0.5)]
+    for i, width in enumerate(widths):
+        table.columns[i].width = width
+    for row in table.rows:
+        for cell, width in zip(row.cells, widths):
+            cell.width = width
+
+    lines = ["УТВЕРЖДАЮ"]
+    if position:
+        lines.append(position)
+    lines.append("")
+    lines.append(f"_______________ {signature}".rstrip())
+
+    _add_table_cell_text(table.rows[0].cells[0], [""])
+    _add_table_cell_text(table.rows[0].cells[1], [""])
+    _add_table_cell_text(table.rows[0].cells[2], lines)
+
+
 def generate_polozhenie(seminar, lecturers):
     data = build_polozhenie_data(seminar, lecturers)
     document = docx.Document()
@@ -319,11 +360,7 @@ def generate_polozhenie(seminar, lecturers):
     section.top_margin = Cm(2.0)
     section.bottom_margin = Cm(2.0)
 
-    _add_paragraph(document, "УТВЕРЖДАЮ", align=WD_ALIGN_PARAGRAPH.RIGHT)
-    if data["approver_position"]:
-        _add_paragraph(document, data["approver_position"], align=WD_ALIGN_PARAGRAPH.RIGHT)
-    _add_paragraph(document, "")
-    _add_paragraph(document, f"_______________ {data['approver_signature']}".rstrip(), align=WD_ALIGN_PARAGRAPH.RIGHT)
+    _add_approval_table(document, data["approver_position"], data["approver_signature"])
     _add_paragraph(document, "")
 
     _add_paragraph(document, "ПОЛОЖЕНИЕ", bold=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER)
