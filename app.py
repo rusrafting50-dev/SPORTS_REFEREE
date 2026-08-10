@@ -112,7 +112,7 @@ def create_app():
 
     @app.route("/")
     def index():
-        return redirect(url_for("judges.judges_list"))
+        return redirect(url_for("seminars.seminars_list"))
 
     @app.route("/settings", methods=["GET", "POST"])
     def settings():
