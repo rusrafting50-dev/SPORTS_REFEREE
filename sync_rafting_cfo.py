@@ -79,6 +79,10 @@ def собрать_данные(семинар):
         'end_date': окончание.isoformat() if окончание else None,
         'location': семинар.location,
         'status': _определить_статус(семинар.start_date, окончание),
+        'category': семинар.category,
+        'program_hours': семинар.program_hours,
+        'qualification_exam': семинар.qualification_exam,
+        'leader_full_name': семинар.leader_full_name,
     }
 
 
