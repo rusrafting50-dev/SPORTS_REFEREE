@@ -12,10 +12,15 @@
     {% if seminar.organizer %}<span class="badge bg-light text-dark border">{{ seminar.organizer }}</span>{% endif %}
 </div>
 
-<p class="text-muted mb-4 text-center">
+<p class="text-muted mb-2 text-center">
     {{ seminar.period or (seminar.start_date.strftime('%d.%m.%Y') if seminar.start_date) }}
     {% if seminar.location %} — {{ seminar.location }}{% endif %}
 </p>
+
+<form action="{{ url_for('seminars.seminars_send_to_site', seminar_id=seminar.id) }}" method="post"
+      class="d-flex justify-content-center mb-4">
+    <button type="submit" class="btn btn-sm btn-outline-primary">Отправить на сайт</button>
+</form>
 
 <div class="d-flex align-items-center bg-light rounded p-2 mb-2">
     <span class="badge bg-secondary rounded-circle me-2">1</span>

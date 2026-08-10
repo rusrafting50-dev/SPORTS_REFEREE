@@ -1,6 +1,7 @@
 # app.py — точка входа, инициализация Flask и БД
 import os
 
+from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from markupsafe import Markup, escape
 from sqlalchemy import inspect, text
@@ -9,6 +10,8 @@ import references
 from models import Settings, db
 from routes.judges import bp as judges_bp
 from routes.seminars import bp as seminars_bp
+
+load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
