@@ -266,6 +266,7 @@ class SeminarApplication(db.Model):
     org_leader_email = db.Column(db.String(150))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    source = db.Column(db.String(20), default="referee", nullable=False)  # referee (внесена здесь) / site (с сайта RAFTING_CFO)
 
     seminar = db.relationship("Seminar", backref=db.backref("applications", cascade="all, delete-orphan"))
 

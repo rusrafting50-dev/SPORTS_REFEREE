@@ -22,6 +22,7 @@
             <th>Организация</th>
             <th>Руководитель организации</th>
             <th>Участников</th>
+            <th>Подана</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -36,6 +37,12 @@
             <td>{{ application.org_leader_full_name }}</td>
             <td class="text-center">{{ application.participants|length }}</td>
             <td class="text-nowrap text-center">
+                {{ application.created_at.strftime('%d.%m.%Y %H:%M') if application.created_at else '' }}
+                <span class="badge {{ 'bg-primary' if application.source == 'site' else 'bg-secondary' }}">
+                    {{ 'сайт' if application.source == 'site' else 'здесь' }}
+                </span>
+            </td>
+            <td class="text-nowrap text-center">
                 <a href="{{ url_for('seminars.applications_print', seminar_id=seminar.id, application_id=application.id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Печать</a>
                 <a href="{{ url_for('seminars.applications_edit', seminar_id=seminar.id, application_id=application.id) }}" class="btn btn-sm btn-outline-primary">Изменить</a>
                 <form method="post" action="{{ url_for('seminars.applications_delete', seminar_id=seminar.id, application_id=application.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту заявку без возможности восстановления?');">
@@ -44,7 +51,7 @@
             </td>
         </tr>
         <tr class="collapse" id="app-participants-{{ application.id }}">
-            <td colspan="6" class="p-0 border-0">
+            <td colspan="7" class="p-0 border-0">
                 <table class="table table-sm table-striped table-bordered align-middle text-center mb-0">
                     <thead>
                         <tr class="text-center align-middle">

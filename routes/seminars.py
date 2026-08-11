@@ -342,14 +342,34 @@ def _default_theory_hours(seminar, participant):
     return digits or None
 
 
-def _protocol_participants(seminar_id, seminar):
-    participants = (
-        SeminarApplicationParticipant.query
-        .join(SeminarApplication, SeminarApplicationParticipant.application_id == SeminarApplication.id)
-        .filter(SeminarApplication.seminar_id == seminar_id)
-        .order_by(SeminarApplicationParticipant.full_name)
+def _latest_applications(seminar_id):
+    """Заявки семинара, по одной на направляющую организацию (или, если она
+    не указана, на регион) — если одна и та же организация подавала
+    несколько заявок (в том числе одну через сайт, другую здесь), в
+    протокол идёт только самая свежая по дате/времени подачи, а не все
+    сразу. Заявки без организации и без региона ни с чем не группируются,
+    чтобы случайно не потерялись."""
+    applications = (
+        SeminarApplication.query
+        .filter_by(seminar_id=seminar_id)
+        .order_by(SeminarApplication.created_at.asc())
         .all()
     )
+    latest_by_key = {}
+    for application in applications:
+        key = (application.sending_org_name or application.region or f"__app_{application.id}").strip().lower()
+        latest_by_key[key] = application
+    return list(latest_by_key.values())
+
+
+def _protocol_participants(seminar_id, seminar):
+    application_ids = [a.id for a in _latest_applications(seminar_id)]
+    participants = (
+        SeminarApplicationParticipant.query
+        .filter(SeminarApplicationParticipant.application_id.in_(application_ids))
+        .order_by(SeminarApplicationParticipant.full_name)
+        .all()
+    ) if application_ids else []
     for p in participants:
         p.default_hours = _default_theory_hours(seminar, p)
     return participants

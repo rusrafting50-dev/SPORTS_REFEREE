@@ -8,6 +8,7 @@ from sqlalchemy import inspect, text
 
 import references
 from models import Settings, db
+from routes.api import bp as api_bp
 from routes.judges import bp as judges_bp
 from routes.seminars import bp as seminars_bp
 
@@ -108,6 +109,7 @@ def create_app():
     db.init_app(app)
     app.register_blueprint(judges_bp)
     app.register_blueprint(seminars_bp)
+    app.register_blueprint(api_bp)
 
     with app.app_context():
         db.create_all()
