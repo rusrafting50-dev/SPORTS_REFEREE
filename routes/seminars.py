@@ -13,7 +13,7 @@ from seminar_polozhenie_generator import (
     APPLICATION_FORM_FIELDS, build_polozhenie_data, generate_polozhenie, polozhenie_filename,
 )
 from seminar_program_data import SS1K_PROGRAM, SS2K_PROGRAM, SS3K_PROGRAM, VSK_PROGRAM
-from sync_rafting_cfo import отправить_на_сайт
+from sync_rafting_cfo import отправить_на_сайт, отправить_заявку_на_сайт
 
 SEMINAR_PROGRAMS = {
     "vsk": VSK_PROGRAM,
@@ -293,6 +293,17 @@ def applications_delete(seminar_id, application_id):
     db.session.delete(application)
     db.session.commit()
     flash("Заявка удалена", "success")
+    return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/send-to-site", methods=["POST"])
+def applications_send_to_site(seminar_id, application_id):
+    application = SeminarApplication.query.get_or_404(application_id)
+    success, message = отправить_заявку_на_сайт(application)
+    if success:
+        application.sent_to_site_at = datetime.utcnow()
+        db.session.commit()
+    flash(message, "success" if success else "danger")
     return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
 
 

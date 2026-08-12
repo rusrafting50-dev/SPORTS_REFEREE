@@ -92,6 +92,52 @@ def applications_get(seminar_id):
     return jsonify({"status": "ok", "items": [_application_to_dict(a) for a in applications]})
 
 
+@bp.route("/seminars/<int:seminar_id>/applications/<int:application_id>", methods=["PUT"])
+@require_api_key
+def applications_put(seminar_id, application_id):
+    """Обновляет уже отправленную ранее заявку (сайт нажал «Отправить в
+    считалку» повторно после редактирования заявки на своей стороне)."""
+    application = SeminarApplication.query.filter_by(id=application_id, seminar_id=seminar_id).first()
+    if application is None:
+        return jsonify({"error": "Заявка не найдена."}), 404
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Тело запроса должно быть JSON-объектом."}), 400
+
+    participants_raw = payload.get("participants")
+    if not isinstance(participants_raw, list) or not participants_raw:
+        return jsonify({"error": "Нужен непустой список участников (participants)."}), 400
+
+    application.region = (payload.get("region") or "").strip() or None
+    application.organization_name = (payload.get("organization_name") or "").strip() or None
+    application.sending_org_name = (payload.get("sending_org_name") or "").strip() or None
+    application.sending_org_leader_name = (payload.get("sending_org_leader_name") or "").strip() or None
+    application.sending_org_leader_position = (payload.get("sending_org_leader_position") or "").strip() or None
+    application.sending_org_leader_phone = (payload.get("sending_org_leader_phone") or "").strip() or None
+    application.sending_org_leader_email = (payload.get("sending_org_leader_email") or "").strip() or None
+
+    for participant in list(application.participants):
+        db.session.delete(participant)
+
+    for item in participants_raw:
+        full_name = (item.get("full_name") or "").strip()
+        if not full_name:
+            continue
+        db.session.add(SeminarApplicationParticipant(
+            application_id=application.id,
+            full_name=full_name,
+            gender=(item.get("gender") or "").strip() or None,
+            birth_date=_parse_date(item.get("birth_date")),
+            judge_qualification=(item.get("judge_qualification") or "").strip() or None,
+            assigned_category=(item.get("assigned_category") or "").strip() or None,
+            specialization=(item.get("specialization") or "").strip() or None,
+        ))
+
+    db.session.commit()
+    return jsonify({"status": "ok", "application_id": application.id})
+
+
 @bp.route("/seminars/<int:seminar_id>/applications", methods=["POST"])
 @require_api_key
 def applications_post(seminar_id):

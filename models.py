@@ -267,6 +267,7 @@ class SeminarApplication(db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     source = db.Column(db.String(20), default="referee", nullable=False)  # referee (внесена здесь) / site (с сайта RAFTING_CFO)
+    sent_to_site_at = db.Column(db.DateTime)  # когда заявку отправили на сайт кнопкой «Отправить на сайт»
 
     seminar = db.relationship("Seminar", backref=db.backref("applications", cascade="all, delete-orphan"))
 

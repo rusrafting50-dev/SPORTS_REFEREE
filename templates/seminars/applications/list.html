@@ -41,10 +41,18 @@
                 <span class="badge {{ 'bg-primary' if application.source == 'site' else 'bg-secondary' }}">
                     {{ 'сайт' if application.source == 'site' else 'здесь' }}
                 </span>
+                {% if application.sent_to_site_at %}
+                    <span class="badge bg-success" title="Отправлено на сайт {{ application.sent_to_site_at.strftime('%d.%m.%Y %H:%M') }}">на сайте</span>
+                {% endif %}
             </td>
             <td class="text-nowrap text-center">
                 <a href="{{ url_for('seminars.applications_print', seminar_id=seminar.id, application_id=application.id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Печать</a>
                 <a href="{{ url_for('seminars.applications_edit', seminar_id=seminar.id, application_id=application.id) }}" class="btn btn-sm btn-outline-primary">Изменить</a>
+                {% if application.source != 'site' %}
+                    <form method="post" action="{{ url_for('seminars.applications_send_to_site', seminar_id=seminar.id, application_id=application.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-success">{{ 'Обновить на сайте' if application.sent_to_site_at else 'Отправить на сайт' }}</button>
+                    </form>
+                {% endif %}
                 <form method="post" action="{{ url_for('seminars.applications_delete', seminar_id=seminar.id, application_id=application.id) }}" class="d-inline" onsubmit="return confirm('Удалить эту заявку без возможности восстановления?');">
                     <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                 </form>

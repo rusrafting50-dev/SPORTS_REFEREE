@@ -110,3 +110,55 @@ def отправить_на_сайт(семинар):
     if данные.get('errors'):
         return False, '; '.join(данные['errors'])
     return True, 'Отправлено на сайт.'
+
+
+def собрать_данные_заявки(заявка):
+    """Строит словарь одного элемента для POST /api/sync/seminar-applications."""
+    return {
+        'seminar_source_id': заявка.seminar_id,
+        'referee_application_id': заявка.id,
+        'region': заявка.region,
+        'organization_name': заявка.organization_name,
+        'sending_org_name': заявка.sending_org_name,
+        'sending_org_leader_name': заявка.sending_org_leader_name,
+        'sending_org_leader_position': заявка.sending_org_leader_position,
+        'sending_org_leader_phone': заявка.sending_org_leader_phone,
+        'sending_org_leader_email': заявка.sending_org_leader_email,
+        'submitted_at': заявка.created_at.isoformat() if заявка.created_at else None,
+        'participants': [
+            {
+                'full_name': p.full_name,
+                'gender': p.gender,
+                'birth_date': p.birth_date.isoformat() if p.birth_date else None,
+                'judge_qualification': p.judge_qualification,
+                'assigned_category': p.assigned_category,
+                'specialization': p.specialization,
+            }
+            for p in заявка.participants
+        ],
+    }
+
+
+def отправить_заявку_на_сайт(заявка):
+    """Отправляет одну заявку на семинар на сайт (кнопка «Отправить на
+    сайт» у конкретной заявки). Возвращает (успех, сообщение)."""
+    if not RAFTING_CFO_API_KEY:
+        return False, 'RAFTING_CFO_API_KEY не задан в .env — см. .env.example'
+
+    try:
+        ответ = requests.post(
+            f'{RAFTING_CFO_URL}/api/sync/seminar-applications',
+            json={'items': [собрать_данные_заявки(заявка)]},
+            headers={'X-API-Key': RAFTING_CFO_API_KEY},
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        return False, f'Не удалось соединиться с сайтом ({RAFTING_CFO_URL}): {exc}'
+
+    if ответ.status_code != 200:
+        return False, f'Сайт ответил ошибкой {ответ.status_code}: {ответ.text[:200]}'
+
+    данные = ответ.json()
+    if данные.get('errors'):
+        return False, '; '.join(данные['errors'])
+    return True, 'Отправлено на сайт.'
