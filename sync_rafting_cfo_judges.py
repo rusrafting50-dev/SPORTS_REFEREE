@@ -27,6 +27,13 @@ import os
 
 import requests
 
+import references
+
+# То же сокращение, что и в app.py (фильтр category_abbr) — на сайт
+# категория уходит уже в виде ССВК/СС1К/СС2К/СС3К, полным написанием
+# сайт её не показывает.
+_КАТЕГОРИЯ_В_СОКРАЩЕНИЕ = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
+
 
 def _адрес():
     return os.environ.get('RAFTING_CFO_URL', 'http://127.0.0.1:5003').rstrip('/')
@@ -40,7 +47,7 @@ def _собрать_данные(judge):
     return {
         'source_id': judge.id,
         'full_name': judge.full_name,
-        'category': judge.current_category,
+        'category': _КАТЕГОРИЯ_В_СОКРАЩЕНИЕ.get(judge.current_category, judge.current_category),
         'disciplines': judge.discipline_group,
         'territory': judge.region,
         'organization': judge.workplace,
