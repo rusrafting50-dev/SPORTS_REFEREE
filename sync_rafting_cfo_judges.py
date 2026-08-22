@@ -36,19 +36,16 @@ def _ключ():
     return os.environ.get('RAFTING_CFO_API_KEY', '')
 
 
-def _дисциплины(judge):
-    части = [часть for часть in (judge.discipline_group, judge.specialization) if часть]
-    return ', '.join(части) if части else None
-
-
 def _собрать_данные(judge):
     return {
         'source_id': judge.id,
         'full_name': judge.full_name,
         'category': judge.current_category,
-        'disciplines': _дисциплины(judge),
+        'disciplines': judge.discipline_group,
         'territory': judge.region,
         'organization': judge.workplace,
+        'municipality': judge.municipality,
+        'specialization': judge.specialization,
         'is_active': bool(judge.is_active),
     }
 
