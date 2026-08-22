@@ -6,6 +6,9 @@
     <div>
         <a href="{{ url_for('judges.judges_export', judge_id=judge.id) }}" class="btn btn-success">Скачать карточку (Word)</a>
         <a href="{{ url_for('judges.judges_edit', judge_id=judge.id) }}" class="btn btn-outline-primary">Редактировать</a>
+        <form method="post" action="{{ url_for('judges.judges_send_to_site', judge_id=judge.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-success">Отправить на сайт</button>
+        </form>
         {% if judge.is_active %}
         <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
             <button type="submit" class="btn btn-outline-danger">Не аттестован</button>

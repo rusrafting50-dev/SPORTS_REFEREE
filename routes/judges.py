@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
 
 import references
+import sync_rafting_cfo_judges
 from judge_docx_generator import generate_judge_card, judge_card_filename
 from judge_docx_importer import parse_judge_card
 from models import (
@@ -12,6 +13,13 @@ from models import (
 )
 
 bp = Blueprint("judges", __name__, url_prefix="/judges")
+
+
+def _синхронизировать(judge):
+    """Отправляет одного судью на RAFTING_CFO и флэшит результат — общий
+    хвост для ручных кнопок «Отправить на сайт» (routes ниже)."""
+    успех, сообщение = sync_rafting_cfo_judges.отправить_судью(judge)
+    flash(сообщение, "success" if успех else "warning")
 
 PHOTO_UPLOAD_SUBDIR = os.path.join("uploads", "judges")
 ALLOWED_PHOTO_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
@@ -303,7 +311,24 @@ def judges_delete(judge_id):
         _delete_photo_file(judge.photo_filename)
     db.session.delete(judge)
     db.session.commit()
+    # Удаление синхронизируется с сайтом сразу, без отдельной кнопки —
+    # после удаления карточки судьи нет страницы, откуда её нажимать.
+    sync_rafting_cfo_judges.удалить_судью(judge_id)
     flash("Судья удалён", "success")
+    return redirect(url_for("judges.judges_list"))
+
+
+@bp.route("/<int:judge_id>/send-to-site", methods=["POST"])
+def judges_send_to_site(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    _синхронизировать(judge)
+    return redirect(url_for("judges.judges_detail", judge_id=judge.id))
+
+
+@bp.route("/send-all-to-site", methods=["POST"])
+def judges_send_all_to_site():
+    успех, сообщение = sync_rafting_cfo_judges.отправить_всех(Judge.query.all())
+    flash(сообщение, "success" if успех else "warning")
     return redirect(url_for("judges.judges_list"))
 
 

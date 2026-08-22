@@ -110,11 +110,23 @@ event_date, location, judge_position, competition_name, competition_status, scor
 - `GET /judges/` → список активных судей + кнопки-фильтры ССВК/СС1К/СС2К/СС3К
 - `GET /judges/vsk`, `/1k`, `/2k`, `/3k` → судьи данной категории (по `current_category`), включая исключённых — активные подсвечены
 - `GET|POST /judges/new`, `GET /judges/<id>`, `GET|POST /judges/<id>/edit`
-- `POST /judges/<id>/activate|deactivate|delete`
+- `POST /judges/<id>/activate|deactivate|delete` (`delete` также сразу удаляет судью на RAFTING_CFO — см. ниже)
+- `POST /judges/<id>/send-to-site`, `POST /judges/send-all-to-site` — отправка на RAFTING_CFO (кнопки «Отправить на сайт» / «Отправить всех на сайт»)
 - `GET /judges/<id>/export` → генерация и скачивание карточки судьи в формате .docx
 - CRUD для истории: `/judges/<id>/category-records`, `/judges/category-records/<id>/edit|delete` (и аналогично `training-records`, `competition-records`) — редактирование прямо на странице карточки судьи, произвольное число строк
 
 `GET|POST /settings` (в `app.py`) — общая информация об организации.
+
+---
+
+## Синхронизация с сайтом RAFTING_CFO
+
+Два независимых направления, оба через `.env` (`RAFTING_CFO_URL` / `RAFTING_CFO_API_KEY`, см. `.env.example`):
+
+- **Семинары и заявки на семинар** — `sync_rafting_cfo.py` (см. `routes/seminars.py`): `POST /api/sync/events`, `POST /api/sync/seminar-applications`.
+- **Судьи** — `sync_rafting_cfo_judges.py` (см. `routes/judges.py`): `POST /api/sync/referees`. Данные судьи попадают на сайт в общий список «Судьи» и в раздел «Спортивные судьи» на странице региональной федерации (сайт сопоставляет `territory` с наименованием субъекта РФ этой федерации — `Judge.region` уже хранит именно субъект РФ, отдельной настройки на этот счёт не нужно).
+
+Отправка **не автоматическая** — по кнопке: одного судьи с его карточки («Отправить на сайт») либо всех разом со страницы списка («Отправить всех на сайт», нужно, чтобы на сайт гарантированно попали и включения, и исключения из активного списка). Исключение — `judges_delete`: удаление синхронизируется сразу, без кнопки, так как после удаления карточки нет страницы, откуда её нажать (для исключения из активного списка без удаления записи используется `is_active` — обычная отправка через кнопку).
 
 ---
 
