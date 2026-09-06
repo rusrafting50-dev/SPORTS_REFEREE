@@ -116,6 +116,96 @@ def отправить_на_сайт(семинар):
     return True, 'Отправлено на сайт.'
 
 
+def собрать_лекторов(семинар, лекторы):
+    """Строит тело запроса для POST /api/sync/event-lecturers."""
+    return {
+        'event_source_id': семинар.id,
+        'items': [
+            {'full_name': l.full_name, 'region': l.region, 'qualification': l.qualification}
+            for l in лекторы
+        ],
+    }
+
+
+def отправить_лекторов_на_сайт(семинар, лекторы):
+    """Отправляет лекторский состав семинара на сайт. lекторы — уже
+    полученный список SeminarLecturer (вызывающий код,
+    routes/seminars.py, сам решает, откуда их взять — чтобы здесь не
+    дублировать запрос к базе). Возвращает (успех, сообщение)."""
+    if not RAFTING_CFO_API_KEY:
+        return False, 'RAFTING_CFO_API_KEY не задан в .env — см. .env.example'
+
+    try:
+        ответ = requests.post(
+            f'{RAFTING_CFO_URL}/api/sync/event-lecturers',
+            json=собрать_лекторов(семинар, лекторы),
+            headers={'X-API-Key': RAFTING_CFO_API_KEY},
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        return False, f'Не удалось соединиться с сайтом ({RAFTING_CFO_URL}): {exc}'
+
+    if ответ.status_code != 200:
+        return False, f'Сайт ответил ошибкой {ответ.status_code}: {ответ.text[:200]}'
+
+    данные = ответ.json()
+    if данные.get('errors'):
+        return False, '; '.join(данные['errors'])
+    return True, 'Лекторский состав отправлен на сайт.'
+
+
+def собрать_протокол(семинар, строки):
+    """Строит тело запроса для POST /api/sync/event-protocols. строки —
+    уже построенные вызывающим кодом (routes/seminars.py: _protocol_rows) —
+    объекты с полями full_name/region/current_qualification/
+    assigned_category/participant_hours/lecturer_hours/exam_result.
+    Ключи строк — по-русски, как в протоколах COREZ (routes/api.py на
+    сайте не подписывает столбцы отдельно, показывает ключи как есть)."""
+    return {
+        'event_source_id': семинар.id,
+        'doc_type': 'протокол',
+        'title': 'Протокол семинара',
+        'rows': [
+            {
+                'ФИО': строка.full_name,
+                'Регион': строка.region,
+                'Квалификация': строка.current_qualification,
+                'Категория': строка.assigned_category,
+                'Часы (участник)': строка.participant_hours,
+                'Часы (лектор)': строка.lecturer_hours,
+                'Результат зачёта': строка.exam_result,
+            }
+            for строка in строки
+        ],
+    }
+
+
+def отправить_протокол_на_сайт(семинар, строки):
+    """Отправляет протокол семинара на сайт. Возвращает (успех, сообщение)."""
+    if not RAFTING_CFO_API_KEY:
+        return False, 'RAFTING_CFO_API_KEY не задан в .env — см. .env.example'
+    if not строки:
+        return True, 'Протокол пуст — нечего отправлять.'
+
+    try:
+        ответ = requests.post(
+            f'{RAFTING_CFO_URL}/api/sync/event-protocols',
+            json=собрать_протокол(семинар, строки),
+            headers={'X-API-Key': RAFTING_CFO_API_KEY},
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        return False, f'Не удалось соединиться с сайтом ({RAFTING_CFO_URL}): {exc}'
+
+    if ответ.status_code != 200:
+        return False, f'Сайт ответил ошибкой {ответ.status_code}: {ответ.text[:200]}'
+
+    данные = ответ.json()
+    if данные.get('errors'):
+        return False, '; '.join(данные['errors'])
+    return True, 'Протокол отправлен на сайт.'
+
+
 def собрать_данные_заявки(заявка):
     """Строит словарь одного элемента для POST /api/sync/seminar-applications."""
     return {

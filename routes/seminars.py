@@ -13,7 +13,9 @@ from seminar_polozhenie_generator import (
     APPLICATION_FORM_FIELDS, build_polozhenie_data, generate_polozhenie, polozhenie_filename,
 )
 from seminar_program_data import SS1K_PROGRAM, SS2K_PROGRAM, SS3K_PROGRAM, VSK_PROGRAM
-from sync_rafting_cfo import отправить_на_сайт, отправить_заявку_на_сайт
+from sync_rafting_cfo import (
+    отправить_заявку_на_сайт, отправить_лекторов_на_сайт, отправить_на_сайт, отправить_протокол_на_сайт,
+)
 
 SEMINAR_PROGRAMS = {
     "vsk": VSK_PROGRAM,
@@ -187,9 +189,27 @@ def seminars_delete(seminar_id):
 
 @bp.route("/<int:seminar_id>/send-to-site", methods=["POST"])
 def seminars_send_to_site(seminar_id):
+    """Отправляет на сайт основные данные семинара, лекторский состав и
+    протокол — одной кнопкой, чтобы не заставлять организатора отдельно
+    помнить про каждую из трёх отправок."""
     seminar = Seminar.query.get_or_404(seminar_id)
     success, message = отправить_на_сайт(seminar)
-    flash(message, "success" if success else "danger")
+    if not success:
+        flash(message, "danger")
+        return redirect(url_for("seminars.seminars_detail", seminar_id=seminar.id))
+
+    messages = [message]
+
+    lecturers = SeminarLecturer.query.filter_by(seminar_id=seminar_id).order_by(SeminarLecturer.id).all()
+    lecturers_success, lecturers_message = отправить_лекторов_на_сайт(seminar, lecturers)
+    messages.append(lecturers_message)
+
+    protocol_rows = _protocol_rows(seminar_id, seminar)
+    protocol_success, protocol_message = отправить_протокол_на_сайт(seminar, protocol_rows)
+    messages.append(protocol_message)
+
+    overall_success = success and lecturers_success and protocol_success
+    flash(" ".join(messages), "success" if overall_success else "danger")
     return redirect(url_for("seminars.seminars_detail", seminar_id=seminar.id))
 
 
