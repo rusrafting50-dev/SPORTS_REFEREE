@@ -78,6 +78,7 @@ def собрать_данные(семинар):
         'start_date': семинар.start_date.isoformat(),
         'end_date': окончание.isoformat() if окончание else None,
         'location': семинар.location,
+        'subject_name': семинар.polozhenie_federation_region,
         'status': _определить_статус(семинар.start_date, окончание),
         'applications_deadline': (
             семинар.polozhenie_applications_deadline.isoformat()
