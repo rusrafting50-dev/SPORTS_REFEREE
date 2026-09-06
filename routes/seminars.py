@@ -253,6 +253,14 @@ def applications_toggle_status(seminar_id):
     return redirect(url_for("seminars.applications_list", seminar_id=seminar.id))
 
 
+@bp.route("/<int:seminar_id>/applications/toggle-open", methods=["POST"])
+def applications_toggle_open(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    seminar.applications_open = not seminar.applications_open
+    db.session.commit()
+    return redirect(url_for("seminars.applications_list", seminar_id=seminar.id))
+
+
 @bp.route("/<int:seminar_id>/applications/new", methods=["GET", "POST"])
 def applications_new(seminar_id):
     seminar = Seminar.query.get_or_404(seminar_id)

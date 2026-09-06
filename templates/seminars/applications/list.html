@@ -7,7 +7,16 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Заявки</h1>
-    <a href="{{ url_for('seminars.applications_new', seminar_id=seminar.id) }}" class="btn btn-primary">+ Новая заявка</a>
+    <div class="d-flex gap-2">
+        <form method="post" action="{{ url_for('seminars.applications_toggle_open', seminar_id=seminar.id) }}">
+            {% if seminar.applications_open %}
+            <button type="submit" class="btn btn-success rounded-pill">Прием заявок</button>
+            {% else %}
+            <button type="submit" class="btn btn-outline-secondary rounded-pill">Прием заявок завершен</button>
+            {% endif %}
+        </form>
+        <a href="{{ url_for('seminars.applications_new', seminar_id=seminar.id) }}" class="btn btn-primary">+ Новая заявка</a>
+    </div>
 </div>
 
 {% if not applications %}

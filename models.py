@@ -162,6 +162,7 @@ class Seminar(db.Model):
     leader_phone = db.Column(db.String(100))
 
     applications_done = db.Column(db.Boolean, default=False, nullable=False)  # статус блока «Заявки на участие»
+    applications_open = db.Column(db.Boolean, default=True, nullable=False)   # приём заявок: открыт/завершён
     lecturers_done = db.Column(db.Boolean, default=False, nullable=False)     # статус блока «Преподавательский состав»
     protocol_done = db.Column(db.Boolean, default=False, nullable=False)      # статус блока «Протокол»
     gradesheet_done = db.Column(db.Boolean, default=False, nullable=False)    # статус протокола сдачи квалификационного зачёта
