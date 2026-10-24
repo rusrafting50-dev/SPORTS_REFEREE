@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
 
 import references
+import sync_corez_judges
 import sync_rafting_cfo_judges
 from judge_docx_generator import generate_judge_card, judge_card_filename
 from judge_docx_importer import parse_judge_card
@@ -36,6 +37,36 @@ JUDGE_CATEGORY_TYPES = [
      "Спортивный судья второй категории", "Спортивные судьи второй категории"),
     ("/3k", "СС3К", "judges.judges_3k",
      "Спортивный судья третьей категории", "Спортивные судьи третьей категории"),
+]
+
+# Подсказки для поля «Должность» при добавлении судьи в коллегию COREZ —
+# тот же список, что в COREZ routes/судьи.py (ДОЛЖНОСТИ); ввод свободный,
+# COREZ саму должность не валидирует, это просто подсказки в форме.
+COREZ_ДОЛЖНОСТИ = [
+    "Главный судья",
+    "Главный секретарь",
+    "Зам. главного судьи по судейству",
+    "Зам. главного судьи по орг. вопросам",
+    "Начальник дистанций",
+    "Начальник спасательной службы",
+    "Зам. главного секретаря",
+    "Секретарь",
+    "Старший судья старта",
+    "Предстартовый контролер",
+    "Судья хронометрист",
+    "Стартер",
+    "Помощник стартера",
+    "Старший судья на связке ворот",
+    "Судья на воротах",
+    "Судья на пульте",
+    "Судья-контролер на дистанции",
+    "Судья-спасатель",
+    "Старший судья по информации",
+    "Старший судья финиша",
+    "Судья-информатор",
+    "Судья на финише",
+    "Судья-постановщик",
+    "Судья-диспетчер",
 ]
 
 
@@ -330,6 +361,34 @@ def judges_send_all_to_site():
     успех, сообщение = sync_rafting_cfo_judges.отправить_всех(Judge.query.all())
     flash(сообщение, "success" if успех else "warning")
     return redirect(url_for("judges.judges_list"))
+
+
+@bp.route("/<int:judge_id>/corez")
+def judges_corez_form(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    успех, результат = sync_corez_judges.список_соревнований()
+    if not успех:
+        flash(результат, "warning")
+        competitions = []
+    else:
+        competitions = результат
+    return render_template(
+        "judges/corez.html", judge=judge, competitions=competitions,
+        должности=COREZ_ДОЛЖНОСТИ,
+    )
+
+
+@bp.route("/<int:judge_id>/corez", methods=["POST"])
+def judges_corez_send(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    соревнование_id = request.form.get("соревнование_id", "").strip()
+    должность = request.form.get("должность", "").strip()
+    if not соревнование_id:
+        flash("Выберите соревнование", "warning")
+        return redirect(url_for("judges.judges_corez_form", judge_id=judge.id))
+    успех, сообщение = sync_corez_judges.добавить_в_коллегию(judge, int(соревнование_id), должность)
+    flash(сообщение, "success" if успех else "warning")
+    return redirect(url_for("judges.judges_detail", judge_id=judge.id))
 
 
 @bp.route("/<int:judge_id>/export")

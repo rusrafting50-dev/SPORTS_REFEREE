@@ -9,6 +9,7 @@
         <form method="post" action="{{ url_for('judges.judges_send_to_site', judge_id=judge.id) }}" class="d-inline">
             <button type="submit" class="btn btn-outline-success">Отправить на сайт</button>
         </form>
+        <a href="{{ url_for('judges.judges_corez_form', judge_id=judge.id) }}" class="btn btn-outline-success">В коллегию COREZ</a>
         {% if judge.is_active %}
         <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
             <button type="submit" class="btn btn-outline-danger">Не аттестован</button>

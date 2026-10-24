@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}В коллегию COREZ — {{ judge.full_name }} — Спортивные судьи{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Добавить в судейскую коллегию COREZ</h1>
+<p class="text-muted">{{ judge.full_name }}{% if judge.current_category %}, {{ judge.current_category }}{% endif %}</p>
+
+{% if not competitions %}
+<p class="text-muted">Список соревнований недоступен — проверьте настройки COREZ_URL / COREZ_API_KEY в .env.</p>
+<a href="{{ url_for('judges.judges_detail', judge_id=judge.id) }}" class="btn btn-outline-secondary">Назад</a>
+{% else %}
+<form method="post" class="row g-3" style="max-width: 700px;">
+    <div class="col-md-8">
+        <label class="form-label">Соревнование</label>
+        <select name="соревнование_id" class="form-select" required>
+            <option value="">— выберите —</option>
+            {% for c in competitions %}
+            <option value="{{ c.id }}">
+                {{ c.название }}{% if c.даты_проведения %}, {{ c.даты_проведения }}{% endif %}{% if c.место_проведения %}, {{ c.место_проведения }}{% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-8">
+        <label class="form-label">Должность в коллегии</label>
+        <input type="text" name="должность" class="form-control" list="должности-list" placeholder="например, Судья на воротах">
+        <datalist id="должности-list">
+            {% for d in должности %}
+            <option value="{{ d }}">
+            {% endfor %}
+        </datalist>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-success">Добавить</button>
+        <a href="{{ url_for('judges.judges_detail', judge_id=judge.id) }}" class="btn btn-outline-secondary">Отмена</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
