@@ -3,8 +3,8 @@ cd /d "D:\Projects Claude Code\SPORTS_REFEREE"
 git config merge.ff false
 set GIT_MERGE_AUTOEDIT=no
 
-echo [1/4] Stop Flask...
-taskkill /f /im python.exe 1>nul 2>nul
+echo [1/4] Stop Flask (port 5002)...
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr :5002 ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
 timeout /t 2 /nobreak >nul
 
 echo [2/4] Git pull...
