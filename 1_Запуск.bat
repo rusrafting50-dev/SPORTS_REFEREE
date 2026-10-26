@@ -3,6 +3,8 @@ cd /d "D:\Projects Claude Code\SPORTS_REFEREE"
 git config merge.ff false
 set GIT_MERGE_AUTOEDIT=no
 
+if "%~1"=="--relaunched" goto :run
+
 echo [1/4] Stop Flask (port 5002)...
 for /f "tokens=5" %%p in ('netstat -ano ^| findstr :5002 ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
 timeout /t 2 /nobreak >nul
@@ -16,6 +18,13 @@ git checkout --theirs templates/ 2>nul
 git add templates/ 2>nul
 git commit -m "Auto-resolve post-pull conflicts" --no-edit 2>nul
 
+rem git pull мог изменить сам этот .bat-файл — перезапускаемся новым
+rem процессом, чтобы дочитать файл с диска заново, а не со старого
+rem (теперь невалидного) смещения в этом же процессе cmd.exe.
+start "" "%~f0" --relaunched
+exit /b
+
+:run
 echo [3/4] pip install...
 pip install -r requirements.txt --quiet
 
