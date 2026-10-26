@@ -1,19 +1,31 @@
-# routes/api.py — приём заявок на семинар с сайта RAFTING_CFO
+# routes/api.py — приём заявок на семинар с сайта RAFTING_CFO, поиск судей для COREZ
 #
 # Сайт RAFTING_CFO шлёт сюда заявки, поданные зарегистрированными
 # пользователями (представителями регионов) — POST создаёт новую заявку
 # (историю не перезаписываем, у каждой заявки своя дата/время), GET отдаёт
 # список уже поданных заявок для отображения на странице мероприятия на
 # сайте. Оба защищены заголовком X-API-Key (значение — в .env, API_KEY).
+#
+# /judges/search — обратное направление интеграции с COREZ (там же
+# routes/судьи.py, маршрут /поиск): раньше судьи уходили ТОЛЬКО по кнопке
+# с карточки судьи в SPORTS_REFEREE («В коллегию COREZ»); теперь, находясь
+# в самом COREZ на форме добавления судьи в коллегию, можно искать судей
+# прямо по базе SPORTS_REFEREE (запрос в этот эндпоинт встраивается в тот
+# же выпадающий список, что и локальный поиск COREZ по прошлым
+# соревнованиям) — выдача специально в том же формате ключей, что и
+# собственный локальный поиск COREZ, чтобы не править его JS.
 import os
 from datetime import datetime
 from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
-from models import Seminar, SeminarApplication, SeminarApplicationParticipant, db
+import references
+from models import Judge, Seminar, SeminarApplication, SeminarApplicationParticipant, db
 
 bp = Blueprint("api", __name__, url_prefix="/api")
+
+_CATEGORY_TO_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
 
 def require_api_key(view):
@@ -186,3 +198,47 @@ def applications_post(seminar_id):
 
     db.session.commit()
     return jsonify({"status": "ok", "application_id": application.id})
+
+
+def _category_dates(judge):
+    """Дата последней записи «присвоена»/«подтверждена» в истории категорий —
+    приближение к полям дата_присвоения/дата_подтверждения, которых в
+    SPORTS_REFEREE как отдельных полей судьи нет (только история записей)."""
+    присвоена = [r.date for r in judge.category_records if r.action == "присвоена" and r.date]
+    подтверждена = [r.date for r in judge.category_records if r.action == "подтверждена" and r.date]
+    return (max(присвоена) if присвоена else None, max(подтверждена) if подтверждена else None)
+
+
+def _judge_to_corez_dict(judge):
+    дата_присвоения, дата_подтверждения = _category_dates(judge)
+    return {
+        "фио": judge.full_name,
+        "квалификация": _CATEGORY_TO_ABBR.get(judge.current_category, judge.current_category) or "",
+        "субъект_рф": judge.region or "",
+        "пол": "",
+        "дата_рождения": judge.birth_date.isoformat() if judge.birth_date else "",
+        "дата_присвоения": дата_присвоения.isoformat() if дата_присвоения else "",
+        "дата_подтверждения": дата_подтверждения.isoformat() if дата_подтверждения else "",
+        "конец_аттестации": "",
+        "номер_в_базе": judge.id,
+    }
+
+
+@bp.route("/judges/search", methods=["GET"])
+@require_api_key
+def judges_search():
+    q = (request.args.get("q") or "").strip()
+    if len(q) < 2:
+        return jsonify([])
+
+    judges = (
+        Judge.query.filter(db.or_(
+            Judge.last_name.ilike(f"%{q}%"),
+            Judge.first_name.ilike(f"%{q}%"),
+            Judge.middle_name.ilike(f"%{q}%"),
+        ))
+        .order_by(Judge.last_name)
+        .limit(50)
+        .all()
+    )
+    return jsonify([_judge_to_corez_dict(j) for j in judges])
