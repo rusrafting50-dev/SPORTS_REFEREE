@@ -244,7 +244,13 @@ def judges_import():
         if imported:
             flash(f"Импортировано карточек: {len(imported)} ({', '.join(j.full_name for j in imported)})", "success")
         if errors:
-            flash(f"Не удалось импортировать: {', '.join(errors)}", "error")
+            flash(
+                f"Не удалось импортировать: {', '.join(errors)} — поддерживается только файл "
+                f"«Карточка учёта судейской деятельности спортивного судьи» по установленному "
+                f"образцу; другие документы (например, «Представление к присвоению категории») "
+                f"этот формат не распознаёт.",
+                "error",
+            )
 
         if len(imported) == 1 and not errors:
             return redirect(url_for("judges.judges_detail", judge_id=imported[0].id))
