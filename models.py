@@ -6,6 +6,33 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+class Subject(db.Model):
+    """Субъект Российской Федерации — справочник для переключателя в шапке
+    «Судьи ЦФО» (routes/judges.py, _scope_to_subject_and_branch): выбор
+    субъекта фильтрует список судей по Judge.region (точное совпадение
+    по наименованию)."""
+    __tablename__ = "subject"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class LocalBranch(db.Model):
+    """Местное отделение (муниципальное образование) в рамках субъекта РФ —
+    второй переключатель в шапке «Региональная федерация», на уровень
+    ниже Subject. Выбор фильтрует список судей по Judge.municipality
+    (точное совпадение по наименованию)."""
+    __tablename__ = "local_branch"
+    __table_args__ = (db.UniqueConstraint("subject_id", "name", name="uq_local_branch_subject_name"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)
+    subject = db.relationship("Subject")
+    name = db.Column(db.String(300), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class Settings(db.Model):
     """Общая информация об организации для шапки карточки судьи."""
     __tablename__ = "settings"

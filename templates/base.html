@@ -19,8 +19,65 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('seminars.seminars_list') }}">Семинары</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('judges.judges_list') }}">Судьи</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            {{ current_subject.name if current_subject else 'Судьи ЦФО' }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item {{ 'active' if not current_subject }}"
+                                   href="{{ url_for('subjects_clear') }}">Судьи ЦФО (все субъекты)</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% for subject in all_subjects %}
+                            <li>
+                                <a class="dropdown-item {{ 'active' if current_subject and subject.id == current_subject.id }}"
+                                   href="{{ url_for('subjects_switch', subject_id=subject.id) }}">{{ subject.name }}</a>
+                            </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item" id="btnToggleAddSubject">+ Добавить субъект Российской Федерации</button>
+                            </li>
+                            <li id="formAddSubjectWrap" class="px-3 py-1" style="display:none;">
+                                <form method="post" action="{{ url_for('subjects_add') }}" class="d-flex gap-1">
+                                    <input type="text" name="name" class="form-control form-control-sm"
+                                           placeholder="Наименование субъекта РФ" required>
+                                    <button type="submit" class="btn btn-sm btn-primary">Добавить</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            {{ current_local_branch.name if current_local_branch else 'Региональная федерация' }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item {{ 'active' if not current_local_branch }}"
+                                   href="{{ url_for('local_branches_clear') }}">Региональная федерация (все отделения)</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% for branch in current_subject_local_branches %}
+                            <li>
+                                <a class="dropdown-item {{ 'active' if current_local_branch and branch.id == current_local_branch.id }}"
+                                   href="{{ url_for('local_branches_switch', branch_id=branch.id) }}">{{ branch.name }}</a>
+                            </li>
+                            {% else %}
+                            <li><span class="dropdown-item-text text-muted">{{ 'Местные отделения ещё не добавлены' if current_subject else 'Сначала выберите субъект РФ' }}</span></li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item" id="btnToggleAddLocalBranch">+ Добавить муниципальное образование</button>
+                            </li>
+                            <li id="formAddLocalBranchWrap" class="px-3 py-1" style="display:none;">
+                                <form method="post" action="{{ url_for('local_branches_add') }}" class="d-flex gap-1">
+                                    <input type="text" name="name" class="form-control form-control-sm"
+                                           placeholder="Наименование муниципального образования" required>
+                                    <button type="submit" class="btn btn-sm btn-primary">Добавить</button>
+                                </form>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('judges.judges_import') }}">Импорт</a>

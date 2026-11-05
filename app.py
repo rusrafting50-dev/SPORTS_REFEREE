@@ -2,15 +2,19 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from markupsafe import Markup, escape
 from sqlalchemy import inspect, text
 
 import references
-from models import Settings, db
+from models import LocalBranch, Settings, Subject, db
 from routes.api import bp as api_bp
 from routes.judges import bp as judges_bp
 from routes.seminars import bp as seminars_bp
+from subjects import (
+    обеспечить_субъекты_цфо, местные_отделения_субъекта, текущее_местное_отделение,
+    текущий_субъект, текущий_субъект_id,
+)
 
 # override=True — .env должен побеждать даже если такая переменная уже
 # случайно задана на уровне Windows (иначе пустое/старое системное
@@ -117,10 +121,84 @@ def create_app():
     with app.app_context():
         db.create_all()
         _sync_missing_columns()
+        обеспечить_субъекты_цфо()
+
+    @app.context_processor
+    def inject_subjects():
+        subject_id = текущий_субъект_id()
+        return {
+            "all_subjects": Subject.query.order_by(Subject.name).all(),
+            "current_subject": текущий_субъект(),
+            "current_subject_local_branches": местные_отделения_субъекта(subject_id),
+            "current_local_branch": текущее_местное_отделение(),
+        }
 
     @app.route("/")
     def index():
         return redirect(url_for("seminars.seminars_list"))
+
+    @app.route("/subjects/<int:subject_id>/switch")
+    def subjects_switch(subject_id):
+        Subject.query.get_or_404(subject_id)
+        session["judge_subject_id"] = subject_id
+        session.pop("judge_local_branch_id", None)  # отделение прошлого субъекта здесь больше не действует
+        return redirect(request.referrer or url_for("judges.judges_list"))
+
+    @app.route("/subjects/clear")
+    def subjects_clear():
+        session.pop("judge_subject_id", None)
+        session.pop("judge_local_branch_id", None)
+        return redirect(request.referrer or url_for("judges.judges_list"))
+
+    @app.route("/subjects", methods=["POST"])
+    def subjects_add():
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Укажите наименование субъекта Российской Федерации", "error")
+            return redirect(request.referrer or url_for("judges.judges_list"))
+        subject = Subject.query.filter_by(name=name).first()
+        if not subject:
+            subject = Subject(name=name)
+            db.session.add(subject)
+            db.session.commit()
+            flash(f"Субъект «{name}» добавлен", "success")
+        else:
+            flash("Такой субъект уже есть в списке", "warning")
+        session["judge_subject_id"] = subject.id
+        session.pop("judge_local_branch_id", None)
+        return redirect(url_for("judges.judges_list"))
+
+    @app.route("/local-branches/<int:branch_id>/switch")
+    def local_branches_switch(branch_id):
+        LocalBranch.query.get_or_404(branch_id)
+        session["judge_local_branch_id"] = branch_id
+        return redirect(request.referrer or url_for("judges.judges_list"))
+
+    @app.route("/local-branches/clear")
+    def local_branches_clear():
+        session.pop("judge_local_branch_id", None)
+        return redirect(request.referrer or url_for("judges.judges_list"))
+
+    @app.route("/local-branches", methods=["POST"])
+    def local_branches_add():
+        subject_id = текущий_субъект_id()
+        if not subject_id:
+            flash("Сначала выберите субъект Российской Федерации", "error")
+            return redirect(request.referrer or url_for("judges.judges_list"))
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Укажите наименование муниципального образования", "error")
+            return redirect(request.referrer or url_for("judges.judges_list"))
+        branch = LocalBranch.query.filter_by(subject_id=subject_id, name=name).first()
+        if not branch:
+            branch = LocalBranch(subject_id=subject_id, name=name)
+            db.session.add(branch)
+            db.session.commit()
+            flash(f"Местное отделение «{name}» добавлено", "success")
+        else:
+            flash("Такое местное отделение уже есть в списке", "warning")
+        session["judge_local_branch_id"] = branch.id
+        return redirect(url_for("judges.judges_list"))
 
     @app.route("/settings", methods=["GET", "POST"])
     def settings():

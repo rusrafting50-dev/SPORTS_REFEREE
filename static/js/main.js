@@ -3,7 +3,31 @@
 document.addEventListener("DOMContentLoaded", function () {
     initParticipantsTable();
     initLecturerSearch();
+    initHeaderDropdownToggles();
 });
+
+// Переключатели субъекта РФ и местного отделения в шапке — кнопка
+// «+ Добавить ...» показывает/скрывает поле ввода наименования.
+function initHeaderDropdownToggles() {
+    var toggles = [
+        ["btnToggleAddSubject", "formAddSubjectWrap"],
+        ["btnToggleAddLocalBranch", "formAddLocalBranchWrap"],
+    ];
+    toggles.forEach(function (pair) {
+        var toggleButton = document.getElementById(pair[0]);
+        var formWrap = document.getElementById(pair[1]);
+        if (toggleButton && formWrap) {
+            toggleButton.addEventListener("click", function () {
+                var isHidden = formWrap.style.display === "none";
+                formWrap.style.display = isHidden ? "block" : "none";
+                if (isHidden) {
+                    var input = formWrap.querySelector("input[name='name']");
+                    if (input) input.focus();
+                }
+            });
+        }
+    });
+}
 
 function initLecturerSearch() {
     var searchInput = document.getElementById("lecturer-search-input");

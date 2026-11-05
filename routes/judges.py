@@ -12,8 +12,24 @@ from judge_docx_importer import parse_judge_card
 from models import (
     Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, Settings, db,
 )
+from subjects import текущее_местное_отделение, текущий_субъект
 
 bp = Blueprint("judges", __name__, url_prefix="/judges")
+
+
+def _scope_to_subject_and_branch(query):
+    """Сужает запрос до выбранных в шапке субъекта РФ («Судьи ЦФО») и
+    местного отделения («Региональная федерация») — по точному
+    совпадению со свободнотекстовыми Judge.region / Judge.municipality.
+    Ничего не выбрано — список не фильтруется (видны судьи всех
+    субъектов)."""
+    subject = текущий_субъект()
+    if subject:
+        query = query.filter(Judge.region == subject.name)
+    branch = текущее_местное_отделение()
+    if branch:
+        query = query.filter(Judge.municipality == branch.name)
+    return query
 
 
 def _синхронизировать(judge):
@@ -131,6 +147,7 @@ def judges_list():
     discipline_group = request.args.get("discipline_group", "")
 
     query = Judge.query.filter_by(is_active=True)
+    query = _scope_to_subject_and_branch(query)
     if municipality:
         query = query.filter_by(municipality=municipality)
     if specialization:
@@ -170,8 +187,9 @@ def _make_category_view(category, heading):
         specialization = request.args.get("specialization", "")
         discipline_group = request.args.get("discipline_group", "")
 
+        query = _scope_to_subject_and_branch(Judge.query)
         judges = [
-            j for j in Judge.query.order_by(Judge.last_name).all()
+            j for j in query.order_by(Judge.last_name).all()
             if j.current_category == category
         ]
         if municipality:
