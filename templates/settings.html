@@ -13,18 +13,6 @@
         <input type="text" name="sport_code" class="form-control" value="{{ settings.sport_code if settings else '' }}">
     </div>
     <div class="col-12">
-        <label class="form-label">Наименование организации, осуществляющей учёт судейской деятельности</label>
-        <input type="text" name="organization_name" class="form-control" value="{{ settings.organization_name if settings else '' }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Адрес (место нахождения) организации</label>
-        <input type="text" name="organization_address" class="form-control" value="{{ settings.organization_address if settings else '' }}">
-    </div>
-    <div class="col-md-6">
-        <label class="form-label">Телефон, адрес электронной почты организации</label>
-        <input type="text" name="organization_contacts" class="form-control" value="{{ settings.organization_contacts if settings else '' }}">
-    </div>
-    <div class="col-12">
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </div>
 </form>
@@ -35,12 +23,29 @@
 
 <div class="row g-3">
     {% for subject in all_subjects %}
-    <div class="col-md-6 col-lg-4">
+    <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-body">
-                <form method="post" action="{{ url_for('subjects_edit', subject_id=subject.id) }}" class="d-flex gap-1 mb-2">
-                    <input type="text" name="name" class="form-control form-control-sm" value="{{ subject.name }}" required>
-                    <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                <form method="post" action="{{ url_for('subjects_edit', subject_id=subject.id) }}" class="row g-2 mb-2">
+                    <div class="col-12">
+                        <label class="form-label mb-0">Наименование субъекта РФ</label>
+                        <input type="text" name="name" class="form-control form-control-sm" value="{{ subject.name }}" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label mb-0">Наименование организации, осуществляющей учёт судейской деятельности</label>
+                        <input type="text" name="organization_name" class="form-control form-control-sm" value="{{ subject.organization_name or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label mb-0">Адрес (место нахождения) организации</label>
+                        <input type="text" name="organization_address" class="form-control form-control-sm" value="{{ subject.organization_address or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label mb-0">Телефон, адрес электронной почты организации</label>
+                        <input type="text" name="organization_contacts" class="form-control form-control-sm" value="{{ subject.organization_contacts or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                    </div>
                 </form>
                 <form method="post" action="{{ url_for('subjects_delete', subject_id=subject.id) }}" class="mb-3"
                       onsubmit="return confirm('Удалить субъект ' + {{ subject.name|tojson }} + '? Его местные отделения тоже будут удалены.');">

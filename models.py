@@ -20,12 +20,18 @@ class Subject(db.Model):
     """Субъект Российской Федерации — справочник для переключателя в шапке
     «Судьи ЦФО» (routes/judges.py, _scope_to_subject_and_branch): выбор
     субъекта фильтрует список судей по Judge.region (точное совпадение
-    по наименованию)."""
+    по наименованию). Хранит и свою организацию, осуществляющую учёт
+    судейской деятельности в этом субъекте, — для шапки карточки судьи
+    (judge_docx_generator.py подбирает субъект по Judge.region)."""
     __tablename__ = "subject"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    organization_name = db.Column(db.String(300))      # Наименование организации, осуществляющей учёт судейской деятельности
+    organization_address = db.Column(db.String(300))   # Адрес (место нахождения) организации
+    organization_contacts = db.Column(db.String(300))  # Телефон, адрес электронной почты организации
 
     local_branches = db.relationship(
         "LocalBranch", backref="subject", lazy=True, order_by="LocalBranch.name",
@@ -49,17 +55,15 @@ class LocalBranch(db.Model):
 
 
 class Settings(db.Model):
-    """Общая информация об организации для шапки карточки судьи."""
+    """Общая информация о виде спорта для шапки карточки судьи (организация,
+    осуществляющая учёт судейской деятельности, — теперь на уровне
+    Subject, своя для каждого субъекта РФ, см. выше)."""
     __tablename__ = "settings"
 
     id = db.Column(db.Integer, primary_key=True)
 
-    sport_name = db.Column(db.String(200))            # Наименование вида спорта
-    sport_code = db.Column(db.String(50))              # Номер-код вида спорта
-
-    organization_name = db.Column(db.String(300))      # Наименование организации, осуществляющей учёт судейской деятельности
-    organization_address = db.Column(db.String(300))   # Адрес (место нахождения)
-    organization_contacts = db.Column(db.String(300))  # Телефон, адрес электронной почты
+    sport_name = db.Column(db.String(200))  # Наименование вида спорта
+    sport_code = db.Column(db.String(50))   # Номер-код вида спорта
 
 
 class Judge(db.Model):

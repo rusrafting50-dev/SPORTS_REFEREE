@@ -10,7 +10,7 @@ import sync_rafting_cfo_judges
 from judge_docx_generator import generate_judge_card, judge_card_filename
 from judge_docx_importer import parse_judge_card
 from models import (
-    Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, Settings, db,
+    Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, Settings, Subject, db,
 )
 from subjects import текущее_местное_отделение, текущий_субъект
 
@@ -419,7 +419,8 @@ def judges_corez_send(judge_id):
 def judges_export(judge_id):
     judge = Judge.query.get_or_404(judge_id)
     settings = Settings.query.first()
-    buffer = generate_judge_card(judge, settings)
+    subject = Subject.query.filter_by(name=judge.region).first() if judge.region else None
+    buffer = generate_judge_card(judge, settings, subject)
     return send_file(
         buffer, as_attachment=True, download_name=judge_card_filename(judge),
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

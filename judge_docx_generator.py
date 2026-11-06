@@ -99,7 +99,10 @@ def _date_parts(value):
     return value.strftime("%d"), value.strftime("%m"), value.strftime("%Y")
 
 
-def generate_judge_card(judge, settings):
+def generate_judge_card(judge, settings, subject):
+    """subject — субъект РФ судьи (Subject.name == judge.region), хранит
+    организацию, осуществляющую учёт судейской деятельности именно в
+    этом субъекте (routes/judges.py, judges_export)."""
     document = docx.Document(TEMPLATE_PATH)
     table0, table1, table2 = document.tables[0], document.tables[1], document.tables[2]
 
@@ -110,9 +113,9 @@ def generate_judge_card(judge, settings):
     # --- Шапка: вид спорта, организация ---
     _set_text(table0.rows[0]._tr, 2, table0, settings.sport_name if settings else "")
     _set_text(table0.rows[1]._tr, 2, table0, settings.sport_code if settings else "")
-    _set_text(table0.rows[11]._tr, 1, table0, settings.organization_name if settings else "")
-    _set_text(table0.rows[11]._tr, 3, table0, settings.organization_address if settings else "")
-    _set_text(table0.rows[11]._tr, 5, table0, settings.organization_contacts if settings else "")
+    _set_text(table0.rows[11]._tr, 1, table0, subject.organization_name if subject else "")
+    _set_text(table0.rows[11]._tr, 3, table0, subject.organization_address if subject else "")
+    _set_text(table0.rows[11]._tr, 5, table0, subject.organization_contacts if subject else "")
 
     # --- Личные данные судьи ---
     _set_text(table0.rows[2]._tr, 1, table0, judge.last_name)

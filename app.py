@@ -180,8 +180,11 @@ def create_app():
             flash("Субъект с таким наименованием уже есть в списке", "warning")
             return redirect(url_for("settings"))
         subject.name = name
+        subject.organization_name = request.form.get("organization_name", "").strip()
+        subject.organization_address = request.form.get("organization_address", "").strip()
+        subject.organization_contacts = request.form.get("organization_contacts", "").strip()
         db.session.commit()
-        flash(f"Субъект переименован в «{name}»", "success")
+        flash(f"Субъект «{name}» сохранён", "success")
         return redirect(url_for("settings"))
 
     @app.route("/subjects/<int:subject_id>/delete", methods=["POST"])
@@ -262,9 +265,6 @@ def create_app():
                 db.session.add(org_settings)
             org_settings.sport_name = request.form.get("sport_name", "").strip()
             org_settings.sport_code = request.form.get("sport_code", "").strip()
-            org_settings.organization_name = request.form.get("organization_name", "").strip()
-            org_settings.organization_address = request.form.get("organization_address", "").strip()
-            org_settings.organization_contacts = request.form.get("organization_contacts", "").strip()
             db.session.commit()
             flash("Настройки сохранены", "success")
             return redirect(url_for("settings"))
