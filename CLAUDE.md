@@ -173,4 +173,4 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Приложение открывается на `http://localhost:5002`
+Приложение открывается на `http://localhost:5005`

@@ -5,8 +5,8 @@ set GIT_MERGE_AUTOEDIT=no
 
 if "%~1"=="--relaunched" goto :run
 
-echo [1/4] Stop Flask (port 5002)...
-for /f "tokens=5" %%p in ('netstat -ano ^| findstr :5002 ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
+echo [1/4] Stop Flask (port 5005)...
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr :5005 ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
 timeout /t 2 /nobreak >nul
 
 echo [2/4] Git pull...
@@ -29,6 +29,6 @@ echo [3/4] pip install...
 pip install -r requirements.txt --quiet
 
 echo [4/4] Start Flask...
-start http://localhost:5002
+start http://localhost:5005
 python app.py
 pause
