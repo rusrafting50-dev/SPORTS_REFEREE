@@ -143,13 +143,16 @@ def create_app():
         Subject.query.get_or_404(subject_id)
         session["judge_subject_id"] = subject_id
         session.pop("judge_local_branch_id", None)  # отделение прошлого субъекта здесь больше не действует
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        # Всегда на список судей, а не на request.referrer: пункт в шапке доступен
+        # с любой страницы (например, «Семинары»), и клик должен сразу показать
+        # таблицу судей этого субъекта, а не молча отфильтровать и остаться на месте.
+        return redirect(url_for("judges.judges_list"))
 
     @app.route("/subjects/clear")
     def subjects_clear():
         session.pop("judge_subject_id", None)
         session.pop("judge_local_branch_id", None)
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        return redirect(url_for("judges.judges_list"))
 
     # Добавление/переименование/удаление субъектов и местных отделений —
     # только со страницы «Настройки» (settings()); в шапке эти справочники
@@ -202,12 +205,12 @@ def create_app():
     def local_branches_switch(branch_id):
         LocalBranch.query.get_or_404(branch_id)
         session["judge_local_branch_id"] = branch_id
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        return redirect(url_for("judges.judges_list"))
 
     @app.route("/local-branches/clear")
     def local_branches_clear():
         session.pop("judge_local_branch_id", None)
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        return redirect(url_for("judges.judges_list"))
 
     @app.route("/local-branches", methods=["POST"])
     def local_branches_add():
