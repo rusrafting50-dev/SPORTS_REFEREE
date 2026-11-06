@@ -10,7 +10,7 @@ import sync_rafting_cfo_judges
 from judge_docx_generator import generate_judge_card, judge_card_filename
 from judge_docx_importer import parse_judge_card
 from models import (
-    Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, Settings, Subject, db,
+    Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, LocalBranch, Settings, Subject, db,
 )
 from subjects import текущее_местное_отделение, текущий_субъект
 
@@ -301,6 +301,45 @@ def judges_search():
         }
         for j in judges
     ])
+
+
+PREVIEW_LIMIT = 8
+
+
+@bp.route("/preview")
+def judges_preview():
+    """Всплывающая таблица-превью судей субъекта/местного отделения — по
+    наведению на пункт меню в шапке (templates/base.html, static/js/main.js),
+    без перехода на страницу списка. Принимает ровно один из параметров."""
+    subject_id = request.args.get("subject_id", type=int)
+    branch_id = request.args.get("branch_id", type=int)
+
+    query = Judge.query.filter_by(is_active=True)
+    if subject_id:
+        subject = Subject.query.get(subject_id)
+        if not subject:
+            return jsonify({"count": 0, "judges": []})
+        query = query.filter(Judge.region == subject.name)
+    elif branch_id:
+        branch = LocalBranch.query.get(branch_id)
+        if not branch:
+            return jsonify({"count": 0, "judges": []})
+        query = query.filter(Judge.municipality == branch.name)
+    else:
+        return jsonify({"count": 0, "judges": []})
+
+    judges = query.order_by(Judge.last_name).limit(PREVIEW_LIMIT).all()
+    return jsonify({
+        "count": query.count(),
+        "judges": [
+            {
+                "full_name": j.full_name,
+                "birth_date": j.birth_date.strftime("%d.%m.%Y") if j.birth_date else "",
+                "qualification": _CATEGORY_TO_ABBR.get(j.current_category, ""),
+            }
+            for j in judges
+        ],
+    })
 
 
 @bp.route("/<int:judge_id>")

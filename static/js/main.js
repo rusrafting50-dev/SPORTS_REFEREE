@@ -3,7 +3,87 @@
 document.addEventListener("DOMContentLoaded", function () {
     initParticipantsTable();
     initLecturerSearch();
+    initHeaderJudgesPreview();
 });
+
+// Всплывающая таблица-превью судей при наведении на субъект/местное
+// отделение в выпадающих списках шапки (routes/judges.py: judges_preview).
+// Клик по пункту, как и раньше, ведёт на отфильтрованный список судей —
+// превью только показывает его содержимое заранее, без перехода.
+function initHeaderJudgesPreview() {
+    var HOVER_DELAY_MS = 300;
+    var hoverTimer = null;
+    var previewEl = null;
+    var requestToken = 0;
+
+    function escapeHtml(value) {
+        var div = document.createElement("div");
+        div.textContent = value == null ? "" : String(value);
+        return div.innerHTML;
+    }
+
+    function hidePreview() {
+        if (previewEl) {
+            previewEl.remove();
+            previewEl = null;
+        }
+    }
+
+    function renderPreview(data) {
+        if (!data.judges || !data.judges.length) {
+            return '<div class="p-2 text-muted small">Судей нет</div>';
+        }
+        var rows = data.judges.map(function (j) {
+            return "<tr><td>" + escapeHtml(j.full_name) + "</td><td>" + escapeHtml(j.birth_date) +
+                "</td><td>" + escapeHtml(j.qualification) + "</td></tr>";
+        }).join("");
+        var more = data.count > data.judges.length
+            ? '<div class="small text-muted px-2 pb-1">и ещё ' + (data.count - data.judges.length) + "</div>"
+            : "";
+        return (
+            '<table class="table table-sm table-bordered mb-0">' +
+            "<thead><tr><th>ФИО</th><th>Дата рождения</th><th>Кат.</th></tr></thead>" +
+            "<tbody>" + rows + "</tbody></table>" + more
+        );
+    }
+
+    function showPreview(anchor, url) {
+        var token = ++requestToken;
+        hidePreview();
+        var rect = anchor.getBoundingClientRect();
+        previewEl = document.createElement("div");
+        previewEl.className = "judges-hover-preview";
+        previewEl.style.left = Math.round(rect.right + 8) + "px";
+        previewEl.style.top = Math.round(rect.top) + "px";
+        previewEl.innerHTML = '<div class="p-2 text-muted small">Загрузка…</div>';
+        document.body.appendChild(previewEl);
+
+        fetch(url)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (token !== requestToken || !previewEl) return;
+                previewEl.innerHTML = renderPreview(data);
+            })
+            .catch(function () {
+                if (token === requestToken && previewEl) {
+                    previewEl.innerHTML = '<div class="p-2 text-danger small">Не удалось загрузить</div>';
+                }
+            });
+    }
+
+    document.querySelectorAll("[data-preview-url]").forEach(function (item) {
+        item.addEventListener("mouseenter", function () {
+            clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(function () {
+                showPreview(item, item.dataset.previewUrl);
+            }, HOVER_DELAY_MS);
+        });
+        item.addEventListener("mouseleave", function () {
+            clearTimeout(hoverTimer);
+            hidePreview();
+        });
+    });
+}
 
 function initLecturerSearch() {
     var searchInput = document.getElementById("lecturer-search-input");

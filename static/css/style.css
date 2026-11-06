@@ -21,3 +21,17 @@
 .seminar-title {
     text-wrap: balance;
 }
+
+/* Всплывающая таблица-превью судей при наведении на пункт меню в шапке (main.js) */
+.judges-hover-preview {
+    position: fixed;
+    z-index: 2000;
+    min-width: 320px;
+    max-width: 480px;
+    max-height: 320px;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, .15);
+    border-radius: .375rem;
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .25);
+}

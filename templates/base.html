@@ -32,7 +32,8 @@
                             {% for subject in all_subjects %}
                             <li>
                                 <a class="dropdown-item {{ 'active' if current_subject and subject.id == current_subject.id }}"
-                                   href="{{ url_for('subjects_switch', subject_id=subject.id) }}">{{ subject.name }}</a>
+                                   href="{{ url_for('subjects_switch', subject_id=subject.id) }}"
+                                   data-preview-url="{{ url_for('judges.judges_preview', subject_id=subject.id) }}">{{ subject.name }}</a>
                             </li>
                             {% endfor %}
                         </ul>
@@ -50,7 +51,8 @@
                             {% for branch in current_subject_local_branches %}
                             <li>
                                 <a class="dropdown-item {{ 'active' if current_local_branch and branch.id == current_local_branch.id }}"
-                                   href="{{ url_for('local_branches_switch', branch_id=branch.id) }}">{{ branch.name }}</a>
+                                   href="{{ url_for('local_branches_switch', branch_id=branch.id) }}"
+                                   data-preview-url="{{ url_for('judges.judges_preview', branch_id=branch.id) }}">{{ branch.name }}</a>
                             </li>
                             {% else %}
                             <li><span class="dropdown-item-text text-muted">{{ 'Местные отделения ещё не добавлены' if current_subject else 'Сначала выберите субъект РФ' }}</span></li>
