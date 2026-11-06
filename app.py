@@ -13,7 +13,7 @@ from routes.judges import bp as judges_bp
 from routes.seminars import bp as seminars_bp
 from subjects import (
     обеспечить_субъекты_цфо, местные_отделения_субъекта, текущее_местное_отделение,
-    текущий_субъект, текущий_субъект_id,
+    текущее_местное_отделение_id, текущий_субъект, текущий_субъект_id, убрать_лишние_субъекты_цфо,
 )
 
 # override=True — .env должен побеждать даже если такая переменная уже
@@ -122,6 +122,7 @@ def create_app():
         db.create_all()
         _sync_missing_columns()
         обеспечить_субъекты_цфо()
+        убрать_лишние_субъекты_цфо()
 
     @app.context_processor
     def inject_subjects():
@@ -168,6 +169,17 @@ def create_app():
         session.pop("judge_local_branch_id", None)
         return redirect(url_for("judges.judges_list"))
 
+    @app.route("/subjects/<int:subject_id>/delete", methods=["POST"])
+    def subjects_delete(subject_id):
+        subject = Subject.query.get_or_404(subject_id)
+        if текущий_субъект_id() == subject_id:
+            session.pop("judge_subject_id", None)
+            session.pop("judge_local_branch_id", None)
+        db.session.delete(subject)  # каскадно удаляет и местные отделения этого субъекта
+        db.session.commit()
+        flash(f"Субъект «{subject.name}» удалён", "success")
+        return redirect(request.referrer or url_for("judges.judges_list"))
+
     @app.route("/local-branches/<int:branch_id>/switch")
     def local_branches_switch(branch_id):
         LocalBranch.query.get_or_404(branch_id)
@@ -199,6 +211,16 @@ def create_app():
             flash("Такое местное отделение уже есть в списке", "warning")
         session["judge_local_branch_id"] = branch.id
         return redirect(url_for("judges.judges_list"))
+
+    @app.route("/local-branches/<int:branch_id>/delete", methods=["POST"])
+    def local_branches_delete(branch_id):
+        branch = LocalBranch.query.get_or_404(branch_id)
+        if текущее_местное_отделение_id() == branch_id:
+            session.pop("judge_local_branch_id", None)
+        db.session.delete(branch)
+        db.session.commit()
+        flash(f"Местное отделение «{branch.name}» удалено", "success")
+        return redirect(request.referrer or url_for("judges.judges_list"))
 
     @app.route("/settings", methods=["GET", "POST"])
     def settings():

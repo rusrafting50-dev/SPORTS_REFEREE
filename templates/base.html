@@ -31,8 +31,13 @@
                             <li><hr class="dropdown-divider"></li>
                             {% for subject in all_subjects %}
                             <li>
-                                <a class="dropdown-item {{ 'active' if current_subject and subject.id == current_subject.id }}"
-                                   href="{{ url_for('subjects_switch', subject_id=subject.id) }}">{{ subject.name }}</a>
+                                <form method="post" action="{{ url_for('subjects_delete', subject_id=subject.id) }}"
+                                      class="d-flex align-items-center"
+                                      onsubmit="return confirm('Удалить субъект ' + {{ subject.name|tojson }} + '? Его местные отделения тоже будут удалены.');">
+                                    <a class="dropdown-item flex-grow-1 {{ 'active' if current_subject and subject.id == current_subject.id }}"
+                                       href="{{ url_for('subjects_switch', subject_id=subject.id) }}">{{ subject.name }}</a>
+                                    <button type="submit" class="btn btn-sm btn-link text-danger px-2 py-0" title="Удалить субъект">✕</button>
+                                </form>
                             </li>
                             {% endfor %}
                             <li><hr class="dropdown-divider"></li>
@@ -60,8 +65,13 @@
                             <li><hr class="dropdown-divider"></li>
                             {% for branch in current_subject_local_branches %}
                             <li>
-                                <a class="dropdown-item {{ 'active' if current_local_branch and branch.id == current_local_branch.id }}"
-                                   href="{{ url_for('local_branches_switch', branch_id=branch.id) }}">{{ branch.name }}</a>
+                                <form method="post" action="{{ url_for('local_branches_delete', branch_id=branch.id) }}"
+                                      class="d-flex align-items-center"
+                                      onsubmit="return confirm('Удалить местное отделение ' + {{ branch.name|tojson }} + '?');">
+                                    <a class="dropdown-item flex-grow-1 {{ 'active' if current_local_branch and branch.id == current_local_branch.id }}"
+                                       href="{{ url_for('local_branches_switch', branch_id=branch.id) }}">{{ branch.name }}</a>
+                                    <button type="submit" class="btn btn-sm btn-link text-danger px-2 py-0" title="Удалить местное отделение">✕</button>
+                                </form>
                             </li>
                             {% else %}
                             <li><span class="dropdown-item-text text-muted">{{ 'Местные отделения ещё не добавлены' if current_subject else 'Сначала выберите субъект РФ' }}</span></li>

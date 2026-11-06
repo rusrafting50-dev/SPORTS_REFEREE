@@ -6,6 +6,16 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+class SchemaFlag(db.Model):
+    """Маркеры одноразовых идемпотентных миграций (см. subjects.py) —
+    отличают «ещё не применяли» от «применяли, но подходящих записей
+    сейчас нет», чтобы миграция не повторялась на каждом запуске и не
+    задевала данные, добавленные уже ПОСЛЕ применения."""
+    __tablename__ = "schema_flag"
+
+    key = db.Column(db.String(100), primary_key=True)
+
+
 class Subject(db.Model):
     """Субъект Российской Федерации — справочник для переключателя в шапке
     «Судьи ЦФО» (routes/judges.py, _scope_to_subject_and_branch): выбор
@@ -17,18 +27,23 @@ class Subject(db.Model):
     name = db.Column(db.String(200), nullable=False, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    local_branches = db.relationship(
+        "LocalBranch", backref="subject", lazy=True, order_by="LocalBranch.name",
+        cascade="all, delete-orphan",
+    )
+
 
 class LocalBranch(db.Model):
     """Местное отделение (муниципальное образование) в рамках субъекта РФ —
     второй переключатель в шапке «Региональная федерация», на уровень
     ниже Subject. Выбор фильтрует список судей по Judge.municipality
-    (точное совпадение по наименованию)."""
+    (точное совпадение по наименованию). Удаляется каскадно вместе со
+    своим субъектом."""
     __tablename__ = "local_branch"
     __table_args__ = (db.UniqueConstraint("subject_id", "name", name="uq_local_branch_subject_name"),)
 
     id = db.Column(db.Integer, primary_key=True)
     subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)
-    subject = db.relationship("Subject")
     name = db.Column(db.String(300), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
