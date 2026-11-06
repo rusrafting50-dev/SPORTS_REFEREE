@@ -55,13 +55,6 @@ JUDGE_CATEGORY_TYPES = [
      "Спортивный судья третьей категории", "Спортивные судьи третьей категории"),
 ]
 
-# Тот же ряд кнопок + «Все судьи» впереди — показывается и на общем списке,
-# и на страницах по категориям; какая из них активна сейчас, определяется
-# в шаблоне по request.endpoint (templates/judges/list.html).
-JUDGE_LIST_BUTTONS = [
-    ("", "Все судьи", "judges.judges_list", None, "Список спортивных судей"),
-] + JUDGE_CATEGORY_TYPES
-
 # Подсказки для поля «Должность» при добавлении судьи в коллегию COREZ —
 # тот же список, что в COREZ routes/судьи.py (ДОЛЖНОСТИ); ввод свободный,
 # COREZ саму должность не валидирует, это просто подсказки в форме.
@@ -149,40 +142,74 @@ def _save_photo(judge, file_storage):
 
 @bp.route("/")
 def judges_list():
+    municipality = request.args.get("municipality", "")
     specialization = request.args.get("specialization", "")
+    discipline_group = request.args.get("discipline_group", "")
 
     query = Judge.query.filter_by(is_active=True)
     query = _scope_to_subject_and_branch(query)
+    if municipality:
+        query = query.filter_by(municipality=municipality)
     if specialization:
         query = query.filter_by(specialization=specialization)
+    if discipline_group:
+        query = query.filter_by(discipline_group=discipline_group)
     judges = query.order_by(Judge.last_name).all()
 
     return render_template(
         "judges/list.html", judges=judges, heading="Список спортивных судей",
-        list_buttons=JUDGE_LIST_BUTTONS, show_add_button=True, highlight_active=False,
-        filters={"specialization": specialization},
+        list_buttons=JUDGE_CATEGORY_TYPES, show_add_button=True, highlight_active=False,
+        show_filters=True,
+        filters={
+            "municipality": municipality, "specialization": specialization,
+            "discipline_group": discipline_group,
+        },
+        municipality_options=_distinct_municipalities(),
         specialization_options=references.JUDGE_SPECIALIZATIONS,
+        discipline_group_options=references.JUDGE_DISCIPLINE_GROUPS,
     )
+
+
+def _distinct_municipalities():
+    rows = (
+        db.session.query(Judge.municipality)
+        .filter(Judge.municipality.isnot(None), Judge.municipality != "")
+        .distinct()
+        .order_by(Judge.municipality)
+        .all()
+    )
+    return [row[0] for row in rows]
 
 
 def _make_category_view(category, heading):
     def view():
+        municipality = request.args.get("municipality", "")
         specialization = request.args.get("specialization", "")
+        discipline_group = request.args.get("discipline_group", "")
 
         query = _scope_to_subject_and_branch(Judge.query)
         judges = [
             j for j in query.order_by(Judge.last_name).all()
             if j.current_category == category
         ]
+        if municipality:
+            judges = [j for j in judges if j.municipality == municipality]
         if specialization:
             judges = [j for j in judges if j.specialization == specialization]
+        if discipline_group:
+            judges = [j for j in judges if j.discipline_group == discipline_group]
 
         return render_template(
             "judges/list.html", judges=judges, heading=heading,
-            list_buttons=JUDGE_LIST_BUTTONS,
             show_add_button=False, highlight_active=True,
-            filters={"specialization": specialization},
+            show_filters=True,
+            filters={
+                "municipality": municipality, "specialization": specialization,
+                "discipline_group": discipline_group,
+            },
+            municipality_options=_distinct_municipalities(),
             specialization_options=references.JUDGE_SPECIALIZATIONS,
+            discipline_group_options=references.JUDGE_DISCIPLINE_GROUPS,
         )
     return view
 

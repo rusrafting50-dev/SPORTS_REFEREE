@@ -129,8 +129,8 @@ event_date, location, judge_position, competition_name, competition_status, scor
 
 ## Маршруты (routes/judges.py)
 
-- `GET /judges/` → список активных судей + ряд кнопок «Все судьи»/ССВК/СС1К/СС2К/СС3К (`JUDGE_LIST_BUTTONS`) — текущая страница выделена (`btn-primary`, по `request.endpoint`), справа от кнопок — фильтр «Специализация» (применяется сразу при выборе, `onchange="this.form.submit()"`, без отдельной кнопки)
-- `GET /judges/vsk`, `/1k`, `/2k`, `/3k` → судьи данной категории (по `current_category`), включая исключённых — активные подсвечены, тот же ряд кнопок и фильтр
+- `GET /judges/` → список активных судей + кнопки-фильтры ССВК/СС1К/СС2К/СС3К
+- `GET /judges/vsk`, `/1k`, `/2k`, `/3k` → судьи данной категории (по `current_category`), включая исключённых — активные подсвечены
 - Все страницы списка дополнительно сужаются выбранными в шапке субъектом РФ / местным отделением (`_scope_to_subject_and_branch()`, см. Subject/LocalBranch выше)
 - `GET /judges/preview?subject_id=<id>` / `?branch_id=<id>` → JSON (count + до 8 активных судей: ФИО, дата рождения, категория) для всплывающей таблицы-превью при наведении на пункт субъекта/местного отделения в шапке (`static/js/main.js`, `data-preview-url` в `templates/base.html`) — клик по пункту, как и раньше, просто ведёт на отфильтрованный `/judges/`
 - `GET|POST /judges/new`, `GET /judges/<id>`, `GET|POST /judges/<id>/edit`

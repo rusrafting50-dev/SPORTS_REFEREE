@@ -14,21 +14,47 @@
 </div>
 
 {% if list_buttons %}
-<div class="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-    <div class="d-flex flex-wrap gap-2">
-        {% for _path, label, endpoint, _category, _heading in list_buttons %}
-        <a href="{{ url_for(endpoint) }}" class="btn {{ 'btn-primary' if request.endpoint == endpoint else 'btn-outline-primary' }}">{{ label }}</a>
-        {% endfor %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+    {% for _path, label, endpoint, _category, _heading in list_buttons %}
+    <a href="{{ url_for(endpoint) }}" class="btn btn-outline-primary">{{ label }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if show_filters or discipline_group_options %}
+<form method="get" action="{{ url_for(request.endpoint) }}" class="row g-2 mb-3">
+    {% if show_filters %}
+    <div class="col-auto">
+        <select name="municipality" class="form-select form-select-sm">
+            <option value="">Муниципальное образование: все</option>
+            {% for m in municipality_options %}
+            <option value="{{ m }}" {% if filters.municipality == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
     </div>
-    <form method="get" action="{{ url_for(request.endpoint) }}">
-        <select name="specialization" class="form-select form-select-sm" onchange="this.form.submit()">
+    <div class="col-auto">
+        <select name="specialization" class="form-select form-select-sm">
             <option value="">Специализация: все</option>
             {% for s in specialization_options %}
             <option value="{{ s }}" {% if filters.specialization == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
-    </form>
-</div>
+    </div>
+    {% endif %}
+    {% if discipline_group_options %}
+    <div class="col-auto">
+        <select name="discipline_group" class="form-select form-select-sm">
+            <option value="">Группа спортивных дисциплин: все</option>
+            {% for d in discipline_group_options %}
+            <option value="{{ d }}" {% if filters.discipline_group == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Применить фильтры</button>
+    </div>
+</form>
 {% endif %}
 
 <div class="table-responsive">
