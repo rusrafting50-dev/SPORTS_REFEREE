@@ -26,7 +26,7 @@
     <div class="col-lg-6">
         <div class="card h-100">
             <div class="card-body">
-                <form method="post" action="{{ url_for('subjects_edit', subject_id=subject.id) }}" class="row g-2 mb-2">
+                <form id="subjectForm{{ subject.id }}" method="post" action="{{ url_for('subjects_edit', subject_id=subject.id) }}" class="row g-2 mb-2">
                     <div class="col-12">
                         <label class="form-label mb-0">Наименование субъекта РФ</label>
                         <input type="text" name="name" class="form-control form-control-sm" value="{{ subject.name }}" required>
@@ -43,14 +43,14 @@
                         <label class="form-label mb-0">Телефон, адрес электронной почты организации</label>
                         <input type="text" name="organization_contacts" class="form-control form-control-sm" value="{{ subject.organization_contacts or '' }}">
                     </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
-                    </div>
                 </form>
-                <form method="post" action="{{ url_for('subjects_delete', subject_id=subject.id) }}" class="mb-3"
-                      onsubmit="return confirm('Удалить субъект ' + {{ subject.name|tojson }} + '? Его местные отделения тоже будут удалены.');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить субъект</button>
-                </form>
+                <div class="d-flex gap-2 mb-3">
+                    <button type="submit" form="subjectForm{{ subject.id }}" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                    <form method="post" action="{{ url_for('subjects_delete', subject_id=subject.id) }}" class="m-0"
+                          onsubmit="return confirm('Удалить субъект ' + {{ subject.name|tojson }} + '? Его местные отделения тоже будут удалены.');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить субъект</button>
+                    </form>
+                </div>
 
                 <h3 class="h6">Местные отделения</h3>
                 {% if subject.local_branches %}
