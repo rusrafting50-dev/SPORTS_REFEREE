@@ -151,23 +151,38 @@ def create_app():
         session.pop("judge_local_branch_id", None)
         return redirect(request.referrer or url_for("judges.judges_list"))
 
+    # Добавление/переименование/удаление субъектов и местных отделений —
+    # только со страницы «Настройки» (settings()); в шапке эти справочники
+    # только для переключения (subjects_switch/clear, local_branches_switch/clear выше).
+
     @app.route("/subjects", methods=["POST"])
     def subjects_add():
         name = request.form.get("name", "").strip()
         if not name:
             flash("Укажите наименование субъекта Российской Федерации", "error")
-            return redirect(request.referrer or url_for("judges.judges_list"))
-        subject = Subject.query.filter_by(name=name).first()
-        if not subject:
-            subject = Subject(name=name)
-            db.session.add(subject)
+            return redirect(url_for("settings"))
+        if Subject.query.filter_by(name=name).first():
+            flash("Такой субъект уже есть в списке", "warning")
+        else:
+            db.session.add(Subject(name=name))
             db.session.commit()
             flash(f"Субъект «{name}» добавлен", "success")
-        else:
-            flash("Такой субъект уже есть в списке", "warning")
-        session["judge_subject_id"] = subject.id
-        session.pop("judge_local_branch_id", None)
-        return redirect(url_for("judges.judges_list"))
+        return redirect(url_for("settings"))
+
+    @app.route("/subjects/<int:subject_id>/edit", methods=["POST"])
+    def subjects_edit(subject_id):
+        subject = Subject.query.get_or_404(subject_id)
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Укажите наименование субъекта Российской Федерации", "error")
+            return redirect(url_for("settings"))
+        if Subject.query.filter(Subject.name == name, Subject.id != subject_id).first():
+            flash("Субъект с таким наименованием уже есть в списке", "warning")
+            return redirect(url_for("settings"))
+        subject.name = name
+        db.session.commit()
+        flash(f"Субъект переименован в «{name}»", "success")
+        return redirect(url_for("settings"))
 
     @app.route("/subjects/<int:subject_id>/delete", methods=["POST"])
     def subjects_delete(subject_id):
@@ -178,7 +193,7 @@ def create_app():
         db.session.delete(subject)  # каскадно удаляет и местные отделения этого субъекта
         db.session.commit()
         flash(f"Субъект «{subject.name}» удалён", "success")
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        return redirect(url_for("settings"))
 
     @app.route("/local-branches/<int:branch_id>/switch")
     def local_branches_switch(branch_id):
@@ -193,24 +208,39 @@ def create_app():
 
     @app.route("/local-branches", methods=["POST"])
     def local_branches_add():
-        subject_id = текущий_субъект_id()
-        if not subject_id:
-            flash("Сначала выберите субъект Российской Федерации", "error")
-            return redirect(request.referrer or url_for("judges.judges_list"))
+        subject = Subject.query.get(request.form.get("subject_id", type=int))
+        if not subject:
+            flash("Укажите субъект Российской Федерации", "error")
+            return redirect(url_for("settings"))
         name = request.form.get("name", "").strip()
         if not name:
             flash("Укажите наименование муниципального образования", "error")
-            return redirect(request.referrer or url_for("judges.judges_list"))
-        branch = LocalBranch.query.filter_by(subject_id=subject_id, name=name).first()
-        if not branch:
-            branch = LocalBranch(subject_id=subject_id, name=name)
-            db.session.add(branch)
+            return redirect(url_for("settings"))
+        if LocalBranch.query.filter_by(subject_id=subject.id, name=name).first():
+            flash("Такое местное отделение уже есть в списке", "warning")
+        else:
+            db.session.add(LocalBranch(subject_id=subject.id, name=name))
             db.session.commit()
             flash(f"Местное отделение «{name}» добавлено", "success")
-        else:
+        return redirect(url_for("settings"))
+
+    @app.route("/local-branches/<int:branch_id>/edit", methods=["POST"])
+    def local_branches_edit(branch_id):
+        branch = LocalBranch.query.get_or_404(branch_id)
+        name = request.form.get("name", "").strip()
+        if not name:
+            flash("Укажите наименование муниципального образования", "error")
+            return redirect(url_for("settings"))
+        existing = LocalBranch.query.filter(
+            LocalBranch.subject_id == branch.subject_id, LocalBranch.name == name, LocalBranch.id != branch_id,
+        ).first()
+        if existing:
             flash("Такое местное отделение уже есть в списке", "warning")
-        session["judge_local_branch_id"] = branch.id
-        return redirect(url_for("judges.judges_list"))
+            return redirect(url_for("settings"))
+        branch.name = name
+        db.session.commit()
+        flash(f"Местное отделение переименовано в «{name}»", "success")
+        return redirect(url_for("settings"))
 
     @app.route("/local-branches/<int:branch_id>/delete", methods=["POST"])
     def local_branches_delete(branch_id):
@@ -220,7 +250,7 @@ def create_app():
         db.session.delete(branch)
         db.session.commit()
         flash(f"Местное отделение «{branch.name}» удалено", "success")
-        return redirect(request.referrer or url_for("judges.judges_list"))
+        return redirect(url_for("settings"))
 
     @app.route("/settings", methods=["GET", "POST"])
     def settings():

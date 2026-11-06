@@ -28,4 +28,59 @@
         <button type="submit" class="btn btn-primary">Сохранить</button>
     </div>
 </form>
+
+<hr class="my-4">
+<h2 class="h4 mb-2">Субъекты ЦФО и местные отделения</h2>
+<p class="text-muted">Справочники для переключателей «Судьи ЦФО» и «Региональная федерация» в шапке — там только выбор, добавление/переименование/удаление здесь.</p>
+
+<div class="row g-3">
+    {% for subject in all_subjects %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <form method="post" action="{{ url_for('subjects_edit', subject_id=subject.id) }}" class="d-flex gap-1 mb-2">
+                    <input type="text" name="name" class="form-control form-control-sm" value="{{ subject.name }}" required>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                </form>
+                <form method="post" action="{{ url_for('subjects_delete', subject_id=subject.id) }}" class="mb-3"
+                      onsubmit="return confirm('Удалить субъект ' + {{ subject.name|tojson }} + '? Его местные отделения тоже будут удалены.');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить субъект</button>
+                </form>
+
+                <h3 class="h6">Местные отделения</h3>
+                {% if subject.local_branches %}
+                <ul class="list-group list-group-flush mb-2">
+                    {% for branch in subject.local_branches %}
+                    <li class="list-group-item px-0">
+                        <div class="d-flex gap-1">
+                            <form method="post" action="{{ url_for('local_branches_edit', branch_id=branch.id) }}" class="d-flex gap-1 flex-grow-1">
+                                <input type="text" name="name" class="form-control form-control-sm" value="{{ branch.name }}" required>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                            </form>
+                            <form method="post" action="{{ url_for('local_branches_delete', branch_id=branch.id) }}"
+                                  onsubmit="return confirm('Удалить местное отделение ' + {{ branch.name|tojson }} + '?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted small">Местные отделения ещё не добавлены</p>
+                {% endif %}
+                <form method="post" action="{{ url_for('local_branches_add') }}" class="d-flex gap-1">
+                    <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="Новое местное отделение" required>
+                    <button type="submit" class="btn btn-sm btn-primary">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<form method="post" action="{{ url_for('subjects_add') }}" class="d-flex gap-1 mt-3" style="max-width: 420px;">
+    <input type="text" name="name" class="form-control" placeholder="Наименование нового субъекта РФ" required>
+    <button type="submit" class="btn btn-primary">Добавить субъект</button>
+</form>
 {% endblock %}
