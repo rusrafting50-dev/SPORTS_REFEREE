@@ -93,11 +93,11 @@ def parse_judge_card(file_obj):
 
     # --- История квалификационных категорий ---
     # 3-табл.: раздел внутри table0, строки 14+
-    # 4-табл.: отдельная таблица — строки 0 и 1 шапка, данные с 2-й
+    # 4-табл.: отдельная таблица — строки 0–2 шапка, данные с 3-й
     if tbl_cat is None:
         cat_table, cat_start = table0, 14
     else:
-        cat_table, cat_start = tbl_cat, 2
+        cat_table, cat_start = tbl_cat, 3
     for row in range(cat_start, len(cat_table.rows)):
         if _row_blank(cat_table, row, range(7)):
             continue
