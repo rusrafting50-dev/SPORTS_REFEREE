@@ -169,10 +169,10 @@ def parse_judge_card(file_obj):
                 event_date=_cell(tbl_comp, row, 0) or None,
                 location=_cell(tbl_comp, row, 1) or None,
                 judge_position=_cell(tbl_comp, row, 2) or None,
-                competition_name=_cell(tbl_comp, row, 3) or None,
+                competition_status=_cell(tbl_comp, row, 3) or None,
                 score=_cell(tbl_comp, row, 4) or None,
                 record_date=_cell(tbl_comp, row, 5) or None,
-                competition_status=_cell(tbl_comp, row + 1, 3) or None,
+                competition_name=_cell(tbl_comp, row + 1, 3) or None,
                 record_keeper=_cell(tbl_comp, row + 1, 5) or None,
             ))
 
