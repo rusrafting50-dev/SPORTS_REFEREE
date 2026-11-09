@@ -159,26 +159,18 @@ def parse_judge_card(file_obj):
                 ))
 
     # --- Практика судейства официальных спортивных соревнований (группы по 2 строки) ---
-    # При переносе таблицы на следующую страницу Word физически вставляет строки-заголовки
-    # (w:tblHeader) в XML — они сбивают шаг. Пропускаем их явно через while-цикл.
+    # Строки-заголовки (начальные и повторяющиеся при переносе страницы) определяем по
+    # содержимому col 0: строка данных всегда имеет дату, строка-заголовок — нет.
     if tbl_comp is not None:
         n_comp = len(tbl_comp.rows)
         crow = 0
         while crow < n_comp:
-            tr = tbl_comp.rows[crow]._tr
-            trPr = tr.find(qn("w:trPr"))
-            is_hdr = trPr is not None and trPr.find(qn("w:tblHeader")) is not None
-            if is_hdr or _row_blank(tbl_comp, crow, range(3)):
+            # пропускаем строки без даты в col 0 (заголовки любого рода)
+            if _parse_ddmmyyyy(_cell(tbl_comp, crow, 0) or "") is None:
                 crow += 1
                 continue
             if crow + 1 >= n_comp:
                 break
-            # пропустить пару если следующая строка тоже заголовок
-            next_tr = tbl_comp.rows[crow + 1]._tr
-            next_trPr = next_tr.find(qn("w:trPr"))
-            if next_trPr is not None and next_trPr.find(qn("w:tblHeader")) is not None:
-                crow += 1
-                continue
             _name_status = _cell(tbl_comp, crow + 1, 3) or ""
             if "/" in _name_status:
                 _name_part, _, _status_part = _name_status.partition("/")
