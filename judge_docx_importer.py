@@ -29,6 +29,23 @@ def _cell(table, row, col):
     return "".join(t.text or "" for t in texts).strip()
 
 
+def _cell_paras(table, row, col):
+    """Список непустых абзацев ячейки (каждый абзац — отдельная строка)."""
+    try:
+        tr = table.rows[row]._tr
+    except IndexError:
+        return []
+    tcs = tr.findall(qn("w:tc"))
+    if col >= len(tcs):
+        return []
+    result = []
+    for p in tcs[col].findall(qn("w:p")):
+        text = "".join(t.text or "" for t in p.findall(".//" + qn("w:t"))).strip()
+        if text:
+            result.append(text)
+    return result
+
+
 def _row_blank(table, row, cols):
     return all(not _cell(table, row, c) for c in cols)
 
@@ -159,34 +176,15 @@ def parse_judge_card(file_obj):
                 ))
 
     # --- Практика судейства официальных спортивных соревнований ---
-    # Строки-заголовки и строки-продолжения пропускаются по отсутствию даты в col 0.
-    # Количество строк на одну запись может быть разным (2–4), поэтому шаг динамический:
-    # после обработки записи переходим к следующей строке с датой.
+    # Каждое соревнование — одна строка. Строки-заголовки пропускаются по отсутствию
+    # даты в col 0. Col 3 той же строки: наименование + "/статус".
+    # Col 5 той же строки может содержать два абзаца: дата записи и секретарь.
     if tbl_comp is not None:
         n_comp = len(tbl_comp.rows)
-        crow = 0
-        while crow < n_comp:
-            # пропускаем строки без даты в col 0 (заголовки и строки-продолжения)
+        for crow in range(n_comp):
             if _parse_ddmmyyyy(_cell(tbl_comp, crow, 0) or "") is None:
-                crow += 1
                 continue
-            # находим начало следующей записи (следующая строка с датой в col 0)
-            next_crow = crow + 1
-            while next_crow < n_comp and _parse_ddmmyyyy(_cell(tbl_comp, next_crow, 0) or "") is None:
-                next_crow += 1
-            # наименование и статус — первая непустая ячейка col 3 после текущей строки
-            _name_status = ""
-            for r in range(crow + 1, next_crow):
-                v = _cell(tbl_comp, r, 3) or ""
-                if v:
-                    _name_status = v
-                    break
-            # секретарь — последняя непустая ячейка col 5 среди строк-продолжений
-            _record_keeper = None
-            for r in range(crow + 1, next_crow):
-                v = _cell(tbl_comp, r, 5) or ""
-                if v:
-                    _record_keeper = v
+            _name_status = _cell(tbl_comp, crow, 3) or ""
             if "/" in _name_status:
                 _name_part, _, _status_part = _name_status.partition("/")
                 _comp_name   = _name_part.strip() or None
@@ -194,6 +192,9 @@ def parse_judge_card(file_obj):
             else:
                 _comp_name   = _name_status or None
                 _comp_status = None
+            _paras5 = _cell_paras(tbl_comp, crow, 5)
+            _record_date   = _paras5[0] if _paras5 else (_cell(tbl_comp, crow, 5) or None)
+            _record_keeper = _paras5[1] if len(_paras5) > 1 else None
             judge.competition_records.append(JudgeCompetitionRecord(
                 event_date=_cell(tbl_comp, crow, 0) or None,
                 location=_cell(tbl_comp, crow, 1) or None,
@@ -201,9 +202,8 @@ def parse_judge_card(file_obj):
                 competition_name=_comp_name,
                 competition_status=_comp_status,
                 score=_cell(tbl_comp, crow, 4) or None,
-                record_date=_cell(tbl_comp, crow, 5) or None,
+                record_date=_record_date,
                 record_keeper=_record_keeper,
             ))
-            crow = next_crow
 
     return judge
