@@ -251,19 +251,32 @@ def judges_import():
                 judge = parse_judge_card(file_storage.stream)
                 if not judge.last_name or not judge.first_name:
                     raise ValueError("не удалось распознать фамилию и имя судьи")
-                db.session.add(judge)
-                db.session.flush()
-                imported.append(judge)
-            except Exception:
-                errors.append(file_storage.filename)
+                n_cat   = len(judge.category_records)
+                n_train = len(judge.training_records)
+                n_comp  = len(judge.competition_records)
+                sp = db.session.begin_nested()
+                try:
+                    db.session.add(judge)
+                    db.session.flush()
+                    sp.commit()
+                    imported.append((judge, n_cat, n_train, n_comp))
+                except Exception as db_err:
+                    sp.rollback()
+                    errors.append(f"{file_storage.filename} (ошибка БД: {db_err})")
+            except Exception as parse_err:
+                errors.append(f"{file_storage.filename} ({parse_err})")
 
         db.session.commit()
 
-        if imported:
-            flash(f"Импортировано карточек: {len(imported)} ({', '.join(j.full_name for j in imported)})", "success")
+        for judge, n_cat, n_train, n_comp in imported:
+            flash(
+                f"Импортирован: {judge.full_name} — "
+                f"категорий: {n_cat}, семинаров: {n_train}, соревнований: {n_comp}",
+                "success",
+            )
         if errors:
             flash(
-                f"Не удалось импортировать: {', '.join(errors)} — поддерживается только файл "
+                f"Не удалось импортировать: {'; '.join(errors)} — поддерживается только файл "
                 f"«Карточка учёта судейской деятельности спортивного судьи» по установленному "
                 f"образцу; другие документы (например, «Представление к присвоению категории») "
                 f"этот формат не распознаёт.",
@@ -271,7 +284,7 @@ def judges_import():
             )
 
         if len(imported) == 1 and not errors:
-            return redirect(url_for("judges.judges_detail", judge_id=imported[0].id))
+            return redirect(url_for("judges.judges_detail", judge_id=imported[0][0].id))
         return redirect(url_for("judges.judges_list"))
 
     return render_template("judges/import.html")
