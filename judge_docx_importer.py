@@ -165,14 +165,22 @@ def parse_judge_card(file_obj):
                 break
             if _row_blank(tbl_comp, row, range(3)):
                 continue
+            _name_status = _cell(tbl_comp, row + 1, 3) or ""
+            if "/" in _name_status:
+                _name_part, _, _status_part = _name_status.partition("/")
+                _comp_name   = _name_part.strip() or None
+                _comp_status = _status_part.strip() or None
+            else:
+                _comp_name   = _name_status or None
+                _comp_status = None
             judge.competition_records.append(JudgeCompetitionRecord(
                 event_date=_cell(tbl_comp, row, 0) or None,
                 location=_cell(tbl_comp, row, 1) or None,
                 judge_position=_cell(tbl_comp, row, 2) or None,
-                competition_status=_cell(tbl_comp, row, 3) or None,
+                competition_name=_comp_name,
+                competition_status=_comp_status,
                 score=_cell(tbl_comp, row, 4) or None,
                 record_date=_cell(tbl_comp, row, 5) or None,
-                competition_name=_cell(tbl_comp, row + 1, 3) or None,
                 record_keeper=_cell(tbl_comp, row + 1, 5) or None,
             ))
 
