@@ -158,14 +158,28 @@ def parse_judge_card(file_obj):
                     record_keeper=_cell(tbl_train, row + 2, 11) or None,
                 ))
 
-    # --- Практика судейства официальных спортивных соревнований (с 1-й строки, группы по 2 строки) ---
+    # --- Практика судейства официальных спортивных соревнований (группы по 2 строки) ---
+    # При переносе таблицы на следующую страницу Word физически вставляет строки-заголовки
+    # (w:tblHeader) в XML — они сбивают шаг. Пропускаем их явно через while-цикл.
     if tbl_comp is not None:
-        for row in range(1, len(tbl_comp.rows), 2):
-            if row + 1 >= len(tbl_comp.rows):
-                break
-            if _row_blank(tbl_comp, row, range(3)):
+        n_comp = len(tbl_comp.rows)
+        crow = 0
+        while crow < n_comp:
+            tr = tbl_comp.rows[crow]._tr
+            trPr = tr.find(qn("w:trPr"))
+            is_hdr = trPr is not None and trPr.find(qn("w:tblHeader")) is not None
+            if is_hdr or _row_blank(tbl_comp, crow, range(3)):
+                crow += 1
                 continue
-            _name_status = _cell(tbl_comp, row + 1, 3) or ""
+            if crow + 1 >= n_comp:
+                break
+            # пропустить пару если следующая строка тоже заголовок
+            next_tr = tbl_comp.rows[crow + 1]._tr
+            next_trPr = next_tr.find(qn("w:trPr"))
+            if next_trPr is not None and next_trPr.find(qn("w:tblHeader")) is not None:
+                crow += 1
+                continue
+            _name_status = _cell(tbl_comp, crow + 1, 3) or ""
             if "/" in _name_status:
                 _name_part, _, _status_part = _name_status.partition("/")
                 _comp_name   = _name_part.strip() or None
@@ -174,14 +188,15 @@ def parse_judge_card(file_obj):
                 _comp_name   = _name_status or None
                 _comp_status = None
             judge.competition_records.append(JudgeCompetitionRecord(
-                event_date=_cell(tbl_comp, row, 0) or None,
-                location=_cell(tbl_comp, row, 1) or None,
-                judge_position=_cell(tbl_comp, row, 2) or None,
+                event_date=_cell(tbl_comp, crow, 0) or None,
+                location=_cell(tbl_comp, crow, 1) or None,
+                judge_position=_cell(tbl_comp, crow, 2) or None,
                 competition_name=_comp_name,
                 competition_status=_comp_status,
-                score=_cell(tbl_comp, row, 4) or None,
-                record_date=_cell(tbl_comp, row, 5) or None,
-                record_keeper=_cell(tbl_comp, row + 1, 5) or None,
+                score=_cell(tbl_comp, crow, 4) or None,
+                record_date=_cell(tbl_comp, crow, 5) or None,
+                record_keeper=_cell(tbl_comp, crow + 1, 5) or None,
             ))
+            crow += 2
 
     return judge
