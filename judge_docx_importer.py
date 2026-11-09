@@ -158,20 +158,35 @@ def parse_judge_card(file_obj):
                     record_keeper=_cell(tbl_train, row + 2, 11) or None,
                 ))
 
-    # --- Практика судейства официальных спортивных соревнований (группы по 2 строки) ---
-    # Строки-заголовки (начальные и повторяющиеся при переносе страницы) определяем по
-    # содержимому col 0: строка данных всегда имеет дату, строка-заголовок — нет.
+    # --- Практика судейства официальных спортивных соревнований ---
+    # Строки-заголовки и строки-продолжения пропускаются по отсутствию даты в col 0.
+    # Количество строк на одну запись может быть разным (2–4), поэтому шаг динамический:
+    # после обработки записи переходим к следующей строке с датой.
     if tbl_comp is not None:
         n_comp = len(tbl_comp.rows)
         crow = 0
         while crow < n_comp:
-            # пропускаем строки без даты в col 0 (заголовки любого рода)
+            # пропускаем строки без даты в col 0 (заголовки и строки-продолжения)
             if _parse_ddmmyyyy(_cell(tbl_comp, crow, 0) or "") is None:
                 crow += 1
                 continue
-            if crow + 1 >= n_comp:
-                break
-            _name_status = _cell(tbl_comp, crow + 1, 3) or ""
+            # находим начало следующей записи (следующая строка с датой в col 0)
+            next_crow = crow + 1
+            while next_crow < n_comp and _parse_ddmmyyyy(_cell(tbl_comp, next_crow, 0) or "") is None:
+                next_crow += 1
+            # наименование и статус — первая непустая ячейка col 3 после текущей строки
+            _name_status = ""
+            for r in range(crow + 1, next_crow):
+                v = _cell(tbl_comp, r, 3) or ""
+                if v:
+                    _name_status = v
+                    break
+            # секретарь — последняя непустая ячейка col 5 среди строк-продолжений
+            _record_keeper = None
+            for r in range(crow + 1, next_crow):
+                v = _cell(tbl_comp, r, 5) or ""
+                if v:
+                    _record_keeper = v
             if "/" in _name_status:
                 _name_part, _, _status_part = _name_status.partition("/")
                 _comp_name   = _name_part.strip() or None
@@ -187,8 +202,8 @@ def parse_judge_card(file_obj):
                 competition_status=_comp_status,
                 score=_cell(tbl_comp, crow, 4) or None,
                 record_date=_cell(tbl_comp, crow, 5) or None,
-                record_keeper=_cell(tbl_comp, crow + 1, 5) or None,
+                record_keeper=_record_keeper,
             ))
-            crow += 2
+            crow = next_crow
 
     return judge
