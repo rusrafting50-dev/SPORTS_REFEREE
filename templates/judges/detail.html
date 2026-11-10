@@ -91,16 +91,16 @@
     <tbody>
         {% for record in judge.category_records %}
         <tr id="category-view-{{ record.id }}">
-            <td style="padding-left: 2px; padding-right: 2px;">{{ record.category }}</td>
-            <td style="padding-left: 2px; padding-right: 2px;">{{ record.action|capitalize }}</td>
-            <td>{{ record.date.strftime('%d.%m.%Y') if record.date }}</td>
-            <td>{{ record.document_number }}</td>
-            <td>{{ record.issuing_organization }}</td>
-            <td>{{ record.signed_by }}</td>
-            <td>{{ record.record_keeper }}</td>
+            <td data-field="category" style="padding-left: 2px; padding-right: 2px;">{{ record.category }}</td>
+            <td data-field="action" style="padding-left: 2px; padding-right: 2px;">{{ record.action|capitalize }}</td>
+            <td data-field="date">{{ record.date.strftime('%d.%m.%Y') if record.date }}</td>
+            <td data-field="document_number">{{ record.document_number }}</td>
+            <td data-field="issuing_organization">{{ record.issuing_organization }}</td>
+            <td data-field="signed_by">{{ record.signed_by }}</td>
+            <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
                 <div class="d-flex flex-column gap-1" style="min-width: 0;">
-                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="document.getElementById('category-view-{{ record.id }}').classList.add('d-none'); document.getElementById('category-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="openEdit('category',{{ record.id }})">Изменить</button>
                     <form method="post" action="{{ url_for('judges.category_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
                     </form>
@@ -147,7 +147,7 @@
                         <input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}">
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('category-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('category-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit('category',{{ record.id }})">Отмена</button>
                 </form>
             </td>
         </tr>
@@ -245,22 +245,22 @@
     <tbody>
         {% for record in judge.training_records %}
         <tr id="training-view-{{ record.id }}">
-            <td>{{ record.seminar_name }}</td>
-            <td>{{ record.seminar_date }}</td>
-            <td>{{ record.organizer }}</td>
-            <td>{{ record.location|break_after_comma }}</td>
-            <td>{{ record.participant_category }}</td>
-            <td>{{ record.participant_score }}</td>
-            <td>{{ record.lecturer_category }}</td>
-            <td>{{ record.lecturer_score }}</td>
-            <td>{{ record.lecturer_date }}</td>
-            <td>{{ record.exam_protocol_number }}</td>
-            <td>{{ record.exam_score }}</td>
-            <td>{{ record.record_date }}</td>
-            <td>{{ record.record_keeper }}</td>
+            <td data-field="seminar_name">{{ record.seminar_name }}</td>
+            <td data-field="seminar_date">{{ record.seminar_date }}</td>
+            <td data-field="organizer">{{ record.organizer }}</td>
+            <td data-field="location">{{ record.location|break_after_comma }}</td>
+            <td data-field="participant_category">{{ record.participant_category }}</td>
+            <td data-field="participant_score">{{ record.participant_score }}</td>
+            <td data-field="lecturer_category">{{ record.lecturer_category }}</td>
+            <td data-field="lecturer_score">{{ record.lecturer_score }}</td>
+            <td data-field="lecturer_date">{{ record.lecturer_date }}</td>
+            <td data-field="exam_protocol_number">{{ record.exam_protocol_number }}</td>
+            <td data-field="exam_score">{{ record.exam_score }}</td>
+            <td data-field="record_date">{{ record.record_date }}</td>
+            <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
                 <div class="d-flex flex-column gap-1" style="min-width: 0;">
-                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="document.getElementById('training-view-{{ record.id }}').classList.add('d-none'); document.getElementById('training-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="openEdit('training',{{ record.id }})">Изменить</button>
                     <form method="post" action="{{ url_for('judges.training_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
                     </form>
@@ -285,7 +285,7 @@
                     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
                     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
                     <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('training-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('training-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit('training',{{ record.id }})">Отмена</button>
                 </form>
             </td>
         </tr>
@@ -349,17 +349,17 @@
     <tbody>
         {% for record in judge.competition_records %}
         <tr id="competition-view-{{ record.id }}">
-            <td>{{ record.event_date }}</td>
-            <td>{{ record.location|break_after_comma }}</td>
-            <td>{{ record.judge_position }}</td>
-            <td>{{ record.competition_name }}</td>
-            <td>{{ record.competition_status }}</td>
-            <td>{{ record.score }}</td>
-            <td>{{ record.record_date }}</td>
-            <td>{{ record.record_keeper }}</td>
+            <td data-field="event_date">{{ record.event_date }}</td>
+            <td data-field="location">{{ record.location|break_after_comma }}</td>
+            <td data-field="judge_position">{{ record.judge_position }}</td>
+            <td data-field="competition_name">{{ record.competition_name }}</td>
+            <td data-field="competition_status">{{ record.competition_status }}</td>
+            <td data-field="score">{{ record.score }}</td>
+            <td data-field="record_date">{{ record.record_date }}</td>
+            <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
                 <div class="d-flex flex-column gap-1" style="min-width: 0;">
-                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="document.getElementById('competition-view-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-edit-{{ record.id }}').classList.remove('d-none');">Изменить</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="openEdit('competition',{{ record.id }})">Изменить</button>
                     <form method="post" action="{{ url_for('judges.competition_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
                     </form>
@@ -378,7 +378,7 @@
                     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
                     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
                     <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('competition-edit-{{ record.id }}').classList.add('d-none'); document.getElementById('competition-view-{{ record.id }}').classList.remove('d-none');">Отмена</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closeEdit('competition',{{ record.id }})">Отмена</button>
                 </form>
             </td>
         </tr>
@@ -404,4 +404,59 @@
 </form>
 
 <a href="{{ url_for('judges.judges_list') }}" class="btn btn-outline-secondary">Назад к списку</a>
+
+<script>
+function openEdit(section, id) {
+    document.querySelectorAll('[id^="' + section + '-edit-"]').forEach(function(row) {
+        if (!row.classList.contains('d-none')) {
+            var rowId = row.id.slice((section + '-edit-').length);
+            row.classList.add('d-none');
+            var vr = document.getElementById(section + '-view-' + rowId);
+            if (vr) vr.classList.remove('d-none');
+        }
+    });
+    document.getElementById(section + '-view-' + id).classList.add('d-none');
+    document.getElementById(section + '-edit-' + id).classList.remove('d-none');
+}
+
+function closeEdit(section, id) {
+    document.getElementById(section + '-edit-' + id).classList.add('d-none');
+    document.getElementById(section + '-view-' + id).classList.remove('d-none');
+}
+
+function _fmtDate(val) {
+    var m = (val || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? m[3] + '.' + m[2] + '.' + m[1] : val;
+}
+
+document.addEventListener('submit', function(e) {
+    var form = e.target;
+    var editRow = form.closest('tr[id]');
+    if (!editRow) return;
+    var m = editRow.id.match(/^(\w+)-edit-(\d+)$/);
+    if (!m) return;
+    e.preventDefault();
+    var section = m[1], id = m[2];
+    fetch(form.action, {method: 'POST', body: new FormData(form)})
+        .then(function(resp) {
+            if (!resp.ok && resp.status !== 302) { form.submit(); return; }
+            var viewRow = document.getElementById(section + '-view-' + id);
+            if (viewRow) {
+                viewRow.querySelectorAll('[data-field]').forEach(function(cell) {
+                    var inp = form.querySelector('[name="' + cell.dataset.field + '"]');
+                    if (!inp) return;
+                    if (inp.tagName === 'SELECT') {
+                        var txt = inp.options[inp.selectedIndex].text;
+                        cell.textContent = cell.dataset.field === 'action'
+                            ? txt.charAt(0).toUpperCase() + txt.slice(1) : txt;
+                    } else {
+                        cell.textContent = inp.type === 'date' ? _fmtDate(inp.value) : inp.value;
+                    }
+                });
+            }
+            closeEdit(section, id);
+        })
+        .catch(function() { form.submit(); });
+});
+</script>
 {% endblock %}
