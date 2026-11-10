@@ -88,7 +88,7 @@
             <th>Действия</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="category-tbody">
         {% for record in judge.category_records %}
         <tr id="category-view-{{ record.id }}">
             <td data-field="category" style="padding-left: 2px; padding-right: 2px;">{{ record.category }}</td>
@@ -157,7 +157,7 @@
     </tbody>
 </table>
 </div>
-<form method="post" action="{{ url_for('judges.category_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-5">
+<form method="post" action="{{ url_for('judges.category_record_add', judge_id=judge.id) }}" data-adds-to="category-tbody" class="d-flex flex-wrap align-items-end gap-2 mb-5">
     <div>
         <label class="form-label mb-0">Категория</label>
         <select name="category" class="form-select form-select-sm">
@@ -242,7 +242,7 @@
             <th>Ответственный</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="training-tbody">
         {% for record in judge.training_records %}
         <tr id="training-view-{{ record.id }}">
             <td data-field="seminar_name">{{ record.seminar_name }}</td>
@@ -295,7 +295,7 @@
     </tbody>
 </table>
 </div>
-<form method="post" action="{{ url_for('judges.training_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-5">
+<form method="post" action="{{ url_for('judges.training_record_add', judge_id=judge.id) }}" data-adds-to="training-tbody" class="d-flex flex-wrap align-items-end gap-2 mb-5">
     <div class="flex-grow-1"><label class="form-label mb-0">Наименование семинара</label><input type="text" name="seminar_name" class="form-control form-control-sm w-100"></div>
     <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата</label><input type="text" name="seminar_date" class="form-control form-control-sm"></div>
@@ -346,7 +346,7 @@
             <th>Ответственный</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="competition-tbody">
         {% for record in judge.competition_records %}
         <tr id="competition-view-{{ record.id }}">
             <td data-field="event_date">{{ record.event_date }}</td>
@@ -388,7 +388,7 @@
     </tbody>
 </table>
 </div>
-<form method="post" action="{{ url_for('judges.competition_record_add', judge_id=judge.id) }}" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+<form method="post" action="{{ url_for('judges.competition_record_add', judge_id=judge.id) }}" data-adds-to="competition-tbody" class="d-flex flex-wrap align-items-end gap-2 mb-4">
     <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" style="width: 148px;"></div>
     <div class="flex-grow-1"><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm w-100"></div>
     <div class="w-100"></div>
@@ -431,6 +431,25 @@ function _fmtDate(val) {
 
 document.addEventListener('submit', function(e) {
     var form = e.target;
+
+    // Формы добавления записи
+    var tbodyId = form.dataset.addsTo;
+    if (tbodyId) {
+        e.preventDefault();
+        fetch(form.action, {method: 'POST', body: new FormData(form)})
+            .then(function(resp) { return resp.text(); })
+            .then(function(html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                var newTbody = doc.getElementById(tbodyId);
+                var curTbody = document.getElementById(tbodyId);
+                if (newTbody && curTbody) curTbody.innerHTML = newTbody.innerHTML;
+                form.reset();
+            })
+            .catch(function() { form.submit(); });
+        return;
+    }
+
+    // Формы редактирования строки
     var editRow = form.closest('tr[id]');
     if (!editRow) return;
     var m = editRow.id.match(/^(\w+)-edit-(\d+)$/);
