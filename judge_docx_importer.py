@@ -85,14 +85,14 @@ def parse_judge_card(file_obj):
     # Определяем по числу столбцов второй таблицы: ≥12 → подготовка, иначе → категории
     if len(tables) >= 2 and len(tables[1].columns) >= 12:
         # 3-таблечный формат: категории внутри table0 (строки 14+)
-        tbl_cat   = None          # читаем из table0
-        tbl_train = tables[1] if len(tables) > 1 else None
-        tbl_comp  = tables[2] if len(tables) > 2 else None
+        tbl_cat    = None          # читаем из table0
+        tbl_train  = tables[1] if len(tables) > 1 else None
+        tbl_comps  = tables[2:] if len(tables) > 2 else []
     else:
         # 4-таблечный формат: каждый раздел — своя таблица
-        tbl_cat   = tables[1] if len(tables) > 1 else None
-        tbl_train = tables[2] if len(tables) > 2 else None
-        tbl_comp  = tables[3] if len(tables) > 3 else None
+        tbl_cat    = tables[1] if len(tables) > 1 else None
+        tbl_train  = tables[2] if len(tables) > 2 else None
+        tbl_comps  = tables[3:] if len(tables) > 3 else []
 
     judge = Judge(
         last_name=_cell(table0, 2, 1),
@@ -176,12 +176,12 @@ def parse_judge_card(file_obj):
                 ))
 
     # --- Практика судейства официальных спортивных соревнований ---
+    # Листов с соревнованиями может быть несколько (tbl_comps — список таблиц).
     # Каждое соревнование — одна строка. Строки-заголовки пропускаются по отсутствию
     # даты в col 0. Col 3 той же строки: наименование + "/статус".
     # Col 5 той же строки может содержать два абзаца: дата записи и секретарь.
-    if tbl_comp is not None:
-        n_comp = len(tbl_comp.rows)
-        for crow in range(n_comp):
+    for tbl_comp in tbl_comps:
+        for crow in range(len(tbl_comp.rows)):
             if _parse_ddmmyyyy(_cell(tbl_comp, crow, 0) or "") is None:
                 continue
             _name_status = _cell(tbl_comp, crow, 3) or ""
