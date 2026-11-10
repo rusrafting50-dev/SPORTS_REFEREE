@@ -3,25 +3,29 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">{{ judge.full_name }}</h1>
-    <div>
-        <a href="{{ url_for('judges.judges_export', judge_id=judge.id) }}" class="btn btn-success">Скачать карточку (Word)</a>
-        <a href="{{ url_for('judges.judges_edit', judge_id=judge.id) }}" class="btn btn-outline-primary">Редактировать</a>
-        <form method="post" action="{{ url_for('judges.judges_send_to_site', judge_id=judge.id) }}" class="d-inline">
-            <button type="submit" class="btn btn-outline-success">Отправить на сайт</button>
-        </form>
-        <a href="{{ url_for('judges.judges_corez_form', judge_id=judge.id) }}" class="btn btn-outline-success">В коллегию COREZ</a>
-        {% if judge.is_active %}
-        <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
-            <button type="submit" class="btn btn-outline-danger">Не аттестован</button>
-        </form>
-        {% else %}
-        <form method="post" action="{{ url_for('judges.judges_activate', judge_id=judge.id) }}" class="d-inline">
-            <button type="submit" class="btn btn-outline-success">Аттестован</button>
-        </form>
-        {% endif %}
-        <form method="post" action="{{ url_for('judges.judges_delete', judge_id=judge.id) }}" class="d-inline" onsubmit="return confirm('Удалить без возможности восстановления?');">
-            <button type="submit" class="btn btn-danger">Удалить</button>
-        </form>
+    <div class="d-flex flex-column align-items-end gap-1">
+        <div class="d-flex gap-2">
+            {% if judge.is_active %}
+            <form method="post" action="{{ url_for('judges.judges_deactivate', judge_id=judge.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger">Не аттестован</button>
+            </form>
+            {% else %}
+            <form method="post" action="{{ url_for('judges.judges_activate', judge_id=judge.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-outline-success">Аттестован</button>
+            </form>
+            {% endif %}
+            <a href="{{ url_for('judges.judges_edit', judge_id=judge.id) }}" class="btn btn-outline-primary">Редактировать</a>
+            <form method="post" action="{{ url_for('judges.judges_delete', judge_id=judge.id) }}" class="d-inline" onsubmit="return confirm('Удалить без возможности восстановления?');">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('judges.judges_export', judge_id=judge.id) }}" class="btn btn-success">Скачать карточку</a>
+            <form method="post" action="{{ url_for('judges.judges_send_to_site', judge_id=judge.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-outline-success">Отправить на сайт</button>
+            </form>
+            <a href="{{ url_for('judges.judges_corez_form', judge_id=judge.id) }}" class="btn btn-outline-success">В COREZ</a>
+        </div>
     </div>
 </div>
 
