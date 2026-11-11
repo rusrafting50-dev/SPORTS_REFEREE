@@ -43,12 +43,15 @@
                         <label class="form-label mb-0">Телефон, адрес электронной почты организации</label>
                         <input type="text" name="organization_contacts" class="form-control form-control-sm" value="{{ subject.organization_contacts or '' }}">
                     </div>
+                    <div class="col-12 mt-3">
+                        <h3 class="h6 mb-0">Руководитель региональной федерации <span class="text-muted fw-normal small">— подпись в «Представлении к присвоению категории»</span></h3>
+                    </div>
                     <div class="col-md-6">
-                        <label class="form-label mb-0">Должность руководителя организации</label>
+                        <label class="form-label mb-0">Должность руководителя</label>
                         <input type="text" name="organization_leader_position" class="form-control form-control-sm" placeholder="Председатель" value="{{ subject.organization_leader_position or '' }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label mb-0">Инициалы и фамилия руководителя</label>
+                        <label class="form-label mb-0">И. О. Фамилия</label>
                         <input type="text" name="organization_leader_name" class="form-control form-control-sm" placeholder="Е. В. Милевский" value="{{ subject.organization_leader_name or '' }}">
                     </div>
                 </form>
