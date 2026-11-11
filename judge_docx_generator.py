@@ -102,51 +102,87 @@ def _date_parts(value):
 
 
 def _replace_photo(document, judge):
-    """Заменяет фото шаблона на фото судьи, подменяя r:embed прямо в a:blip."""
-    blip = document.element.body.find(".//" + qn("a:blip"))
-    if blip is None:
-        return
-    old_rid = blip.get(qn("r:embed"))
+    """Заменяет фото шаблона на фото судьи.
+    Удаляет содержащий drawing элемент целиком (w:r или mc:AlternateContent)
+    и добавляет новое фото через run.add_picture(), чтобы обойти mc:Fallback."""
+    body = document.element.body
 
+    # Найти первый w:drawing с изображением
+    photo_drawing = None
+    for d in body.findall(".//" + qn("w:drawing")):
+        if d.find(".//" + qn("a:blip")) is not None:
+            photo_drawing = d
+            break
+    if photo_drawing is None:
+        return
+
+    # Запомнить размер рамки в EMU
+    extent = photo_drawing.find(".//" + qn("wp:extent"))
+    box_w = int(extent.get("cx")) if extent is not None else None
+    box_h = int(extent.get("cy")) if extent is not None else None
+
+    # Найти параграф
+    para_el = photo_drawing
+    while para_el is not None and para_el.tag != qn("w:p"):
+        para_el = para_el.getparent()
+    if para_el is None:
+        return
+
+    # Найти прямого потомка параграфа, содержащего drawing
+    target = photo_drawing
+    while target.getparent() != para_el:
+        target = target.getparent()
+        if target is None:
+            return
+
+    # Собрать все старые rId изображений (a:blip и v:imagedata в fallback)
+    old_rids = set()
+    for b in target.findall(".//" + qn("a:blip")):
+        rid = b.get(qn("r:embed"))
+        if rid:
+            old_rids.add(rid)
+    for vi in target.findall(".//" + "{urn:schemas-microsoft-com:vml}imagedata"):
+        rid = vi.get(qn("r:id"))
+        if rid:
+            old_rids.add(rid)
+
+    # Удалить весь блок с фото шаблона
+    para_el.remove(target)
+    for rid in old_rids:
+        try:
+            document.part.drop_rel(rid)
+        except Exception:
+            pass
+
+    # Если у судьи нет фото — оставляем ячейку пустой
     filename = getattr(judge, "photo_filename", None)
     path = os.path.join(BASE_DIR, "static", "uploads", "judges", filename) if filename else None
     if not path or not os.path.exists(path):
-        drawing = blip
-        while drawing is not None and drawing.tag != qn("w:drawing"):
-            drawing = drawing.getparent()
-        if drawing is not None:
-            drawing.getparent().remove(drawing)
-        if old_rid:
-            try:
-                document.part.drop_rel(old_rid)
-            except Exception:
-                pass
         return
 
     try:
         from PIL import Image
-        drawing = blip
-        while drawing is not None and drawing.tag != qn("w:drawing"):
-            drawing = drawing.getparent()
-        if drawing is not None:
-            extent = drawing.find(".//" + qn("wp:extent"))
-            if extent is not None:
-                with Image.open(path) as img:
-                    img_w, img_h = img.size
-                box_w, box_h = int(extent.get("cx")), int(extent.get("cy"))
-                scale = min(box_w / img_w, box_h / img_h)
-                extent.set("cx", str(int(img_w * scale)))
-                extent.set("cy", str(int(img_h * scale)))
+        from docx.oxml import OxmlElement
+        from docx.text.run import Run
+        from docx.text.paragraph import Paragraph
 
-        _, new_rid = document.part.get_or_add_image(path)
-        blip.set(qn("r:embed"), new_rid)
-        if old_rid and old_rid != new_rid:
-            try:
-                document.part.drop_rel(old_rid)
-            except Exception:
-                pass
-    except Exception:
-        pass
+        with Image.open(path) as img:
+            img_w, img_h = img.size
+
+        run_el = OxmlElement("w:r")
+        para_el.append(run_el)
+        para = Paragraph(para_el, document._body)
+        run = Run(run_el, para)
+
+        if box_w and box_h:
+            scale = min(box_w / img_w, box_h / img_h)
+            run.add_picture(path, width=int(img_w * scale), height=int(img_h * scale))
+        else:
+            from docx.shared import Cm
+            run.add_picture(path, width=Cm(3))
+    except Exception as e:
+        import sys
+        print(f"[_replace_photo] error: {e}", file=sys.stderr)
 
 
 def generate_judge_card(judge, settings, subject):
