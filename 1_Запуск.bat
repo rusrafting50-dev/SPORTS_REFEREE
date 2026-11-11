@@ -2,11 +2,13 @@
 cd /d "D:\Projects Claude Code\SPORTS_REFEREE"
 git config merge.ff false
 set GIT_MERGE_AUTOEDIT=no
+set PORT=5005
+if exist .env for /f "usebackq tokens=1,2 delims== " %%a in (".env") do if /i "%%a"=="PORT" set PORT=%%b
 
 if "%~1"=="--relaunched" goto :run
 
-echo [1/4] Stop Flask (port 5005)...
-for /f "tokens=5" %%p in ('netstat -ano ^| findstr :5005 ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
+echo [1/4] Stop Flask (port %PORT%)...
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr :%PORT% ^| findstr LISTENING') do taskkill /f /pid %%p 1>nul 2>nul
 timeout /t 2 /nobreak >nul
 
 echo [2/4] Git pull...
@@ -29,6 +31,6 @@ echo [3/4] pip install...
 pip install -r requirements.txt --quiet
 
 echo [4/4] Start Flask...
-start http://localhost:5005
+start http://localhost:%PORT%
 python app.py
 pause
