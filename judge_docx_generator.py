@@ -5,6 +5,8 @@ import os
 from io import BytesIO
 
 import docx
+import docx.text.paragraph
+import docx.text.run
 from docx.oxml.ns import qn
 from docx.table import _Cell
 
@@ -99,6 +101,54 @@ def _date_parts(value):
     return value.strftime("%d"), value.strftime("%m"), value.strftime("%Y")
 
 
+def _replace_photo(document, judge):
+    """Заменяет фото шаблона на фото судьи, подменяя r:embed прямо в a:blip."""
+    blip = document.element.body.find(".//" + qn("a:blip"))
+    if blip is None:
+        return
+    old_rid = blip.get(qn("r:embed"))
+
+    filename = getattr(judge, "photo_filename", None)
+    path = os.path.join(BASE_DIR, "static", "uploads", "judges", filename) if filename else None
+    if not path or not os.path.exists(path):
+        drawing = blip
+        while drawing is not None and drawing.tag != qn("w:drawing"):
+            drawing = drawing.getparent()
+        if drawing is not None:
+            drawing.getparent().remove(drawing)
+        if old_rid:
+            try:
+                document.part.drop_rel(old_rid)
+            except Exception:
+                pass
+        return
+
+    try:
+        from PIL import Image
+        drawing = blip
+        while drawing is not None and drawing.tag != qn("w:drawing"):
+            drawing = drawing.getparent()
+        if drawing is not None:
+            extent = drawing.find(".//" + qn("wp:extent"))
+            if extent is not None:
+                with Image.open(path) as img:
+                    img_w, img_h = img.size
+                box_w, box_h = int(extent.get("cx")), int(extent.get("cy"))
+                scale = min(box_w / img_w, box_h / img_h)
+                extent.set("cx", str(int(img_w * scale)))
+                extent.set("cy", str(int(img_h * scale)))
+
+        _, new_rid = document.part.get_or_add_image(path)
+        blip.set(qn("r:embed"), new_rid)
+        if old_rid and old_rid != new_rid:
+            try:
+                document.part.drop_rel(old_rid)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 def generate_judge_card(judge, settings, subject):
     """subject — субъект РФ судьи (Subject.name == judge.region), хранит
     организацию, осуществляющую учёт судейской деятельности именно в
@@ -187,6 +237,8 @@ def generate_judge_card(judge, settings, subject):
         _set_text(tr1, 5, table2, record.record_keeper)
 
     _replace_repeating_rows(table2, 1, 2, judge.sorted_competition_records, fill_competition_group)
+
+    _replace_photo(document, judge)
 
     buffer = BytesIO()
     document.save(buffer)
