@@ -111,12 +111,22 @@ class Judge(db.Model):
     @property
     def sorted_competition_records(self):
         import re
-        _RE = re.compile(r'(\d{1,2})\.(\d{1,2})\.(\d{4})')
+        _RE_FULL = re.compile(r'(\d{1,2})\.(\d{1,2})\.\s*(\d{4})')
+        _RE_MY   = re.compile(r'(\d{1,2})\.\s*(\d{4})')
+        _RE_Y    = re.compile(r'(\d{4})')
         def _key(r):
-            m = _RE.search(r.event_date or '')
+            t = r.event_date or ''
+            m = _RE_FULL.search(t)
             if m:
                 d, mo, y = m.groups()
                 return (int(y), int(mo), int(d))
+            m = _RE_MY.search(t)
+            if m:
+                mo, y = m.groups()
+                return (int(y), int(mo), 0)
+            m = _RE_Y.search(t)
+            if m:
+                return (int(m.group(1)), 99, 99)
             return (9999, 99, 99)
         return sorted(self.competition_records, key=_key)
 
