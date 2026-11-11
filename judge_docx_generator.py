@@ -186,7 +186,7 @@ def generate_judge_card(judge, settings, subject):
         _set_text(tr1, 3, table2, record.competition_status)
         _set_text(tr1, 5, table2, record.record_keeper)
 
-    _replace_repeating_rows(table2, 1, 2, judge.competition_records, fill_competition_group)
+    _replace_repeating_rows(table2, 1, 2, judge.sorted_competition_records, fill_competition_group)
 
     buffer = BytesIO()
     document.save(buffer)

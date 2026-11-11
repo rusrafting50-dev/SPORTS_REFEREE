@@ -351,7 +351,7 @@
         </tr>
     </thead>
     <tbody id="competition-tbody">
-        {% for record in judge.competition_records %}
+        {% for record in judge.sorted_competition_records %}
         <tr id="competition-view-{{ record.id }}">
             <td data-field="event_date">{{ record.event_date }}</td>
             <td data-field="location">{{ record.location|break_after_comma }}</td>
