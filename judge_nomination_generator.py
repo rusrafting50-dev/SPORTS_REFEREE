@@ -38,6 +38,7 @@ CATEGORY_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIA
 
 _RE_PARTS = re.compile(r"(\d{1,2}(?:\s*-\s*\d{1,2})?)\.\s*(\d{1,2})\.\s*(\d{4})")
 _RE_ZACHET = re.compile(r"зач[её]т", re.IGNORECASE)
+_RE_HOURS = re.compile(r"\d+\s*(?:академ\w*\s*)?час", re.IGNORECASE)
 _RE_EKP = re.compile(r"(?<![А-Яа-яЁё])Е?КП(?![А-Яа-яЁё])")
 _RE_POINTS = re.compile(r"балл", re.IGNORECASE)
 MARK_FILL = "FFFF00"  # жёлтая заливка: в карточке не заполнены данные для этой ячейки
@@ -66,12 +67,33 @@ def _hours(score):
 
 
 def _grade(score):
+    """Оценка без объёма часов: «2 часа, зачет» -> «Зачёт»."""
     if not score:
         return ""
     if _RE_ZACHET.search(score):
         return "Зачёт"
-    tail = score.split(",")[-1].strip()
+    parts = [p.strip() for p in score.split(",") if p.strip() and not _RE_HOURS.search(p)]
+    tail = parts[-1] if parts else ""
     return tail[:1].upper() + tail[1:]
+
+
+# Уровни образования, длинные варианты раньше коротких («неоконченное высшее» до «высшее»)
+EDUCATION_LEVELS = [
+    "Неоконченное высшее", "Незаконченное высшее", "Высшее",
+    "Среднее профессиональное", "Среднее специальное", "Среднее техническое",
+    "Начальное профессиональное", "Среднее общее", "Основное общее", "Среднее",
+]
+
+
+def _education_level(text):
+    """Только уровень образования без учебного заведения; второй элемент —
+    распознан ли уровень (иначе ячейка помечается)."""
+    t = (text or "").strip()
+    low = t.lower()
+    for level in EDUCATION_LEVELS:
+        if low.startswith(level.lower()) or re.search(rf"(?<![а-яё]){level.lower()}(?![а-яё])", low):
+            return level, True
+    return re.split(r"[,(]", t)[0].strip(), False
 
 
 def _initials(judge):
@@ -233,6 +255,7 @@ def _left_rows(judge, settings, subject, current, previous_date):
     org = ",\n".join(x for x in (
         subject.organization_name if subject else "", subject.organization_address if subject else "",
     ) if x)
+    education, education_known = _education_level(judge.education)
     rows = [
         [C(0, 1, "Дата поступления представления и документов\n(число, месяц, год)", vm="restart"),
          C(1, 2, vm="restart"), C(3, 1, vm="restart"), C(4, 1, vm="restart"),
@@ -263,7 +286,7 @@ def _left_rows(judge, settings, subject, current, previous_date):
          C(6, 5, org, vm="restart", need=True)],
         [C(0, 1, "Место работы (учебы), должность"), C(1, 4, judge.workplace or "", pt=6.5, need=True),
          C(5, 1, vm="cont"), C(6, 5, vm="cont")],
-        [C(0, 1, "Образование"), C(1, 4, judge.education or "", pt=12, need=True),
+        [C(0, 1, "Образование"), C(1, 4, education, pt=12, mark=not education_known),
          C(5, 1, "Спортивное звание"), C(6, 5, judge.rank or "", pt=12)],
         [C(0, 6, "Участие в теоретических занятиях, сдача нормативов по физической подготовке "
                  "(для видов спорта, где такие нормативы предусмотрены правилами вида спорта), "
@@ -289,7 +312,7 @@ def _left_rows(judge, settings, subject, current, previous_date):
             # participant_date хранит дату занятий в качестве лектора (колонка
             # «Дата» под группой «Лектор» в образце карточки, см. judge_docx_importer)
             activities.append((f"Проведение теоретических занятий{volume} в форме семинара", not hours,
-                               rec.participant_date, _grade(rec.lecturer_score)))
+                               rec.participant_date or rec.seminar_date, _grade(rec.lecturer_score)))
         if not activities:
             continue
         n += 1
