@@ -226,8 +226,6 @@ class JudgeCompetitionRecord(db.Model):
     competition_name = db.Column(db.String(500))          # наименование и вид программы соревнования
     competition_status = db.Column(db.String(200))        # статус официального соревнования
     score = db.Column(db.String(50))
-    ekp_number = db.Column(db.String(100))   # номер в ЕКП / КП, напр. «КП № 1378-СМ»
-    points = db.Column(db.String(20))        # баллы за судейство
     # Включать ли в представление к присвоению категории; None — галочку ещё
     # не трогали, тогда включаются соревнования после даты присвоения
     # действующей категории (Judge.previous_category_date)

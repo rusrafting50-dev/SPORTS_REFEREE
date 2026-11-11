@@ -38,6 +38,9 @@ CATEGORY_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIA
 
 _RE_PARTS = re.compile(r"(\d{1,2}(?:\s*-\s*\d{1,2})?)\.\s*(\d{1,2})\.\s*(\d{4})")
 _RE_ZACHET = re.compile(r"зач[её]т", re.IGNORECASE)
+_RE_EKP = re.compile(r"(?<![А-Яа-яЁё])Е?КП(?![А-Яа-яЁё])")
+_RE_POINTS = re.compile(r"балл", re.IGNORECASE)
+MARK_FILL = "FFFF00"  # жёлтая заливка: в карточке не заполнены данные для этой ячейки
 
 
 # --- Разбор данных карточки ---
@@ -71,21 +74,6 @@ def _grade(score):
     return tail[:1].upper() + tail[1:]
 
 
-def _ru_plural(n, one, few, many):
-    if n % 10 == 1 and n % 100 != 11:
-        return one
-    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
-        return few
-    return many
-
-
-def _points_text(points):
-    points = (points or "").strip()
-    if not points.isdigit():
-        return points
-    return f"{points} {_ru_plural(int(points), 'балл', 'балла', 'баллов')}"
-
-
 def _initials(judge):
     return "".join(p[0] for p in (judge.first_name, judge.middle_name) if p)
 
@@ -101,7 +89,36 @@ def _border(parent, side, val):
     parent.append(el)
 
 
-def _make_tc(start, span, text="", pt=8, bold=False, align="center", vmerge=None, top_double=False):
+def _shd(fill):
+    shd = OxmlElement("w:shd")
+    shd.set(qn("w:val"), "clear")
+    shd.set(qn("w:color"), "auto")
+    shd.set(qn("w:fill"), fill)
+    return shd
+
+
+def _mark_tc(tc):
+    tc.find(qn("w:tcPr")).find(qn("w:tcBorders")).addnext(_shd(MARK_FILL))
+
+
+_PPR_BEFORE_SHD = {qn(t) for t in ("w:pStyle", "w:keepNext", "w:keepLines", "w:pageBreakBefore", "w:framePr",
+                                     "w:widowControl", "w:numPr", "w:suppressLineNumbers", "w:pBdr")}
+
+
+def _mark_p(p):
+    """Пометка строки в блоке подписей (заливка абзаца видна и у пустого)."""
+    ppr = p.find(qn("w:pPr"))
+    if ppr is None:
+        ppr = OxmlElement("w:pPr")
+        p.insert(0, ppr)
+    before = [c for c in ppr if c.tag in _PPR_BEFORE_SHD]
+    if before:
+        before[-1].addnext(_shd(MARK_FILL))
+    else:
+        ppr.insert(0, _shd(MARK_FILL))
+
+
+def _make_tc(start, span, text="", pt=8, bold=False, align="center", vmerge=None, top_double=False, mark=False):
     tc = OxmlElement("w:tc")
     pr = OxmlElement("w:tcPr")
     tc.append(pr)
@@ -127,6 +144,8 @@ def _make_tc(start, span, text="", pt=8, bold=False, align="center", vmerge=None
     _border(borders, "bottom", "single")
     _border(borders, "right", "double" if end in (LEFT_LAST, LAST) else "single")
     pr.append(borders)
+    if mark:
+        pr.append(_shd(MARK_FILL))
 
     mar = OxmlElement("w:tcMar")
     for side in ("left", "right"):
@@ -199,8 +218,11 @@ def _make_tr(height=None):
     return tr
 
 
-def C(start, span, text="", pt=8, bold=False, align="center", vm=None):
-    return dict(start=start, span=span, text=text, pt=pt, bold=bold, align=align, vm=vm)
+def C(start, span, text="", pt=8, bold=False, align="center", vm=None, need=False, mark=False):
+    """need — обязательные данные: пустая ячейка помечается заливкой;
+    mark — пометить заливкой независимо от текста (данные неполные)."""
+    mark = mark or (need and not (text or "").strip())
+    return dict(start=start, span=span, text=text, pt=pt, bold=bold, align=align, vm=vm, mark=mark)
 
 
 # --- Содержимое левой и правой половины ---
@@ -218,30 +240,30 @@ def _left_rows(judge, settings, subject, current, previous_date):
          C(6, 5, "Наименование действующей квалификационной категории\nспортивного судьи")],
         [C(0, 1, vm="cont"), C(1, 2, vm="cont"), C(3, 1, vm="cont"), C(4, 1, vm="cont"),
          C(5, 1, vm="cont"),
-         C(6, 5, (current or "").replace("судья ", "судья\n", 1), pt=11)],
-        [C(0, 1, "Фамилия"), C(1, 4, judge.last_name, pt=12), C(5, 1, vm="cont"),
+         C(6, 5, (current or "").replace("судья ", "судья\n", 1), pt=11, need=True)],
+        [C(0, 1, "Фамилия"), C(1, 4, judge.last_name, pt=12, need=True), C(5, 1, vm="cont"),
          C(6, 5, "Дата присвоения предыдущей квалификационной категории\nспортивного судьи\n"
                  "(число, месяц, год)", vm="restart")],
-        [C(0, 1, "Имя"), C(1, 4, judge.first_name, pt=12), C(5, 1, vm="cont"), C(6, 5, vm="cont")],
+        [C(0, 1, "Имя"), C(1, 4, judge.first_name, pt=12, need=True), C(5, 1, vm="cont"), C(6, 5, vm="cont")],
         [C(0, 1, "Отчество (при наличии)"), C(1, 4, judge.middle_name or "", pt=12), C(5, 1, vm="cont"),
-         C(6, 1, prev.strftime("%d") if prev else "", pt=12),
-         C(7, 2, prev.strftime("%m") if prev else "", pt=12),
-         C(9, 2, prev.strftime("%Y") if prev else "", pt=12)],
+         C(6, 1, prev.strftime("%d") if prev else "", pt=12, need=True),
+         C(7, 2, prev.strftime("%m") if prev else "", pt=12, need=True),
+         C(9, 2, prev.strftime("%Y") if prev else "", pt=12, need=True)],
         [C(0, 1, "Дата рождения\n(число, месяц, год)"),
-         C(1, 2, birth.strftime("%d") if birth else "", pt=12),
-         C(3, 1, birth.strftime("%m") if birth else "", pt=12),
-         C(4, 1, birth.strftime("%Y") if birth else "", pt=12),
+         C(1, 2, birth.strftime("%d") if birth else "", pt=12, need=True),
+         C(3, 1, birth.strftime("%m") if birth else "", pt=12, need=True),
+         C(4, 1, birth.strftime("%Y") if birth else "", pt=12, need=True),
          C(5, 1, "Наименование вида спорта (спортивной дисциплины)"),
-         C(6, 5, settings.sport_name if settings else "", pt=12)],
-        [C(0, 1, "Субъект Российской Федерации"), C(1, 4, judge.region or "", pt=12),
-         C(5, 1, "Номер-код вида спорта"), C(6, 5, settings.sport_code if settings else "", pt=12)],
-        [C(0, 1, "Адрес (место жительства)"), C(1, 4, judge.address or ""),
+         C(6, 5, settings.sport_name if settings else "", pt=12, need=True)],
+        [C(0, 1, "Субъект Российской Федерации"), C(1, 4, judge.region or "", pt=12, need=True),
+         C(5, 1, "Номер-код вида спорта"), C(6, 5, settings.sport_code if settings else "", pt=12, need=True)],
+        [C(0, 1, "Адрес (место жительства)"), C(1, 4, judge.address or "", need=True),
          C(5, 1, "Наименование и адрес (место нахождения) организации, осуществляющей учет "
                  "судейской деятельности спортивного судьи", pt=7.5, vm="restart"),
-         C(6, 5, org, vm="restart")],
-        [C(0, 1, "Место работы (учебы), должность"), C(1, 4, judge.workplace or "", pt=6.5),
+         C(6, 5, org, vm="restart", need=True)],
+        [C(0, 1, "Место работы (учебы), должность"), C(1, 4, judge.workplace or "", pt=6.5, need=True),
          C(5, 1, vm="cont"), C(6, 5, vm="cont")],
-        [C(0, 1, "Образование"), C(1, 4, judge.education or "", pt=12),
+        [C(0, 1, "Образование"), C(1, 4, judge.education or "", pt=12, need=True),
          C(5, 1, "Спортивное звание"), C(6, 5, judge.rank or "", pt=12)],
         [C(0, 6, "Участие в теоретических занятиях, сдача нормативов по физической подготовке "
                  "(для видов спорта, где такие нормативы предусмотрены правилами вида спорта), "
@@ -259,25 +281,27 @@ def _left_rows(judge, settings, subject, current, previous_date):
         if _is_filled(rec.participant_score) or _is_filled(rec.participant_category):
             hours = _hours(rec.participant_score)
             volume = f" в объеме {hours} академических часов" if hours else ""
-            activities.append((f"Теоретическая подготовка{volume} в форме семинара",
+            activities.append((f"Теоретическая подготовка{volume} в форме семинара", not hours,
                                rec.seminar_date, _grade(rec.participant_score)))
         if _is_filled(rec.lecturer_score) or _is_filled(rec.lecturer_category):
             hours = _hours(rec.lecturer_score)
             volume = f" в объеме {hours} академических часов" if hours else ""
             # participant_date хранит дату занятий в качестве лектора (колонка
             # «Дата» под группой «Лектор» в образце карточки, см. judge_docx_importer)
-            activities.append((f"Проведение теоретических занятий{volume} в форме семинара",
-                               rec.participant_date or rec.seminar_date, _grade(rec.lecturer_score)))
+            activities.append((f"Проведение теоретических занятий{volume} в форме семинара", not hours,
+                               rec.participant_date, _grade(rec.lecturer_score)))
         if not activities:
             continue
         n += 1
         title = f"{n}. {rec.seminar_name or ''}" + (f", {rec.location}" if rec.location else "")
-        for i, (activity, when, grade) in enumerate(activities):
+        for i, (activity, no_hours, when, grade) in enumerate(activities):
             d, m, y = _date_parts(when)
             rows.append([
-                C(0, 2, title, pt=6, align="left", vm=("restart" if i == 0 else "cont")),
-                C(2, 4, activity, pt=6, align="left"),
-                C(6, 1, d, pt=10), C(7, 1, m, pt=10), C(8, 2, y, pt=10), C(10, 1, grade, pt=10),
+                C(0, 2, title, pt=6, align="left", vm=("restart" if i == 0 else "cont"),
+                  mark=(i == 0 and not (rec.seminar_name and rec.location))),
+                C(2, 4, activity, pt=6, align="left", mark=no_hours),
+                C(6, 1, d, pt=10, need=True), C(7, 1, m, pt=10, need=True), C(8, 2, y, pt=10, need=True),
+                C(10, 1, grade, pt=10, need=True),
             ])
 
     exams = [r for r in seminars if _is_filled(r.exam_score)]
@@ -288,10 +312,10 @@ def _left_rows(judge, settings, subject, current, previous_date):
         if rec.location:
             title += f", {rec.location}"
         # lecturer_date хранит дату сдачи зачёта (в форме — «Дата (зачёт)»)
-        d, m, y = _date_parts(rec.lecturer_date or rec.seminar_date)
-        rows.append([C(0, 6, title, pt=6, align="left"),
-                     C(6, 1, d, pt=10), C(7, 1, m, pt=10), C(8, 2, y, pt=10),
-                     C(10, 1, _grade(rec.exam_score), pt=10)])
+        d, m, y = _date_parts(rec.lecturer_date)
+        rows.append([C(0, 6, title, pt=6, align="left", mark=not rec.location),
+                     C(6, 1, d, pt=10, need=True), C(7, 1, m, pt=10, need=True), C(8, 2, y, pt=10, need=True),
+                     C(10, 1, _grade(rec.exam_score), pt=10, need=True)])
     return rows
 
 
@@ -306,14 +330,17 @@ def _right_rows(judge):
     for rec in judge.sorted_competition_records:
         if not rec.included_in_nomination:
             continue
-        name = rec.competition_name or ""
-        if rec.ekp_number:
-            name += f", {rec.ekp_number}"
-        position = ", ".join(x for x in (
-            (rec.judge_position or "").strip(), (rec.score or "").strip().lower(), _points_text(rec.points),
-        ) if x)
-        rows.append([C(11, 1, rec.event_date or "", pt=8), C(12, 1, name, pt=6.5),
-                     C(13, 1, rec.competition_status or "", pt=6.5), C(14, 1, position, pt=6.5)])
+        # № в ЕКП / КП записывается в наименовании, баллы — вместе с оценкой
+        name = (rec.competition_name or "").strip()
+        position_name = (rec.judge_position or "").strip()
+        score = (rec.score or "").strip()
+        position = ", ".join(x for x in (position_name, score[:1].lower() + score[1:]) if x)
+        rows.append([
+            C(11, 1, rec.event_date or "", pt=8, need=True),
+            C(12, 1, name, pt=6.5, mark=not (name and _RE_EKP.search(name))),
+            C(13, 1, rec.competition_status or "", pt=6.5, need=True),
+            C(14, 1, position, pt=6.5, mark=not (position_name and score and _RE_POINTS.search(score))),
+        ])
     return rows
 
 
@@ -351,9 +378,13 @@ def _fill_signature(tr, subject):
     head, sep, tail = org.partition("«")
     _set_para_text(paras[0], head.strip() if sep else org)
     _set_para_text(paras[1], (sep + tail).strip() if sep else "")
+    if not org:
+        _mark_p(paras[0])
     position = (subject.organization_leader_position if subject else "") or ""
     leader = (subject.organization_leader_name if subject else "") or ""
     _set_para_text(paras[7], f"     {position:<38}        {leader}" if (position or leader) else "")
+    if not (position and leader):
+        _mark_p(paras[7])
     # Строка «Дата ___ Подпись ___»: дата образца разбита на несколько
     # подчёркнутых runs — меняем только цифры, чтобы сохранить подчёркивание
     today = f"{date.today():%d.%m.%Y}"
@@ -371,14 +402,15 @@ def _fill_signature(tr, subject):
 def _add_photo(table, tr, judge):
     filename = getattr(judge, "photo_filename", None)
     path = os.path.join(BASE_DIR, "static", "uploads", "judges", filename) if filename else None
+    tc = tr.findall(qn("w:tc"))[4]
     if not path or not os.path.exists(path):
+        _mark_tc(tc)
         return
     try:
         from PIL import Image
         with Image.open(path) as img:
             w, h = img.size
         scale = min(PHOTO_BOX_EMU[0] / w, PHOTO_BOX_EMU[1] / h)
-        tc = tr.findall(qn("w:tc"))[4]
         _Cell(tc, table).paragraphs[0].add_run().add_picture(path, width=int(w * scale), height=int(h * scale))
     except Exception as e:
         import sys
@@ -437,7 +469,7 @@ def generate_nomination(judge, settings, subject):
         tr = _make_tr(height=ROW_HEIGHTS.get(i, 330))
         for spec in left[i] + right[i]:
             tr.append(_make_tc(spec["start"], spec["span"], spec["text"], spec["pt"], spec["bold"],
-                               spec["align"], spec["vm"], top_double=(i == 0)))
+                               spec["align"], spec["vm"], top_double=(i == 0), mark=spec["mark"]))
         signature_tr.addprevious(tr)
         new_trs.append(tr)
 

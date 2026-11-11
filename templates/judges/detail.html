@@ -332,12 +332,9 @@
         <col style="width: 220px;">
         <col style="width: 150px;">
         <col style="width: 83px;">
-        <col style="width: 100px;">
-        <col style="width: 55px;">
-        <col style="width: 75px;">
         <col style="width: 90px;">
         <col style="width: 155px;">
-        <col style="width: 90px;">
+        <col style="width: 100px;">
     </colgroup>
     <thead>
         <tr class="align-middle">
@@ -346,9 +343,6 @@
             <th rowspan="2">Наименование должности спортивного судьи</th>
             <th colspan="2">Наименование и статус официальных спортивных соревнований, вид программы</th>
             <th rowspan="2">Оценка</th>
-            <th rowspan="2">№ в ЕКП / КП</th>
-            <th rowspan="2">Баллы</th>
-            <th rowspan="2" title="Включить соревнование в «Представление к присвоению категории»">В представление</th>
             <th colspan="2">Дата внесения записи, подпись, фамилия и инициалы лица, ответственного за оформление карточки учёта</th>
             <th rowspan="2">Действия</th>
         </tr>
@@ -368,13 +362,6 @@
             <td data-field="competition_name">{{ record.competition_name }}</td>
             <td data-field="competition_status">{{ record.competition_status }}</td>
             <td data-field="score">{{ record.score }}</td>
-            <td data-field="ekp_number">{{ record.ekp_number }}</td>
-            <td data-field="points">{{ record.points }}</td>
-            <td>
-                <input type="checkbox" class="form-check-input nomination-toggle"
-                       data-url="{{ url_for('judges.competition_record_nomination', record_id=record.id) }}"
-                       {% if record.included_in_nomination %}checked{% endif %}>
-            </td>
             <td data-field="record_date">{{ record.record_date }}</td>
             <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
@@ -383,11 +370,17 @@
                     <form method="post" action="{{ url_for('judges.competition_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
                     </form>
+                    <label class="d-flex align-items-center justify-content-center gap-1 small" title="Включить соревнование в «Представление к присвоению категории»">
+                        <input type="checkbox" class="form-check-input m-0 nomination-toggle"
+                               data-url="{{ url_for('judges.competition_record_nomination', record_id=record.id) }}"
+                               {% if record.included_in_nomination %}checked{% endif %}>
+                        В представление
+                    </label>
                 </div>
             </td>
         </tr>
         <tr id="competition-edit-{{ record.id }}" class="d-none">
-            <td colspan="12">
+            <td colspan="9">
                 <form method="post" action="{{ url_for('judges.competition_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
                     <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" value="{{ record.event_date or '' }}"></div>
                     <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
@@ -395,8 +388,6 @@
                     <div><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm" style="min-width:220px" value="{{ record.competition_name or '' }}"></div>
                     <div><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm" style="min-width:180px" value="{{ record.competition_status or '' }}"></div>
                     <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm" value="{{ record.score or '' }}"></div>
-                    <div><label class="form-label mb-0">№ в ЕКП / КП</label><input type="text" name="ekp_number" class="form-control form-control-sm" placeholder="КП № 1378-СМ" value="{{ record.ekp_number or '' }}"></div>
-                    <div><label class="form-label mb-0">Баллы</label><input type="text" name="points" class="form-control form-control-sm" style="width: 70px;" value="{{ record.points or '' }}"></div>
                     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
                     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
                     <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
@@ -405,7 +396,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="12" class="text-center text-muted">Записей пока нет</td></tr>
+        <tr><td colspan="9" class="text-center text-muted">Записей пока нет</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -419,8 +410,6 @@
     <div class="w-100"></div>
     <div class="w-50"><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm w-100"></div>
     <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm"></div>
-    <div><label class="form-label mb-0">№ в ЕКП / КП</label><input type="text" name="ekp_number" class="form-control form-control-sm" placeholder="КП № 1378-СМ"></div>
-    <div><label class="form-label mb-0">Баллы</label><input type="text" name="points" class="form-control form-control-sm" style="width: 70px;"></div>
     <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>

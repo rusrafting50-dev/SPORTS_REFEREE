@@ -593,8 +593,6 @@ def _fill_competition_record(record, form):
     record.competition_name = form.get("competition_name", "").strip() or None
     record.competition_status = form.get("competition_status", "").strip() or None
     record.score = form.get("score", "").strip() or None
-    record.ekp_number = form.get("ekp_number", "").strip() or None
-    record.points = form.get("points", "").strip() or None
     record.record_date = form.get("record_date", "").strip() or None
     record.record_keeper = form.get("record_keeper", "").strip() or None
 
