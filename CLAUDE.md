@@ -119,7 +119,9 @@ seminar_name, seminar_date, organizer, location, participant_category/score (в 
 
 ### JudgeCompetitionRecord (практика судейства официальных спортивных соревнований)
 
-event_date, location, judge_position, competition_name, competition_status, score, ekp_number (№ в ЕКП / КП, напр. «КП № 1378-СМ»), points (баллы), record_date, record_keeper. `ekp_number` и `points` в карточку учёта не выводятся — только в представление.
+event_date, location, judge_position, competition_name, competition_status, score, ekp_number (№ в ЕКП / КП, напр. «КП № 1378-СМ»), points (баллы), in_nomination, record_date, record_keeper. `ekp_number` и `points` в карточку учёта не выводятся — только в представление.
+
+`in_nomination` — галочка «В представление» в таблице практики судейства (сохраняется сразу по клику, `POST /judges/competition-records/<id>/nomination`). `None` — галочку не трогали: тогда соревнование включено, если проведено не раньше `Judge.previous_category_date` (свойство `included_in_nomination`).
 
 `competition_name` (полное наименование соревнования с видом программы) и `competition_status` (официальный статус: «Чемпионат субъекта Российской Федерации», «Первенство России» и т.п.) — два разных поля, в документе выводятся двумя отдельными строками одной ячейки.
 
@@ -172,7 +174,7 @@ event_date, location, judge_position, competition_name, competition_status, scor
 
 Что откуда:
 - присваиваемая категория — следующая после `current_category` (`NEXT_CATEGORY`); дата присвоения предыдущей — последняя запись «присвоена/восстановлена» действующей категории;
-- в документ попадают только семинары и соревнования **после** этой даты; по каждому семинару — строка «Теоретическая подготовка в объеме N академических часов» (часы из `participant_score`) и, если судья был лектором, «Проведение теоретических занятий…» (дата — `participant_date`); отдельным пунктом — сдача квалификационного зачёта последнего семинара (дата — `lecturer_date`);
+- семинары — только **после** этой даты; соревнования — отмеченные галочкой «В представление» (по умолчанию тоже после этой даты); по каждому семинару — строка «Теоретическая подготовка в объеме N академических часов» (часы из `participant_score`) и, если судья был лектором, «Проведение теоретических занятий…» (дата — `participant_date`); отдельным пунктом — сдача квалификационного зачёта последнего семинара (дата — `lecturer_date`);
 - соревнование: наименование + `ekp_number`, должность + оценка + `points` («12 баллов»);
 - подпись — `Subject.organization_leader_*`, дата подписи — день выгрузки; фото — `Judge.photo_filename`.
 

@@ -1,9 +1,40 @@
 # models.py — модели SQLAlchemy
+import re
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
+_RE_DATE_FULL = re.compile(r"(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})")
+_RE_DATE_MY = re.compile(r"(\d{1,2})\.\s*(\d{4})")
+_RE_DATE_Y = re.compile(r"(\d{4})")
+
+
+def date_key(text):
+    """(год, месяц, день) из свободной записи даты: для «07-08.12.2023»
+    берётся последний день, для «24. 11.2019г.» день = 0; None без года."""
+    t = text or ""
+    m = _RE_DATE_FULL.search(t)
+    if m:
+        d, mo, y = m.groups()
+        return int(y), int(mo), int(d)
+    m = _RE_DATE_MY.search(t)
+    if m:
+        mo, y = m.groups()
+        return int(y), int(mo), 0
+    m = _RE_DATE_Y.search(t)
+    if m:
+        return int(m.group(1)), 0, 0
+    return None
+
+
+def is_after(text, since):
+    """Запись с датой text не раньше даты since (None — без ограничения)."""
+    if since is None:
+        return True
+    key = date_key(text)
+    return key is not None and key >= (since.year, since.month, since.day)
 
 
 class SchemaFlag(db.Model):
@@ -113,25 +144,7 @@ class Judge(db.Model):
 
     @property
     def sorted_competition_records(self):
-        import re
-        _RE_FULL = re.compile(r'(\d{1,2})\.(\d{1,2})\.\s*(\d{4})')
-        _RE_MY   = re.compile(r'(\d{1,2})\.\s*(\d{4})')
-        _RE_Y    = re.compile(r'(\d{4})')
-        def _key(r):
-            t = r.event_date or ''
-            m = _RE_FULL.search(t)
-            if m:
-                d, mo, y = m.groups()
-                return (int(y), int(mo), int(d))
-            m = _RE_MY.search(t)
-            if m:
-                mo, y = m.groups()
-                return (int(y), int(mo), 0)
-            m = _RE_Y.search(t)
-            if m:
-                return (int(m.group(1)), 99, 99)
-            return (9999, 99, 99)
-        return sorted(self.competition_records, key=_key)
+        return sorted(self.competition_records, key=lambda r: date_key(r.event_date) or (9999, 99, 99))
 
     @property
     def full_name(self):
@@ -145,6 +158,16 @@ class Judge(db.Model):
         if not dated:
             return None
         return max(dated, key=lambda r: r.date).category
+
+    @property
+    def previous_category_date(self):
+        """Дата присвоения (восстановления) действующей категории — с неё
+        считаются семинары и соревнования для представления к следующей."""
+        current = self.current_category
+        records = [r for r in self.category_records if r.date and r.category == current]
+        assigned = [r for r in records if (r.action or "").lower() in ("присвоена", "восстановлена")]
+        pool = assigned or records
+        return max(pool, key=lambda r: r.date).date if pool else None
 
 
 class JudgeCategoryRecord(db.Model):
@@ -205,9 +228,20 @@ class JudgeCompetitionRecord(db.Model):
     score = db.Column(db.String(50))
     ekp_number = db.Column(db.String(100))   # номер в ЕКП / КП, напр. «КП № 1378-СМ»
     points = db.Column(db.String(20))        # баллы за судейство
+    # Включать ли в представление к присвоению категории; None — галочку ещё
+    # не трогали, тогда включаются соревнования после даты присвоения
+    # действующей категории (Judge.previous_category_date)
+    in_nomination = db.Column(db.Boolean)
 
     record_date = db.Column(db.String(50))
     record_keeper = db.Column(db.String(150))
+
+
+    @property
+    def included_in_nomination(self):
+        if self.in_nomination is not None:
+            return self.in_nomination
+        return is_after(self.event_date, self.judge.previous_category_date)
 
 
 class Seminar(db.Model):

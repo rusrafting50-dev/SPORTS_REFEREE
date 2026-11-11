@@ -619,6 +619,14 @@ def competition_record_edit(record_id):
     return redirect(url_for("judges.judges_detail", judge_id=record.judge_id))
 
 
+@bp.route("/competition-records/<int:record_id>/nomination", methods=["POST"])
+def competition_record_nomination(record_id):
+    record = JudgeCompetitionRecord.query.get_or_404(record_id)
+    record.in_nomination = request.form.get("included") == "1"
+    db.session.commit()
+    return jsonify({"included": record.in_nomination})
+
+
 @bp.route("/competition-records/<int:record_id>/delete", methods=["POST"])
 def competition_record_delete(record_id):
     record = JudgeCompetitionRecord.query.get_or_404(record_id)

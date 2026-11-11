@@ -334,6 +334,7 @@
         <col style="width: 83px;">
         <col style="width: 100px;">
         <col style="width: 55px;">
+        <col style="width: 75px;">
         <col style="width: 90px;">
         <col style="width: 155px;">
         <col style="width: 90px;">
@@ -347,6 +348,7 @@
             <th rowspan="2">Оценка</th>
             <th rowspan="2">№ в ЕКП / КП</th>
             <th rowspan="2">Баллы</th>
+            <th rowspan="2" title="Включить соревнование в «Представление к присвоению категории»">В представление</th>
             <th colspan="2">Дата внесения записи, подпись, фамилия и инициалы лица, ответственного за оформление карточки учёта</th>
             <th rowspan="2">Действия</th>
         </tr>
@@ -368,6 +370,11 @@
             <td data-field="score">{{ record.score }}</td>
             <td data-field="ekp_number">{{ record.ekp_number }}</td>
             <td data-field="points">{{ record.points }}</td>
+            <td>
+                <input type="checkbox" class="form-check-input nomination-toggle"
+                       data-url="{{ url_for('judges.competition_record_nomination', record_id=record.id) }}"
+                       {% if record.included_in_nomination %}checked{% endif %}>
+            </td>
             <td data-field="record_date">{{ record.record_date }}</td>
             <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
@@ -380,7 +387,7 @@
             </td>
         </tr>
         <tr id="competition-edit-{{ record.id }}" class="d-none">
-            <td colspan="11">
+            <td colspan="12">
                 <form method="post" action="{{ url_for('judges.competition_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
                     <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" value="{{ record.event_date or '' }}"></div>
                     <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
@@ -398,7 +405,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="11" class="text-center text-muted">Записей пока нет</td></tr>
+        <tr><td colspan="12" class="text-center text-muted">Записей пока нет</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -445,6 +452,16 @@ function _fmtDate(val) {
     var m = (val || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return m ? m[3] + '.' + m[2] + '.' + m[1] : val;
 }
+
+document.addEventListener('change', function(e) {
+    var box = e.target;
+    if (!box.classList || !box.classList.contains('nomination-toggle')) return;
+    var body = new FormData();
+    body.append('included', box.checked ? '1' : '0');
+    fetch(box.dataset.url, {method: 'POST', body: body})
+        .then(function(resp) { if (!resp.ok) throw new Error(); })
+        .catch(function() { box.checked = !box.checked; alert('Не удалось сохранить отметку'); });
+});
 
 document.addEventListener('submit', function(e) {
     var form = e.target;

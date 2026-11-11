@@ -16,6 +16,7 @@ from docx.oxml.ns import qn
 from docx.table import _Cell
 
 import references
+from models import date_key, is_after
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATE_PATH = os.path.join(BASE_DIR, "data", "Представление СС1К Серганов СА.docx")
@@ -35,32 +36,11 @@ NEXT_CATEGORY = {
 }
 CATEGORY_ABBR = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
-_RE_FULL = re.compile(r"(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})")
-_RE_MY = re.compile(r"(\d{1,2})\.\s*(\d{4})")
-_RE_Y = re.compile(r"(\d{4})")
 _RE_PARTS = re.compile(r"(\d{1,2}(?:\s*-\s*\d{1,2})?)\.\s*(\d{1,2})\.\s*(\d{4})")
 _RE_ZACHET = re.compile(r"зач[её]т", re.IGNORECASE)
 
 
 # --- Разбор данных карточки ---
-
-def _date_key(text):
-    """(год, месяц, день) из свободной записи даты — для «07-08.12.2023»
-    берётся последний день; None, если год не найден."""
-    t = text or ""
-    m = _RE_FULL.search(t)
-    if m:
-        d, mo, y = m.groups()
-        return int(y), int(mo), int(d)
-    m = _RE_MY.search(t)
-    if m:
-        mo, y = m.groups()
-        return int(y), int(mo), 0
-    m = _RE_Y.search(t)
-    if m:
-        return int(m.group(1)), 0, 0
-    return None
-
 
 def _date_parts(text):
     """«11-12.11. 2023» -> ('11-12', '11', '2023')."""
@@ -104,21 +84,6 @@ def _points_text(points):
     if not points.isdigit():
         return points
     return f"{points} {_ru_plural(int(points), 'балл', 'балла', 'баллов')}"
-
-
-def _previous_assignment_date(judge, category):
-    """Дата присвоения (восстановления) действующей категории."""
-    records = [r for r in judge.category_records if r.date and r.category == category]
-    assigned = [r for r in records if (r.action or "").lower() in ("присвоена", "восстановлена")]
-    pool = assigned or records
-    return max(pool, key=lambda r: r.date).date if pool else None
-
-
-def _since(text, since):
-    if since is None:
-        return True
-    key = _date_key(text)
-    return key is not None and key >= (since.year, since.month, since.day)
 
 
 def _initials(judge):
@@ -285,8 +250,8 @@ def _left_rows(judge, settings, subject, current, previous_date):
     ]
 
     seminars = sorted(
-        (r for r in judge.training_records if _since(r.seminar_date, previous_date)),
-        key=lambda r: _date_key(r.seminar_date) or (0, 0, 0),
+        (r for r in judge.training_records if is_after(r.seminar_date, previous_date)),
+        key=lambda r: date_key(r.seminar_date) or (0, 0, 0),
     )
     n = 0
     for rec in seminars:
@@ -330,7 +295,7 @@ def _left_rows(judge, settings, subject, current, previous_date):
     return rows
 
 
-def _right_rows(judge, previous_date):
+def _right_rows(judge):
     rows = [
         [C(11, 1, "Сроки проведения официального соревнования\n(с дд/мм/гг до дд/мм/гг)", vm="restart"),
          C(12, 1, "Наименование официального соревнования", vm="restart"),
@@ -339,7 +304,7 @@ def _right_rows(judge, previous_date):
         [C(c, 1, vm="cont") for c in range(11, 15)],
     ]
     for rec in judge.sorted_competition_records:
-        if not _since(rec.event_date, previous_date):
+        if not rec.included_in_nomination:
             continue
         name = rec.competition_name or ""
         if rec.ekp_number:
@@ -454,11 +419,11 @@ def generate_nomination(judge, settings, subject):
 
     current = judge.current_category
     target = NEXT_CATEGORY.get(current, references.JUDGE_CATEGORIES[-1])
-    previous_date = _previous_assignment_date(judge, current) if current else None
+    previous_date = judge.previous_category_date
 
     _fill_title(title_tr, target)
     left = _left_rows(judge, settings, subject, current, previous_date)
-    right = _right_rows(judge, previous_date)
+    right = _right_rows(judge)
 
     total = max(len(left), len(right))
     while len(right) < total:
