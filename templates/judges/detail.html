@@ -270,6 +270,12 @@
                     <form method="post" action="{{ url_for('judges.training_record_delete', record_id=record.id) }}" onsubmit="return confirm('Удалить эту запись?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
                     </form>
+                    <label class="d-flex align-items-center justify-content-center gap-1 small" title="Включить семинар в «Представление к присвоению категории»">
+                        <input type="checkbox" class="form-check-input m-0 nomination-toggle"
+                               data-url="{{ url_for('judges.training_record_nomination', record_id=record.id) }}"
+                               {% if record.included_in_nomination %}checked{% endif %}>
+                        В представление
+                    </label>
                 </div>
             </td>
         </tr>

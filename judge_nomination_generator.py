@@ -16,7 +16,7 @@ from docx.oxml.ns import qn
 from docx.table import _Cell
 
 import references
-from models import date_key, is_after
+from models import date_key
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATE_PATH = os.path.join(BASE_DIR, "data", "Представление СС1К Серганов СА.docx")
@@ -272,7 +272,7 @@ def _left_rows(judge, settings, subject, current, previous_date):
     ]
 
     seminars = sorted(
-        (r for r in judge.training_records if is_after(r.seminar_date, previous_date)),
+        (r for r in judge.training_records if r.included_in_nomination),
         key=lambda r: date_key(r.seminar_date) or (0, 0, 0),
     )
     n = 0

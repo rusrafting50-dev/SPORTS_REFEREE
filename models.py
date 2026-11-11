@@ -212,6 +212,16 @@ class JudgeTrainingRecord(db.Model):
     record_date = db.Column(db.String(50))               # дата внесения записи
     record_keeper = db.Column(db.String(150))            # ответственный за оформление карточки
 
+    # Включать ли семинар в представление; None — галочку ещё не трогали,
+    # тогда включаются семинары после Judge.previous_category_date
+    in_nomination = db.Column(db.Boolean)
+
+    @property
+    def included_in_nomination(self):
+        if self.in_nomination is not None:
+            return self.in_nomination
+        return is_after(self.seminar_date, self.judge.previous_category_date)
+
 
 class JudgeCompetitionRecord(db.Model):
     """Практика судейства официальных спортивных соревнований."""
