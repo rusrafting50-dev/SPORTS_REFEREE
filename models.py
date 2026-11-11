@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 db = SQLAlchemy()
 
@@ -105,7 +106,11 @@ class Judge(db.Model):
     )
     competition_records = db.relationship(
         "JudgeCompetitionRecord", backref="judge", lazy=True,
-        order_by="JudgeCompetitionRecord.id", cascade="all, delete-orphan",
+        order_by=text(
+            "CASE WHEN event_date IS NULL OR event_date = '' THEN '99999999'"
+            " ELSE substr(event_date,7,4)||substr(event_date,4,2)||substr(event_date,1,2) END"
+        ),
+        cascade="all, delete-orphan",
     )
 
     @property
