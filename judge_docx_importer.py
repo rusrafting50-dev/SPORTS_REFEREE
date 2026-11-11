@@ -25,8 +25,11 @@ def _cell(table, row, col):
     tcs = tr.findall(qn("w:tc"))
     if col >= len(tcs):
         return ""
-    texts = tcs[col].findall(".//" + qn("w:t"))
-    return "".join(t.text or "" for t in texts).strip()
+    paras = (
+        "".join(t.text or "" for t in p.findall(".//" + qn("w:t"))).strip()
+        for p in tcs[col].findall(".//" + qn("w:p"))
+    )
+    return " ".join(p for p in paras if p)
 
 
 def _cell_paras(table, row, col):
@@ -195,6 +198,11 @@ def parse_judge_card(file_obj):
             _paras5 = _cell_paras(tbl_comp, crow, 5)
             _record_date   = _paras5[0] if _paras5 else (_cell(tbl_comp, crow, 5) or None)
             _record_keeper = _paras5[1] if len(_paras5) > 1 else None
+            # Двухстрочная запись (как в образце карточки): во второй строке,
+            # где дата объединена с первой, — статус соревнования и ответственный
+            if crow + 1 < len(tbl_comp.rows) and not _cell(tbl_comp, crow + 1, 0):
+                _comp_status = _comp_status or _cell(tbl_comp, crow + 1, 3) or None
+                _record_keeper = _record_keeper or _cell(tbl_comp, crow + 1, 5) or None
             judge.competition_records.append(JudgeCompetitionRecord(
                 event_date=_cell(tbl_comp, crow, 0) or None,
                 location=_cell(tbl_comp, crow, 1) or None,

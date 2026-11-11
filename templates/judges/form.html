@@ -53,6 +53,10 @@
         <label class="form-label">Контактные телефоны, адрес электронной почты</label>
         <input type="text" name="contacts" class="form-control" value="{{ judge.contacts if judge else '' }}">
     </div>
+    <div class="col-12">
+        <label class="form-label">Адрес (место жительства)</label>
+        <input type="text" name="address" class="form-control" value="{{ judge.address if judge and judge.address else '' }}">
+    </div>
     <div class="col-md-6">
         <label class="form-label">Специализация</label>
         <select name="specialization" class="form-select">

@@ -21,6 +21,7 @@
         </div>
         <div class="d-flex gap-2">
             <a href="{{ url_for('judges.judges_export', judge_id=judge.id) }}" class="btn btn-success">Скачать карточку</a>
+            <a href="{{ url_for('judges.judges_nomination', judge_id=judge.id) }}" class="btn btn-success">Скачать представление</a>
             <form method="post" action="{{ url_for('judges.judges_send_to_site', judge_id=judge.id) }}" class="d-inline">
                 <button type="submit" class="btn btn-outline-success">Отправить на сайт</button>
             </form>
@@ -59,6 +60,7 @@
             <tr><th>Образование</th><td>{{ judge.education }}</td></tr>
             <tr><th>Место работы (учёбы), должность</th><td>{{ judge.workplace }}</td></tr>
             <tr><th>Контактные телефоны, адрес электронной почты</th><td>{{ judge.contacts }}</td></tr>
+            <tr><th>Адрес (место жительства)</th><td>{{ judge.address }}</td></tr>
             <tr><th>Дата начала судейской деятельности</th><td>{{ judge.judging_start_date.strftime('%d.%m.%Y') if judge.judging_start_date }}</td></tr>
             <tr><th>Текущая квалификационная категория</th><td>{{ judge.current_category }}</td></tr>
             <tr><th>Группа спортивных дисциплин</th><td>{{ judge.discipline_group|break_after_comma }}</td></tr>
@@ -280,10 +282,10 @@
                     <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
                     <div><label class="form-label mb-0">Квалификация (участник)</label><input type="text" name="participant_category" class="form-control form-control-sm" value="{{ record.participant_category or '' }}"></div>
                     <div><label class="form-label mb-0">Оценка (участник)</label><input type="text" name="participant_score" class="form-control form-control-sm" value="{{ record.participant_score or '' }}"></div>
-                    <div><label class="form-label mb-0">Дата (участник)</label><input type="text" name="participant_date" class="form-control form-control-sm" value="{{ record.participant_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="participant_date" class="form-control form-control-sm" value="{{ record.participant_date or '' }}"></div>
                     <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm" value="{{ record.lecturer_category or '' }}"></div>
                     <div><label class="form-label mb-0">Оценка (лектор)</label><input type="text" name="lecturer_score" class="form-control form-control-sm" value="{{ record.lecturer_score or '' }}"></div>
-                    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="lecturer_date" class="form-control form-control-sm" value="{{ record.lecturer_date or '' }}"></div>
+                    <div><label class="form-label mb-0">Дата (зачёт)</label><input type="text" name="lecturer_date" class="form-control form-control-sm" value="{{ record.lecturer_date or '' }}"></div>
                     <div><label class="form-label mb-0">№ протокола зачёта</label><input type="text" name="exam_protocol_number" class="form-control form-control-sm" value="{{ record.exam_protocol_number or '' }}"></div>
                     <div><label class="form-label mb-0">Оценка зачёта</label><input type="text" name="exam_score" class="form-control form-control-sm" value="{{ record.exam_score or '' }}"></div>
                     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
@@ -310,6 +312,7 @@
     <div><label class="form-label mb-0">Оценка (участник)</label><input type="text" name="participant_score" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Квалификация (лектор)</label><input type="text" name="lecturer_category" class="form-control form-control-sm" style="width: 405px;"></div>
     <div class="flex-grow-1"><label class="form-label mb-0">Оценка (лектор)</label><input type="text" name="lecturer_score" class="form-control form-control-sm w-100"></div>
+    <div><label class="form-label mb-0">Дата (лектор)</label><input type="text" name="participant_date" class="form-control form-control-sm"></div>
     <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата (зачёт)</label><input type="text" name="lecturer_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">№ протокола зачёта</label><input type="text" name="exam_protocol_number" class="form-control form-control-sm"></div>
@@ -329,6 +332,8 @@
         <col style="width: 220px;">
         <col style="width: 150px;">
         <col style="width: 83px;">
+        <col style="width: 100px;">
+        <col style="width: 55px;">
         <col style="width: 90px;">
         <col style="width: 155px;">
         <col style="width: 90px;">
@@ -340,6 +345,8 @@
             <th rowspan="2">Наименование должности спортивного судьи</th>
             <th colspan="2">Наименование и статус официальных спортивных соревнований, вид программы</th>
             <th rowspan="2">Оценка</th>
+            <th rowspan="2">№ в ЕКП / КП</th>
+            <th rowspan="2">Баллы</th>
             <th colspan="2">Дата внесения записи, подпись, фамилия и инициалы лица, ответственного за оформление карточки учёта</th>
             <th rowspan="2">Действия</th>
         </tr>
@@ -359,6 +366,8 @@
             <td data-field="competition_name">{{ record.competition_name }}</td>
             <td data-field="competition_status">{{ record.competition_status }}</td>
             <td data-field="score">{{ record.score }}</td>
+            <td data-field="ekp_number">{{ record.ekp_number }}</td>
+            <td data-field="points">{{ record.points }}</td>
             <td data-field="record_date">{{ record.record_date }}</td>
             <td data-field="record_keeper">{{ record.record_keeper }}</td>
             <td>
@@ -371,7 +380,7 @@
             </td>
         </tr>
         <tr id="competition-edit-{{ record.id }}" class="d-none">
-            <td colspan="9">
+            <td colspan="11">
                 <form method="post" action="{{ url_for('judges.competition_record_edit', record_id=record.id) }}" class="d-flex flex-wrap align-items-end gap-2">
                     <div><label class="form-label mb-0">Дата проведения</label><input type="text" name="event_date" class="form-control form-control-sm" value="{{ record.event_date or '' }}"></div>
                     <div><label class="form-label mb-0">Место проведения</label><input type="text" name="location" class="form-control form-control-sm" value="{{ record.location or '' }}"></div>
@@ -379,6 +388,8 @@
                     <div><label class="form-label mb-0">Наименование соревнования</label><input type="text" name="competition_name" class="form-control form-control-sm" style="min-width:220px" value="{{ record.competition_name or '' }}"></div>
                     <div><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm" style="min-width:180px" value="{{ record.competition_status or '' }}"></div>
                     <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm" value="{{ record.score or '' }}"></div>
+                    <div><label class="form-label mb-0">№ в ЕКП / КП</label><input type="text" name="ekp_number" class="form-control form-control-sm" placeholder="КП № 1378-СМ" value="{{ record.ekp_number or '' }}"></div>
+                    <div><label class="form-label mb-0">Баллы</label><input type="text" name="points" class="form-control form-control-sm" style="width: 70px;" value="{{ record.points or '' }}"></div>
                     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm" value="{{ record.record_date or '' }}"></div>
                     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm" value="{{ record.record_keeper or '' }}"></div>
                     <button type="submit" class="btn btn-sm btn-primary">Сохранить</button>
@@ -387,7 +398,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="9" class="text-center text-muted">Записей пока нет</td></tr>
+        <tr><td colspan="11" class="text-center text-muted">Записей пока нет</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -401,6 +412,8 @@
     <div class="w-100"></div>
     <div class="w-50"><label class="form-label mb-0">Статус соревнования</label><input type="text" name="competition_status" class="form-control form-control-sm w-100"></div>
     <div><label class="form-label mb-0">Оценка</label><input type="text" name="score" class="form-control form-control-sm"></div>
+    <div><label class="form-label mb-0">№ в ЕКП / КП</label><input type="text" name="ekp_number" class="form-control form-control-sm" placeholder="КП № 1378-СМ"></div>
+    <div><label class="form-label mb-0">Баллы</label><input type="text" name="points" class="form-control form-control-sm" style="width: 70px;"></div>
     <div class="w-100"></div>
     <div><label class="form-label mb-0">Дата внесения записи</label><input type="text" name="record_date" class="form-control form-control-sm"></div>
     <div><label class="form-label mb-0">Ответственный за оформление карточки</label><input type="text" name="record_keeper" class="form-control form-control-sm"></div>

@@ -32,6 +32,8 @@ class Subject(db.Model):
     organization_name = db.Column(db.String(300))      # Наименование организации, осуществляющей учёт судейской деятельности
     organization_address = db.Column(db.String(300))   # Адрес (место нахождения) организации
     organization_contacts = db.Column(db.String(300))  # Телефон, адрес электронной почты организации
+    organization_leader_position = db.Column(db.String(150))  # Должность руководителя (подпись в представлении)
+    organization_leader_name = db.Column(db.String(150))      # Инициалы и фамилия руководителя
 
     local_branches = db.relationship(
         "LocalBranch", backref="subject", lazy=True, order_by="LocalBranch.name",
@@ -83,6 +85,7 @@ class Judge(db.Model):
     education = db.Column(db.String(100))       # Образование
     workplace = db.Column(db.String(300))       # Место работы (учёбы), должность
     contacts = db.Column(db.String(300))        # Контактные телефоны, адрес электронной почты
+    address = db.Column(db.String(300))         # Адрес (место жительства)
     specialization = db.Column(db.String(300))  # Специализация
     discipline_group = db.Column(db.String(300))  # Группа спортивных дисциплин
 
@@ -200,6 +203,8 @@ class JudgeCompetitionRecord(db.Model):
     competition_name = db.Column(db.String(500))          # наименование и вид программы соревнования
     competition_status = db.Column(db.String(200))        # статус официального соревнования
     score = db.Column(db.String(50))
+    ekp_number = db.Column(db.String(100))   # номер в ЕКП / КП, напр. «КП № 1378-СМ»
+    points = db.Column(db.String(20))        # баллы за судейство
 
     record_date = db.Column(db.String(50))
     record_keeper = db.Column(db.String(150))

@@ -43,6 +43,14 @@
                         <label class="form-label mb-0">Телефон, адрес электронной почты организации</label>
                         <input type="text" name="organization_contacts" class="form-control form-control-sm" value="{{ subject.organization_contacts or '' }}">
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label mb-0">Должность руководителя организации</label>
+                        <input type="text" name="organization_leader_position" class="form-control form-control-sm" placeholder="Председатель" value="{{ subject.organization_leader_position or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label mb-0">Инициалы и фамилия руководителя</label>
+                        <input type="text" name="organization_leader_name" class="form-control form-control-sm" placeholder="Е. В. Милевский" value="{{ subject.organization_leader_name or '' }}">
+                    </div>
                 </form>
                 <div class="d-flex gap-2 mb-3">
                     <button type="submit" form="subjectForm{{ subject.id }}" class="btn btn-sm btn-outline-primary">Сохранить</button>

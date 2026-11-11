@@ -8,6 +8,7 @@ import references
 import sync_corez_judges
 import sync_rafting_cfo_judges
 from judge_docx_generator import generate_judge_card, judge_card_filename
+from judge_nomination_generator import generate_nomination, nomination_filename
 from judge_docx_importer import parse_judge_card
 from models import (
     Judge, JudgeCategoryRecord, JudgeCompetitionRecord, JudgeTrainingRecord, LocalBranch, Settings, Subject, db,
@@ -107,6 +108,7 @@ def _fill_judge_from_form(judge, form):
     judge.education = form.get("education", "").strip() or None
     judge.workplace = form.get("workplace", "").strip() or None
     judge.contacts = form.get("contacts", "").strip() or None
+    judge.address = form.get("address", "").strip() or None
     judge.specialization = form.get("specialization", "").strip() or None
     judge.discipline_group = form.get("discipline_group", "").strip() or None
     judge.judging_start_date = _parse_date(form.get("judging_start_date"))
@@ -479,6 +481,18 @@ def judges_export(judge_id):
     )
 
 
+@bp.route("/<int:judge_id>/nomination")
+def judges_nomination(judge_id):
+    judge = Judge.query.get_or_404(judge_id)
+    settings = Settings.query.first()
+    subject = Subject.query.filter_by(name=judge.region).first() if judge.region else None
+    buffer = generate_nomination(judge, settings, subject)
+    return send_file(
+        buffer, as_attachment=True, download_name=nomination_filename(judge),
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+
+
 # --- История квалификационных категорий ---
 
 def _fill_category_record(record, form):
@@ -579,6 +593,8 @@ def _fill_competition_record(record, form):
     record.competition_name = form.get("competition_name", "").strip() or None
     record.competition_status = form.get("competition_status", "").strip() or None
     record.score = form.get("score", "").strip() or None
+    record.ekp_number = form.get("ekp_number", "").strip() or None
+    record.points = form.get("points", "").strip() or None
     record.record_date = form.get("record_date", "").strip() or None
     record.record_keeper = form.get("record_keeper", "").strip() or None
 

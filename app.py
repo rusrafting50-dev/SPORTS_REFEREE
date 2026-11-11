@@ -186,6 +186,8 @@ def create_app():
         subject.organization_name = request.form.get("organization_name", "").strip()
         subject.organization_address = request.form.get("organization_address", "").strip()
         subject.organization_contacts = request.form.get("organization_contacts", "").strip()
+        subject.organization_leader_position = request.form.get("organization_leader_position", "").strip()
+        subject.organization_leader_name = request.form.get("organization_leader_name", "").strip()
         db.session.commit()
         flash(f"Субъект «{name}» сохранён", "success")
         return redirect(url_for("settings"))
