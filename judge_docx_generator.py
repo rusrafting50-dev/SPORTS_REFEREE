@@ -2,6 +2,7 @@
 # спортивного судьи» в Word по образцу из data/
 import copy
 import os
+import re
 from io import BytesIO
 
 import docx
@@ -18,6 +19,27 @@ TEMPLATE_PATH = os.path.join(BASE_DIR, "data", "Учетная карточка 
 CATEGORY_ABBREVIATIONS = {full: abbr for abbr, full in references.JUDGE_CATEGORY_ABBREVIATIONS.items()}
 
 
+NBSP = "\u00a0"
+_RE_ZACHET = re.compile(r"зач[её]т", re.IGNORECASE)
+_RE_HOURS = re.compile(r"(\d+)\s+(?=час)", re.IGNORECASE)
+
+
+def normalize_text(text):
+    """Правка текста для выгружаемых документов: «зачёт» всегда через «ё»,
+    «2 часа» / «16 часов» — через неразрывный пробел (не рвутся по строкам)."""
+    if not text:
+        return text
+    text = _RE_ZACHET.sub(lambda m: m.group().replace("е", "ё").replace("Е", "Ё"), text)
+    return _RE_HOURS.sub(r"\1" + NBSP, text)
+
+
+def normalize_document(document):
+    """normalize_text для всего текста документа, включая текст образца."""
+    for t in document.element.body.iter(qn("w:t")):
+        if t.text:
+            t.text = normalize_text(t.text)
+
+
 def _tcs(tr):
     return tr.findall(qn("w:tc"))
 
@@ -25,7 +47,7 @@ def _tcs(tr):
 def _set_text(tr, tc_idx, table, value):
     tc = _tcs(tr)[tc_idx]
     cell = _Cell(tc, table)
-    value = "" if value is None else str(value)
+    value = normalize_text("" if value is None else str(value))
     lines = value.split("\n")
 
     paragraph = cell.paragraphs[0]
@@ -275,6 +297,7 @@ def generate_judge_card(judge, settings, subject):
     _replace_repeating_rows(table2, 1, 2, judge.sorted_competition_records, fill_competition_group)
 
     _replace_photo(document, judge)
+    normalize_document(document)
 
     buffer = BytesIO()
     document.save(buffer)

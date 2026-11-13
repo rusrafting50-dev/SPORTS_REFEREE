@@ -16,6 +16,7 @@ from docx.oxml.ns import qn
 from docx.table import _Cell
 
 import references
+from judge_docx_generator import NBSP, normalize_document, normalize_text
 from models import date_key
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -41,6 +42,9 @@ _RE_ZACHET = re.compile(r"зач[её]т", re.IGNORECASE)
 _RE_HOURS = re.compile(r"\d+\s*(?:академ\w*\s*)?час", re.IGNORECASE)
 _RE_EKP = re.compile(r"(?<![А-Яа-яЁё])Е?КП(?![А-Яа-яЁё])")
 _RE_POINTS = re.compile(r"балл", re.IGNORECASE)
+NB_HYPHEN = "\u2011"  # маркер: в документ пишется как <w:noBreakHyphen/>
+# «КП № 1378-СМ», «№ в ЕКП 29698», «ЕКП № 123» — номер не должен рваться по строкам
+_RE_EKP_NUMBER = re.compile(r"(?:№\s*(?:в\s+)?)?(?<![А-Яа-яЁё])Е?КП(?![А-Яа-яЁё])\s*(?:№\s*)?\d[\w/-]*")
 MARK_FILL = "FFFF00"  # жёлтая заливка: в карточке не заполнены данные для этой ячейки
 
 
@@ -94,6 +98,23 @@ def _education_level(text):
         if low.startswith(level.lower()) or re.search(rf"(?<![а-яё]){level.lower()}(?![а-яё])", low):
             return level, True
     return re.split(r"[,(]", t)[0].strip(), False
+
+
+def _document_text(text):
+    text = normalize_text(text)
+    return _RE_EKP_NUMBER.sub(lambda m: re.sub(r"\s+", NBSP, m.group()).replace("-", NB_HYPHEN), text)
+
+
+def _append_text(r, text):
+    """Текст в run; маркеры NB_HYPHEN становятся неразрывными дефисами Word."""
+    for i, piece in enumerate(text.split(NB_HYPHEN)):
+        if i:
+            r.append(OxmlElement("w:noBreakHyphen"))
+        if piece:
+            t = OxmlElement("w:t")
+            t.set(qn("xml:space"), "preserve")
+            t.text = piece
+            r.append(t)
 
 
 def _initials(judge):
@@ -217,10 +238,7 @@ def _make_p(text, pt, bold, align):
     if text:
         r = OxmlElement("w:r")
         r.append(_make_rpr(pt, bold))
-        t = OxmlElement("w:t")
-        t.set(qn("xml:space"), "preserve")
-        t.text = text
-        r.append(t)
+        _append_text(r, _document_text(text))
         p.append(r)
     return p
 
@@ -499,6 +517,7 @@ def generate_nomination(judge, settings, subject):
     _fill_signature(signature_tr, subject)
     _add_photo(table, new_trs[0], judge)
     _shrink_trailing_paragraph(tbl)
+    normalize_document(document)
 
     buffer = BytesIO()
     document.save(buffer)
