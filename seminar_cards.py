@@ -34,11 +34,15 @@ def _hours_score(hours):
 
 
 def seminar_dates(seminar):
-    """(текст «Дата» как в карточке, первый день, последний день).
-    «07-08 декабря 2024 года» -> «07-08.12.2024»; «31 мая - 01 июня 2025» ->
-    «31.05.2025-01.06.2025»; дни — строки «дд.мм.гггг»."""
-    period = seminar.period or ""
-    start = seminar.start_date
+    return card_dates(seminar.period, seminar.start_date)
+
+
+def card_dates(period, start=None):
+    """Сроки проведения свободным текстом -> (текст «Дата» как в карточке,
+    первый день, последний день). «07-08 декабря 2024 года» -> «07-08.12.2024»;
+    «31 мая - 01 июня 2025» -> «31.05.2025-01.06.2025»; дни — «дд.мм.гггг».
+    Без распознаваемых сроков — дата начала start (date), если есть."""
+    period = period or ""
     numeric = _RE_NUMERIC.search(period)
     if numeric:
         text = numeric.group().replace(" ", "")
