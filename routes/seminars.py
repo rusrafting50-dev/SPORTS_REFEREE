@@ -262,6 +262,7 @@ def applications_list(seminar_id):
     return render_template(
         "seminars/applications/list.html", seminar=seminar,
         applications=applications, regions_count=regions_count,
+        references=references, judge_qualifications=JUDGE_QUALIFICATIONS,
     )
 
 
@@ -321,6 +322,41 @@ def applications_delete(seminar_id, application_id):
     db.session.delete(application)
     db.session.commit()
     flash("Заявка удалена", "success")
+    return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
+
+
+def _application_participant(application_id, participant_id):
+    participant = SeminarApplicationParticipant.query.get_or_404(participant_id)
+    if participant.application_id != application_id:
+        abort(404)
+    return participant
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/participants/<int:participant_id>/edit",
+          methods=["POST"])
+def application_participant_edit(seminar_id, application_id, participant_id):
+    participant = _application_participant(application_id, participant_id)
+    form = request.form
+    full_name = form.get("full_name", "").strip()
+    if full_name:
+        participant.full_name = full_name
+    participant.gender = form.get("gender", "").strip() or None
+    participant.birth_date = _parse_date(form.get("birth_date"))
+    participant.judge_qualification = form.get("judge_qualification", "").strip() or None
+    participant.assigned_category = form.get("assigned_category", "").strip() or None
+    participant.specialization = form.get("specialization", "").strip() or None
+    db.session.commit()
+    flash("Участник обновлён", "success")
+    return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
+
+
+@bp.route("/<int:seminar_id>/applications/<int:application_id>/participants/<int:participant_id>/delete",
+          methods=["POST"])
+def application_participant_delete(seminar_id, application_id, participant_id):
+    participant = _application_participant(application_id, participant_id)
+    db.session.delete(participant)
+    db.session.commit()
+    flash("Участник удалён из заявки", "success")
     return redirect(url_for("seminars.applications_list", seminar_id=seminar_id))
 
 
