@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from flask import Blueprint, abort, flash, redirect, render_template, request, send_file, url_for
 
 import references
+from seminar_cards import send_protocol_to_cards
 from models import (
     Seminar, SeminarApplication, SeminarApplicationParticipant, SeminarLecturer,
     SeminarProgramLecturer, db,
@@ -488,6 +489,8 @@ def _protocol_rows(seminar_id, seminar):
     for p in participants:
         key = _key(p.full_name, "participant", p.id)
         row = rows_by_key[key] = SimpleNamespace(
+            judge_id=p.judge_id,
+            is_lecturer=False,
             full_name=p.full_name or "",
             region=p.application.region if p.application else "",
             current_qualification=p.judge_qualification or "",
@@ -503,6 +506,8 @@ def _protocol_rows(seminar_id, seminar):
         row = rows_by_key.get(key)
         if row is None:
             row = rows_by_key[key] = SimpleNamespace(
+                judge_id=lecturer.judge_id,
+                is_lecturer=True,
                 full_name=lecturer.full_name or "",
                 region=lecturer.region or "",
                 current_qualification=lecturer.qualification or "",
@@ -513,6 +518,8 @@ def _protocol_rows(seminar_id, seminar):
             )
             order.append(key)
         else:
+            row.is_lecturer = True
+            row.judge_id = row.judge_id or lecturer.judge_id
             row.lecturer_hours = lecturer.lecture_hours or "-"
             if not row.region:
                 row.region = lecturer.region or ""
@@ -520,6 +527,16 @@ def _protocol_rows(seminar_id, seminar):
                 row.current_qualification = lecturer.qualification or ""
 
     return [rows_by_key[key] for key in order]
+
+
+@bp.route("/<int:seminar_id>/protocol/send-to-cards", methods=["POST"])
+def protocol_send_to_cards(seminar_id):
+    seminar = Seminar.query.get_or_404(seminar_id)
+    added, updated, not_found = send_protocol_to_cards(seminar, _protocol_rows(seminar_id, seminar))
+    flash(f"В карточки судей: добавлено записей — {added}, обновлено — {updated}", "success")
+    if not_found:
+        flash("Нет в базе судей (запись не добавлена): " + "; ".join(not_found), "warning")
+    return redirect(url_for("seminars.protocol_edit", seminar_id=seminar.id))
 
 
 @bp.route("/<int:seminar_id>/protocol/print")

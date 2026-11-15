@@ -212,6 +212,10 @@ class JudgeTrainingRecord(db.Model):
     record_date = db.Column(db.String(50))               # дата внесения записи
     record_keeper = db.Column(db.String(150))            # ответственный за оформление карточки
 
+    # Семинар, из протокола которого запись создана кнопкой «Отправить в
+    # карточки» (seminar_cards.py) — повторная отправка обновляет эту запись
+    source_seminar_id = db.Column(db.Integer)
+
     # Включать ли семинар в представление; None — галочку ещё не трогали,
     # тогда включаются семинары после Judge.previous_category_date
     in_nomination = db.Column(db.Boolean)
